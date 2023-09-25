@@ -3,11 +3,6 @@
 public class RateWindow
 {
     /// <summary>
-    /// this is the rate name
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
     /// max number of jobs in the window
     /// </summary>
     public int Max { get; set; }

@@ -1,37 +1,15 @@
-﻿namespace Laters.Tests;
+﻿namespace Laters.Tests.Infrastructure;
 
-using AspNet;
-using Machine.Specifications;
+using Laters.AspNet;
+using Laters.Data.Marten;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using PowerAssert;
-
-[Subject("Later")]
-class When_authenticating_an_admin_user
-{
-    static DefaultTestServer _testServer;
-
-    Establish context = () =>
-    {
-        _testServer = new DefaultTestServer();
-    };
-
-    Because of = () =>
-        hello = "hello";
-
-    It should_indicate_the_users_role = () =>
-        PAssert.IsTrue(()=> hello == "hello");
-
-    Cleanup after = () =>
-    {
-        _testServer?.Dispose();
-    };
-}
 
 public class DefaultTestServer : IDisposable
 {
     Action<IServiceCollection>? _configureServices;
+    Action<WebHostBuilderContext, Setup>? _configureLaters;
     Action<IApplicationBuilder>? _configure;
     TestServer? _testServer;
 
@@ -39,20 +17,29 @@ public class DefaultTestServer : IDisposable
 
     public DefaultTestServer()
     {
+        Port = _random.Next(5001, 5500);
+
+        _configureLaters = (context, setup) =>
+        {
+            setup.ScanForJobHandlers();
+            setup.Configuration.Role = Roles.Any;
+            setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}";
+            setup.UseStorage<Marten>();
+        };
+        
         _configure = app =>
         {
             app.UseDeveloperExceptionPage();
             app.UseLaters();
             app.UseAuthorization();
         };
-        
-        Port = _random.Next(5001, 5500);
     }
     
     public IAdvancedSchedule Schedule { get; private set; }
-    public HttpClient Client { get; set; }
-
+    public HttpClient Client { get; private set; }
     public int Port { get; private set; }
+
+    public TestMonitor Monitor { get; set; }
     
     public void Configure(IApplicationBuilder app)
     {
@@ -61,37 +48,43 @@ public class DefaultTestServer : IDisposable
         _configure?.Invoke(app);
     }
     
-    public void Create()
+    public void Setup()
     {
         var builder = new WebHostBuilder();
 
-        builder.ConfigureLaters(config =>
-        {
-            config.ScanForJobHandlers();
-//            config.Windows.Default;
-            config.Windows.Configure()
-            config.UseStorage<Marten>();
-        });
-        
         builder.ConfigureServices((context, collection) =>
         {
+            collection.AddSingleton<TestMonitor>();
             collection.AddControllersWithViews();
             collection.AddEndpointsApiExplorer();
             collection.AddSwaggerGen();
             _configureServices?.Invoke(collection);
         });
-
+        
+        builder.ConfigureLaters((context, setup) =>
+        {
+            _configureLaters?.Invoke(context, setup);
+        });
+        
         builder
             .UseStartup<DefaultTestServer>(context => this)
             .UseUrls($"http://localhost:{Port}");
         
         _testServer = new TestServer(builder);
+        
         Client = _testServer.CreateClient();
+        Schedule = _testServer.Services.GetRequiredService<IAdvancedSchedule>();
+        Monitor = _testServer.Services.GetRequiredService<TestMonitor>();
     }
 
     public void ConfigureServices(Action<IServiceCollection> configure)
     {
         _configureServices = configure;
+    }
+
+    public void ConfigureLaters(Action<WebHostBuilderContext, Setup> configure)
+    {
+        _configureLaters = configure;
     }
     
     public void Dispose()
