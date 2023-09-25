@@ -27,6 +27,9 @@ class When_scheduling_one_task_for_later
 
     It should_only_be_processed_once = () =>
         PAssert.IsTrue(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() == 1);
+    
+    It should_only_process_one_job_type = () =>
+        PAssert.IsTrue(() => _testServer.Monitor.CallOrder.Count == 1);
 
     Cleanup after = () =>
     {

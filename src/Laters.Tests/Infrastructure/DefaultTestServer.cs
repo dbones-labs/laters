@@ -2,9 +2,11 @@
 
 using Laters.AspNet;
 using Laters.Data.Marten;
+using Marten;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Weasel.Core;
 
 public class DefaultTestServer : IDisposable
 {
@@ -18,6 +20,7 @@ public class DefaultTestServer : IDisposable
     public DefaultTestServer()
     {
         Port = _random.Next(5001, 5500);
+        TestNumber = _random.Next(1, 999_999);
 
         _configureLaters = (context, setup) =>
         {
@@ -39,6 +42,8 @@ public class DefaultTestServer : IDisposable
     public HttpClient Client { get; private set; }
     public int Port { get; private set; }
 
+    public int TestNumber { get; set; }
+
     public TestMonitor Monitor { get; set; }
     
     public void Configure(IApplicationBuilder app)
@@ -54,6 +59,34 @@ public class DefaultTestServer : IDisposable
 
         builder.ConfigureServices((context, collection) =>
         {
+            //default database
+            collection.AddMarten(config =>
+            {
+                config.Connection("host=localhost;database=laters;password=ABC123!!;username=application");
+
+                config.AutoCreateSchemaObjects = AutoCreate.All;
+                
+                config.Policies.ForAllDocuments(dm =>
+                {
+                    if (dm.IdType == typeof(string))
+                    {
+                        dm.IdStrategy = new StringIdGeneration();
+                    }
+                });
+
+                config.DatabaseSchemaName = $"laters-{TestNumber}";
+                
+                config.CreateDatabasesForTenants(tenant =>
+                {
+                    tenant
+                        .ForTenant()
+                        .CheckAgainstPgDatabase()
+                        .WithOwner("admin")
+                        .WithEncoding("UTF-8")
+                        .ConnectionLimit(-1);
+                });
+            });
+            
             collection.AddSingleton<TestMonitor>();
             collection.AddControllersWithViews();
             collection.AddEndpointsApiExplorer();
@@ -89,6 +122,14 @@ public class DefaultTestServer : IDisposable
     
     public void Dispose()
     {
+        _testServer
+            ?.Services
+            .GetService<IDocumentStore>()
+            ?.Advanced
+            .Clean
+            .CompletelyRemoveAllAsync()
+            .Wait();
+        
         _testServer?.Dispose();
     }
 }
