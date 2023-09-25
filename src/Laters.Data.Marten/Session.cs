@@ -1,22 +1,8 @@
 ﻿namespace Laters.Data.Marten;
 
 using global::Marten;
-using global::Marten.Schema;
-using global::Marten.Schema.Identity;
-using JasperFx.CodeGeneration;
-using JasperFx.CodeGeneration.Frames;
-using JasperFx.Core.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
-public class Marten : StorageSetup
-{
-    protected override void Apply(IServiceCollection collection)
-    {
-        collection.AddScoped<ISession>();
-    }
-}
-
-public class Session : ISession
+public class Session : ISession, IAsyncDisposable
 {
     readonly IDocumentSession _documentSession;
     readonly IQuerySession _querySession;
@@ -80,21 +66,16 @@ public class Session : ISession
     {
         await _documentSession.SaveChangesAsync();
     }
-}
 
-public class StringIdGeneration : IIdGeneration
-{
-    public void GenerateCode(GeneratedMethod method, DocumentMapping mapping)
+    public void Dispose()
     {
-        Use use = new Use(mapping.DocumentType);
-        method.Frames.Code(
-            $"if ({{0}}.{mapping.IdMember.Name} == null)" +
-            $" _setter({{0}}, {typeof(Convert).FullNameInCode()}" +
-            $".ToBase64String({typeof(Guid).FullNameInCode()}.NewGuid().ToByteArray()).Replace(\"/\", \"_\").Replace(\"+\", \"-\").Substring(0, 22));",
-            use);
-        method.Frames.Code("return {0}." + mapping.IdMember.Name + ";", use);
+        _documentSession.Dispose();
+        _querySession.Dispose();
     }
 
-    public IEnumerable<Type> KeyTypes { get; } = new[] { typeof(string) };
-    public bool RequiresSequences => false;
+    public async ValueTask DisposeAsync()
+    {
+        await _documentSession.DisposeAsync();
+        await _querySession.DisposeAsync();
+    }
 }
