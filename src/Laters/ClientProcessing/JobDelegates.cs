@@ -104,7 +104,7 @@ public interface IProcessJobMiddleware
 /// </summary>
 public class ProcessJobMiddleware : IProcessJobMiddleware, IMiddleware<Job>
 {
-    private readonly Middleware<Job> _internalMiddleware;
+    readonly Middleware<Job> _internalMiddleware;
 
     public ProcessJobMiddleware()
     {

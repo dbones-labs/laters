@@ -1,5 +1,12 @@
 ﻿namespace Laters.Data.Marten;
 
-public class Class1
+using Microsoft.Extensions.DependencyInjection;
+
+public class Marten : StorageSetup
 {
+    protected override void Apply(IServiceCollection serviceCollection)
+    {
+        
+    }
 }
+

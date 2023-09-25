@@ -331,13 +331,6 @@ public class OpenTelemetryProcessAction : IProcessAction
     }
 }
 
-
-
-
-
-
-
-
 public class DataContext<T> : JobContext<T>
 {
     
@@ -346,17 +339,3 @@ public class DataContext<T> : JobContext<T>
 
 
 
-public class SetupLaters : IStartupFilter
-{
-    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-    {
-        return app =>
-        {
-            app.UseEndpoints(points =>
-            {
-                points.MapGet("/dave", context => context.Response.WriteAsync("Hello, world!"));
-            });
-            next(app);
-        };
-    }
-}

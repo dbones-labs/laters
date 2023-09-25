@@ -1,0 +1,35 @@
+﻿namespace Laters.Tests;
+
+using Contexts.Simple;
+using Infrastructure;
+using Machine.Specifications;
+using PowerAssert;
+
+[Subject("Later")]
+class When_scheduling_one_task_for_later
+{
+    static DefaultTestServer _testServer;
+
+    Establish context = () =>
+    {
+        _testServer = new DefaultTestServer();
+        _testServer.Setup();
+    };
+
+    Because of = async () =>
+    {
+        _testServer.Schedule.ForLater(new Hello() { Name = "dave" });
+        
+        // we need to wait to ensure we only process it once
+        await Task.Delay(TimeSpan.FromSeconds(5)); 
+        await Rig.Wait(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() > 0);
+    };
+
+    It should_only_be_processed_once = () =>
+        PAssert.IsTrue(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() == 1);
+
+    Cleanup after = () =>
+    {
+        _testServer?.Dispose();
+    };
+}

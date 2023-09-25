@@ -1,12 +1,13 @@
 ﻿namespace Laters.Tests.Infrastructure;
 
+using System.Collections.Concurrent;
 
 public class TestMonitor
 {
-    public IDictionary<object, int> CallTicks { get; set; } = new Dictionary<object, int>();
+    public IDictionary<object, int> CallTicks { get; set; } = new ConcurrentDictionary<object, int>();
     public List<Type> CallOrder { get; set; } = new();
-    public IDictionary<object, int> CreationTicks { get; set; } = new Dictionary<object, int>();
-    public IDictionary<object, int> DisposeTicks { get; set; } = new Dictionary<object, int>();
+    public IDictionary<object, int> CreationTicks { get; set; } = new ConcurrentDictionary<object, int>();
+    public IDictionary<object, int> DisposeTicks { get; set; } = new ConcurrentDictionary<object, int>();
 
     public int NumberOfCallTicksFor<T>()
     {

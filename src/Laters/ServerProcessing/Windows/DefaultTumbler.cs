@@ -1,5 +1,10 @@
 ﻿namespace Laters;
 
+public static class LatersConstants
+{
+    public static string GlobalTumbler = "global";
+}
+
 public class DefaultTumbler : IDisposable
 {
     private readonly ManualTrigger _trigger = new ();
@@ -44,7 +49,7 @@ public class DefaultTumbler : IDisposable
             return names;
         }
 
-        names.Add("global");
+        names.Add(LatersConstants.GlobalTumbler);
 
         var availableWindows = _namedWindows.Where(x => !x.Value.AvailableCapacity).Select(x => x.Key);
         names.AddRange(availableWindows);

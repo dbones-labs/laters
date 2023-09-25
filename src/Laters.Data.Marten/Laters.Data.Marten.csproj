@@ -10,4 +10,8 @@
       <PackageReference Include="Marten" Version="6.0.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Laters\Laters.csproj" />
+    </ItemGroup>
+
 </Project>

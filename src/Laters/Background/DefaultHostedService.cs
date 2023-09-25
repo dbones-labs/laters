@@ -5,7 +5,7 @@
 /// </summary>
 public class DefaultHostedService : IHostedService
 {
-    private readonly ServerService _serverService;
+    readonly ServerService _serverService;
 
     public DefaultHostedService(ServerService serverService)
     {
