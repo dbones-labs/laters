@@ -5,16 +5,16 @@
 /// </summary>
 public class ServerService : IAsyncDisposable, IDisposable
 {
-    private readonly LatersConfiguration _configuration;
-    private readonly IServiceProvider _scope;
-    private readonly ILogger<ServerService> _logger;
+    readonly LatersConfiguration _configuration;
+    readonly IServiceProvider _scope;
+    readonly ILogger<ServerService> _logger;
+    public bool IsLeader { get; set; } = false;
 
-    private ContinuousLambda _heartbeat;
-    private ContinuousLambda _electServer;
-
-
-    private string _thisServerId = Guid.NewGuid().ToString("D");
-    private const string _electedLeaderName = "leader";
+    ContinuousLambda _heartbeat;
+    ContinuousLambda _electServer;
+    
+    string _thisServerId = Guid.NewGuid().ToString("D");
+    const string _electedLeaderName = "leader";
 
     public ServerService(
         LatersConfiguration configuration,
@@ -25,8 +25,8 @@ public class ServerService : IAsyncDisposable, IDisposable
         _scope = scope;
         _logger = logger;
         
-        _heartbeat = new ContinuousLambda(ServerHeartBeat, new TimeTrigger(TimeSpan.FromSeconds(3)));
-        _electServer = new ContinuousLambda(ElectLeader, new TimeTrigger(TimeSpan.FromSeconds(3)));
+        //_heartbeat = new ContinuousLambda(ServerHeartBeat, new TimeTrigger(TimeSpan.FromSeconds(3)));
+        _electServer = new ContinuousLambda(async () => await ElectLeader(), new TimeTrigger(TimeSpan.FromSeconds(3)));
     }
 
     public async Task Initialize(CancellationToken cancellationToken = default)
@@ -41,7 +41,7 @@ public class ServerService : IAsyncDisposable, IDisposable
         await using var session = _scope.GetRequiredService<ISession>();
         
         //remove self
-        session.Delete<Server>(_thisServerId);
+        //session.Delete<Server>(_thisServerId);
         
         //check leader
         var leader = await session.GetById<LeaderServer>(_electedLeaderName);
@@ -50,33 +50,7 @@ public class ServerService : IAsyncDisposable, IDisposable
         {
             session.Delete<LeaderServer>(_electedLeaderName);   
         }
-
-        await session.SaveChanges();
-    }
-    
-    /// <summary>
-    /// heartbeat, letting everyone know we are alive
-    /// </summary>
-    public virtual async Task ServerHeartBeat()
-    {
-        //setup our instance
-        using var workingScope = _scope.CreateScope();
-        await using var session = _scope.GetRequiredService<ISession>();
-
-        var thisServer = await session.GetById<Server>(_thisServerId);
-        if (thisServer is null)
-        {
-            thisServer = new()
-            {
-                Id = _thisServerId
-            };
-            session.Store(thisServer);
-        }
         
-        //we always update the datetime, to keep a track of
-        //any running instances
-        thisServer.Updated = SystemDateTime.UtcNow;
-
         await session.SaveChanges();
     }
 
@@ -86,11 +60,13 @@ public class ServerService : IAsyncDisposable, IDisposable
     /// <remarks>
     /// this is a first one to succeed will become the leader
     /// </remarks>
-    public virtual async Task ElectLeader()
+    protected virtual async Task ElectLeader()
     {
+        using var loggerScope = _logger.BeginScope($"Server Election: {_thisServerId}");
         //setup our instance
+        bool isLeader = false;
         using var workingScope = _scope.CreateScope();
-        await using var session = _scope.GetRequiredService<ISession>();
+        await using var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
 
         var leader = await session.GetById<LeaderServer>(_electedLeaderName);
         if (leader is null)
@@ -102,14 +78,14 @@ public class ServerService : IAsyncDisposable, IDisposable
                 Updated = SystemDateTime.UtcNow,
                 ServerId = _thisServerId
             };
-
+            
             session.Store(leader);
         }
         else
         {
             //confirm the current leader
-            var timeout = SystemDateTime.UtcNow.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
-            if (leader.Updated < timeout)
+            var timeout = leader.Updated.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
+            if (timeout > SystemDateTime.UtcNow)
             {
                 //all is good
                 return;
@@ -120,29 +96,25 @@ public class ServerService : IAsyncDisposable, IDisposable
             leader.Updated = SystemDateTime.UtcNow;
         }
 
-        await session.SaveChanges();
-    }
-
-    public async Task ClearServers()
-    {
-        using var workingScope = _scope.CreateScope();
-        await using var session = _scope.GetRequiredService<ISession>();
-        
-        var servers = await session.GetServers();
-        var timeout = SystemDateTime.UtcNow.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
-        foreach (var server in servers)
-        {
-            if (server.Updated > timeout)
-            {
-                session.Delete<Server>(server.Id);
-            }
+        try
+        { 
+            isLeader = true;
+            _logger.LogInformation("up for Leader (re)-election");
+            await session.SaveChanges();
+            _logger.LogInformation("promoted to new leader");
         }
+        catch (ConcurrencyException exception)
+        {
+            _logger.LogWarning("Unable to promote to leader, check to see if there is another leader");
+        }
+        
     }
 
     public async ValueTask DisposeAsync()
     {
         await CleanUp();
-        _heartbeat.Dispose();
+        _heartbeat?.Dispose();
+        _electServer?.Dispose();
     }
 
     public void Dispose()

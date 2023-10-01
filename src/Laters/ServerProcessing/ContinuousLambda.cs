@@ -2,11 +2,11 @@
 
 public class ContinuousLambda : IDisposable
 {
-    private readonly Func<Task> _func;
-    private readonly ITrigger _trigger;
-    private bool _isRunning = false;
-    private Task? _backgroundWorker;
-    private CancellationToken _cancellationToken;
+    readonly Func<Task> _func;
+    readonly ITrigger _trigger;
+    bool _isRunning = false;
+    Task? _backgroundWorker;
+    CancellationToken _cancellationToken;
 
     public ContinuousLambda(Func<Task> func, ITrigger trigger)
     {
@@ -21,7 +21,7 @@ public class ContinuousLambda : IDisposable
         _backgroundWorker = Task.Run(async () => await Do(), cancellationToken);
     }
 
-    private async Task Do()
+    async Task Do()
     {
         bool IsRunning() => _isRunning && !_cancellationToken.IsCancellationRequested;
 

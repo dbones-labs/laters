@@ -239,7 +239,7 @@ public static class SetupExtensions
         Action<Setup> configure)
     {
         var latersConfigurationSection = configuration.GetSection(configEntry);
-        var latersConfiguration = latersConfigurationSection.Get<LatersConfiguration>();
+        var latersConfiguration = latersConfigurationSection.Get<LatersConfiguration>() ?? new LatersConfiguration();
 
         //ensure we have the global added in oneway or another.
         latersConfiguration.Windows.TryAdd(LatersConstants.GlobalTumbler, new RateWindow()
@@ -263,6 +263,11 @@ public static class SetupExtensions
         collection.TryAddSingleton<Telemetry>();
         collection.TryAddScoped<TelemetryContext>();
         collection.TryAddSingleton<LatersMetrics>();
+        collection.TryAddSingleton(latersConfiguration);
+        
+        collection.TryAddScoped<IAdvancedSchedule, DefaultSchedule>();
+        collection.TryAddScoped<ISchedule>(provider => provider.GetRequiredService<IAdvancedSchedule>());
+        collection.TryAddScoped<IScheduleCron>(provider => provider.GetRequiredService<IAdvancedSchedule>());
 
         collection.AddHttpClient<WorkerClient>().ConfigurePrimaryHttpMessageHandler(provider =>
         {
@@ -281,7 +286,9 @@ public static class SetupExtensions
 
         collection.TryAddSingleton<IProcessJobMiddleware, ProcessJobMiddleware>();
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
-
+        
+        collection.TryAddSingleton<ServerService>();
+        collection.AddHostedService<DefaultHostedService>();
         //collection.Select(x=> x.ServiceType)
     }
 

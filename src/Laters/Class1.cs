@@ -148,12 +148,12 @@ public class DefaultSchedule : IAdvancedSchedule
         {
             Id = name,
             Payload = JsonSerializer.Serialize(jobPayload),
-            JobType = typeof(T),
+            JobType = typeof(T).FullName,
             Headers = options.Headers,
             Cron = cron,
             MaxRetries = delivery.MaxRetries,
             TimeToLiveInSeconds = delivery.TimeToLiveInSeconds,
-            WindowName = delivery.WindowName,
+            WindowName = delivery.WindowName ?? LatersConstants.GlobalTumbler,
             IsGlobal = false
         };
         
@@ -178,12 +178,12 @@ public class DefaultSchedule : IAdvancedSchedule
         var job = new Job()
         {
             Payload = JsonSerializer.Serialize(jobPayload),
-            JobType = typeof(T),
+            JobType = typeof(T).FullName,
             Headers = options.Headers,
             ScheduledFor = options.ScheduleFor,
             MaxRetries = delivery.MaxRetries,
             TimeToLiveInSeconds = delivery.TimeToLiveInSeconds,
-            WindowName = delivery.WindowName
+            WindowName = delivery.WindowName ?? LatersConstants.GlobalTumbler
         };
         
         _session.Store(job);
@@ -274,7 +274,7 @@ public class TelemetryScheduleAction : IScheduleAction
     
     public async Task Execute(Job context, Next<Job> next)
     {
-        var name = $"laters schedule job: {context.JobType?.FullName}";
+        var name = $"laters schedule job: {context.JobType}";
         var traceId = Activity.Current?.Id;
 
         var activity = traceId != null
@@ -296,8 +296,8 @@ public interface IProcessAction : IAction<Job> { }
 
 public class OpenTelemetryProcessAction : IProcessAction
 {
-    private readonly Telemetry _telemetry;
-    private readonly TelemetryContext _telemetryContext;
+    readonly Telemetry _telemetry;
+    readonly TelemetryContext _telemetryContext;
 
     public OpenTelemetryProcessAction(
         Telemetry telemetry, 
@@ -316,7 +316,7 @@ public class OpenTelemetryProcessAction : IProcessAction
         }
         
         
-        var name = $"laters job handler: {context.JobType?.FullName}";
+        var name = $"laters job handler: {context.JobType}";
         var activity = traceId != null
             ? _telemetry.ActivitySource.StartActivity(name, ActivityKind.Internal, traceId)
             : _telemetry.ActivitySource.StartActivity(name, ActivityKind.Internal);

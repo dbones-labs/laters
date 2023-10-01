@@ -3,7 +3,7 @@
 /// <summary>
 /// datastore interactions
 /// </summary>
-public interface ISession : IDisposable
+public interface ISession : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// the an entity by its ID

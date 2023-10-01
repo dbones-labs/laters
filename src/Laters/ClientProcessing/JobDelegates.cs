@@ -6,7 +6,7 @@ using Pipes;
 
 public class JobDelegates
 {
-    private Dictionary<Type, Func<IServiceProvider, Job, Task>> _delegates = new();
+    private Dictionary<string, Func<IServiceProvider, Job, Task>> _delegates = new();
     
     public JobDelegates(IServiceCollection collection)
     {
@@ -20,7 +20,7 @@ public class JobDelegates
         foreach (var handlerType in handlerTypes)
         {
             var func = CreateExecuteJobLambda(handlerType);
-            _delegates.Add(handlerType, func);
+            _delegates.Add(handlerType.FullName, func);
         }
 
     }
