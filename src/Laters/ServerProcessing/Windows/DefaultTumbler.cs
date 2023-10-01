@@ -2,10 +2,10 @@
 
 public class DefaultTumbler : IDisposable
 {
-    private readonly ManualTrigger _trigger = new ();
+    readonly ManualTrigger _trigger = new ();
 
-    private Window _globalWindow = new();
-    private Dictionary<string, Window> _namedWindows = new ();
+    Window _globalWindow = new();
+    Dictionary<string, Window> _namedWindows = new ();
 
     public DefaultTumbler(LatersConfiguration configuration)
     {

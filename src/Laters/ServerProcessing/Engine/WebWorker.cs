@@ -2,12 +2,12 @@
 
 public class WebWorker : IDisposable
 {
-    readonly IJobWorkerQueue _jobWorkerQueue;
+    readonly JobWorkerQueue _jobWorkerQueue;
     readonly WorkerClient _workerClient;
     readonly ContinuousLambda _lambda;
 
     public WebWorker(
-        IJobWorkerQueue jobWorkerQueue,
+        JobWorkerQueue jobWorkerQueue,
         WorkerClient workerClient
     )
     {

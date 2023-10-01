@@ -2,6 +2,7 @@
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Engine;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 public abstract class StorageSetup
@@ -238,6 +239,7 @@ public static class SetupExtensions
         string configEntry, 
         Action<Setup> configure)
     {
+        //config
         var latersConfigurationSection = configuration.GetSection(configEntry);
         var latersConfiguration = latersConfigurationSection.Get<LatersConfiguration>() ?? new LatersConfiguration();
 
@@ -260,36 +262,43 @@ public static class SetupExtensions
         setup.Apply(collection);
 
         //apply all other defaults to the IoC
+        
+        //infra
         collection.TryAddSingleton<Telemetry>();
         collection.TryAddScoped<TelemetryContext>();
         collection.TryAddSingleton<LatersMetrics>();
         collection.TryAddSingleton(latersConfiguration);
         
+        //api
         collection.TryAddScoped<IAdvancedSchedule, DefaultSchedule>();
         collection.TryAddScoped<ISchedule>(provider => provider.GetRequiredService<IAdvancedSchedule>());
         collection.TryAddScoped<IScheduleCron>(provider => provider.GetRequiredService<IAdvancedSchedule>());
 
+        //server side
+        collection.TryAddSingleton<DefaultTumbler>();
+        collection.TryAddSingleton<WorkerEngine>();
+        collection.TryAddSingleton<JobWorkerQueue>();
+        collection.TryAddSingleton<LeaderContext>();
+        collection.TryAddSingleton<LeaderElectionService>();
+        collection.AddHostedService<DefaultHostedService>();
+        collection.TryAddTransient<WebWorker>();
+        
         collection.AddHttpClient<WorkerClient>().ConfigurePrimaryHttpMessageHandler(provider =>
         {
-            var configuration = provider.GetRequiredService<LatersConfiguration>();
             var handler = new HttpClientHandler();
 
-            if (configuration.AllowPrivateCert)
+            if (latersConfiguration.AllowPrivateCert)
             {
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
             }
 
-            handler.MaxConnectionsPerServer = configuration.NumberOfProcessingThreads;
+            handler.MaxConnectionsPerServer = latersConfiguration.NumberOfProcessingThreads;
             return handler;
         });
 
         collection.TryAddSingleton<IProcessJobMiddleware, ProcessJobMiddleware>();
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
-        
-        collection.TryAddSingleton<LeaderElectionService>();
-        collection.AddHostedService<DefaultHostedService>();
-        //collection.Select(x=> x.ServiceType)
     }
 
 }

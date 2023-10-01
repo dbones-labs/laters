@@ -1,8 +1,9 @@
 ﻿namespace Laters.Engine;
 
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
-public class JobWorkerQueue : IJobWorkerQueue, IDisposable
+public class JobWorkerQueue : IDisposable
 {
     //state
     ConcurrentQueue<Candidate> _candidates = new();
@@ -14,6 +15,7 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
     readonly LatersConfiguration _configuration;
 
     //local
+    CandidatePopulateTrigger _populateTrigger;
     CandidateNextTrigger _nextTrigger;
     ContinuousLambda _populateLambda;
 
@@ -35,10 +37,16 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
         _scope = scope;
         _configuration = configuration;
         _nextTrigger = new CandidateNextTrigger();
-        var populateTrigger = new CandidatePopulateTrigger();
+        
+        _populateTrigger = new CandidatePopulateTrigger(TimeSpan.FromSeconds(3));
 
         _populateLambda =
-            new ContinuousLambda(async ()=> await PopulateCandidates(), populateTrigger);
+            new ContinuousLambda(async ()=> await PopulateCandidates(), _populateTrigger);
+    }
+
+    public void Initialize(CancellationToken cancellationToken)
+    {
+        _populateLambda.Start(cancellationToken);
     }
 
 
@@ -93,6 +101,7 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
         }
         
         _nextTrigger.UpdateFromReader(candidates.Count, pageSize);
+        _populateTrigger.RetrievedFromDatabase(candidates.Count, pageSize, _configuration.InMemoryWorkerQueueMax);
     }
 
     public void Dispose()
