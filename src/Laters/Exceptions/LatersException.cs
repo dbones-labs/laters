@@ -1,5 +1,8 @@
 namespace Laters;
 
+/// <summary>
+/// base exception for Laters
+/// </summary>
 public class LatersException : Exception
 {
     public LatersException() { }

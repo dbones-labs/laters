@@ -9,11 +9,10 @@ using System.Text.Json;
 /// </summary>
 public class WorkerClient : IWorkerClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly Telemetry _telemetry;
-    private readonly LatersMetrics _metrics;
-    private readonly LatersConfiguration _configuration;
-
+    readonly HttpClient _httpClient;
+    readonly Telemetry _telemetry;
+    readonly LatersMetrics _metrics;
+    readonly LatersConfiguration _configuration;
 
     public WorkerClient(
         HttpClient httpClient,

@@ -4,13 +4,15 @@ public class LatersRegistry : global::Marten.MartenRegistry
 {
     public LatersRegistry()
     {
-        For<LeaderServer>()
+        For<Leader>()
             .UseOptimisticConcurrency(true)
             .IdStrategy(new StringIdGeneration());
         
-        For<JobBase>()
-            .AddSubClass<Job>()
-            .AddSubClass<CronJob>()
+        For<Job>()
+            .UseOptimisticConcurrency(true)
+            .IdStrategy(new StringIdGeneration());
+        
+        For<CronJob>()
             .UseOptimisticConcurrency(true)
             .IdStrategy(new StringIdGeneration());
     }

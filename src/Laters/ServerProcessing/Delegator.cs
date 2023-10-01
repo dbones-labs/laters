@@ -1,11 +1,12 @@
 ﻿namespace Laters;
 
+[Obsolete("removing in favor of the engine")]
 public class Delegator : IDelegator
 {
-    private readonly IServiceProvider _scope;
-    private readonly DefaultTumbler _tumbler;
-    private readonly IWorkerClient _workerClient;
-    private readonly LatersConfiguration _latersConfiguration;
+    readonly IServiceProvider _scope;
+    readonly DefaultTumbler _tumbler;
+    readonly IWorkerClient _workerClient;
+    readonly LatersConfiguration _latersConfiguration;
 
     public Delegator(
         IServiceProvider serviceProvider, 
@@ -46,7 +47,7 @@ public class Delegator : IDelegator
         }
     }
 
-    private async Task<bool> Send(Candidate candidate)
+    async Task<bool> Send(Candidate candidate)
     {
         //confirm this window is still open
         if (!_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName)) return false;

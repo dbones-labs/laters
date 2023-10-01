@@ -5,14 +5,14 @@
 /// </summary>
 public class CandidateNextTrigger : ITrigger
 {
-    private ManualTrigger _internalIndicatedTrigger = new();
-    private ITrigger _internalTimeTrigger = new TimeTrigger(TimeSpan.FromSeconds(3));
-    private ITrigger _triggerInUse;
-    
-    private int _maximum;
-    
-    private bool _running = false;
-    private volatile bool _useTimer = true;
+    ManualTrigger _internalIndicatedTrigger = new();
+    ITrigger _internalTimeTrigger = new TimeTrigger(TimeSpan.FromSeconds(3));
+    ITrigger _triggerInUse;
+
+    int _maximum;
+
+    bool _running = false;
+    volatile bool _useTimer = true;
     
     public async Task Wait(CancellationToken cancellationToken)
     {
