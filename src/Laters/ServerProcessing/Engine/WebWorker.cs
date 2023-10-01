@@ -2,9 +2,9 @@
 
 public class WebWorker : IDisposable
 {
-    private readonly IJobWorkerQueue _jobWorkerQueue;
-    private readonly WorkerClient _workerClient;
-    private readonly ContinuousLambda _lambda;
+    readonly IJobWorkerQueue _jobWorkerQueue;
+    readonly WorkerClient _workerClient;
+    readonly ContinuousLambda _lambda;
 
     public WebWorker(
         IJobWorkerQueue jobWorkerQueue,
@@ -14,7 +14,7 @@ public class WebWorker : IDisposable
         _jobWorkerQueue = jobWorkerQueue;
         _workerClient = workerClient;
 
-        _lambda = new ContinuousLambda(Process, _jobWorkerQueue.NextTrigger);
+        _lambda = new ContinuousLambda(async ()=> await Process(), _jobWorkerQueue.NextTrigger, false);
     }
 
     public Task Initialize(CancellationToken cancellationToken)
@@ -24,7 +24,7 @@ public class WebWorker : IDisposable
     }
 
 
-    private async Task Process()
+    async Task Process()
     {
         var candidate = _jobWorkerQueue.Next();
         

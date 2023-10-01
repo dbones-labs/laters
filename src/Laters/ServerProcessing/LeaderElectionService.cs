@@ -1,37 +1,45 @@
 ﻿namespace Laters;
 
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 /// <summary>
-/// todo complete
+/// Leader election is where we signal the leader
 /// </summary>
-public class ServerService : IAsyncDisposable, IDisposable
+public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, IDisposable
 {
+    readonly LeaderContext _leaderContext;
     readonly LatersConfiguration _configuration;
     readonly IServiceProvider _scope;
-    readonly ILogger<ServerService> _logger;
-    public bool IsLeader { get; set; } = false;
-
+    readonly ILogger<LeaderElectionService> _logger;
+    
     ContinuousLambda _heartbeat;
     ContinuousLambda _electServer;
     
-    string _thisServerId = Guid.NewGuid().ToString("D");
     const string _electedLeaderName = "leader";
 
-    public ServerService(
+    public LeaderElectionService(
+        LeaderContext leaderContext,
         LatersConfiguration configuration,
         IServiceProvider scope, 
-        ILogger<ServerService> logger)
+        ILogger<LeaderElectionService> logger)
     {
+        _leaderContext = leaderContext;
         _configuration = configuration;
         _scope = scope;
         _logger = logger;
         
-        //_heartbeat = new ContinuousLambda(ServerHeartBeat, new TimeTrigger(TimeSpan.FromSeconds(3)));
         _electServer = new ContinuousLambda(async () => await ElectLeader(), new TimeTrigger(TimeSpan.FromSeconds(3)));
     }
+    
+    /// <summary>
+    /// if this running service/application instance is the leader
+    /// </summary>
+    public bool IsLeader { get; set; } = false;
+
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {
-        //_heartbeat.Start(cancellationToken);
         _electServer.Start(cancellationToken);
     }
 
@@ -40,15 +48,12 @@ public class ServerService : IAsyncDisposable, IDisposable
         using var workingScope = _scope.CreateScope();
         await using var session = _scope.GetRequiredService<ISession>();
         
-        //remove self
-        //session.Delete<Server>(_thisServerId);
-        
         //check leader
-        var leader = await session.GetById<LeaderServer>(_electedLeaderName);
-        var isCurrentLeader = leader is not null && _thisServerId.Equals(leader.ServerId);
+        var leader = await session.GetById<Leader>(_electedLeaderName);
+        var isCurrentLeader = leader is not null && _leaderContext.IsThisServer(leader);
         if (isCurrentLeader)
         {
-            session.Delete<LeaderServer>(_electedLeaderName);   
+            session.Delete<Leader>(_electedLeaderName);   
         }
         
         await session.SaveChanges();
@@ -62,21 +67,22 @@ public class ServerService : IAsyncDisposable, IDisposable
     /// </remarks>
     protected virtual async Task ElectLeader()
     {
-        using var loggerScope = _logger.BeginScope($"Server Election: {_thisServerId}");
+        using var loggerScope = _logger.BeginScope($"Server Election: {_leaderContext.ServerId}");
         //setup our instance
         bool isLeader = false;
         using var workingScope = _scope.CreateScope();
         await using var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
 
-        var leader = await session.GetById<LeaderServer>(_electedLeaderName);
+        var leader = await session.GetById<Leader>(_electedLeaderName);
+        _leaderContext.Leader = leader;
         if (leader is null)
         {
             //first time run! we have no leader, lets provide us
-            leader = new LeaderServer()
+            leader = new Leader()
             {
                 Id = _electedLeaderName,
                 Updated = SystemDateTime.UtcNow,
-                ServerId = _thisServerId
+                ServerId = _leaderContext.ServerId
             };
             
             session.Store(leader);
@@ -92,7 +98,7 @@ public class ServerService : IAsyncDisposable, IDisposable
             }
 
             //leader is old, lets try and promote us
-            leader.ServerId = _thisServerId;
+            leader.ServerId = _leaderContext.ServerId;
             leader.Updated = SystemDateTime.UtcNow;
         }
 
@@ -101,11 +107,18 @@ public class ServerService : IAsyncDisposable, IDisposable
             isLeader = true;
             _logger.LogInformation("up for Leader (re)-election");
             await session.SaveChanges();
+            _leaderContext.Leader = leader; //was updated
             _logger.LogInformation("promoted to new leader");
         }
         catch (ConcurrencyException exception)
         {
             _logger.LogWarning("Unable to promote to leader, check to see if there is another leader");
+        }
+
+        if (isLeader != IsLeader)
+        {
+            IsLeader = isLeader;
+            OnPropertyChanged(nameof(IsLeader));
         }
         
     }
@@ -120,5 +133,26 @@ public class ServerService : IAsyncDisposable, IDisposable
     public void Dispose()
     {
         DisposeAsync().AsTask().Wait(200);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+
+public class LeaderContext
+{
+    public Leader? Leader { get; set; }
+    public string ServerId { get; set; } = Guid.NewGuid().ToString("D");
+
+    public bool IsLeader => ServerId.Equals(Leader?.ServerId);
+
+    public bool IsThisServer(Leader currentLeader)
+    {
+        return ServerId.Equals(currentLeader?.ServerId);
     }
 }

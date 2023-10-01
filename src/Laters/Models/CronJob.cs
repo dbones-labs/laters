@@ -3,10 +3,14 @@
 using System.ComponentModel.DataAnnotations;
 
 /// <summary>
-/// name is the id
+/// this is a cron job, which will create a job when the cron is met. 
+/// <br />- the ID has to be set by the user, and should be meaningful.
 /// </summary>
 public class CronJob : JobBase
 {
+    /// <summary>
+    /// when to create a job instance.
+    /// </summary>
     [Required(AllowEmptyStrings = false)]
     public virtual string Cron { get; set; } = string.Empty;
     
@@ -16,6 +20,7 @@ public class CronJob : JobBase
     public virtual bool IsGlobal { get; set; }
 }
 
+[Obsolete("do not think this is in use")]
 public class CronJobCtx<T>
 {
     public T? Payload { get; set; }

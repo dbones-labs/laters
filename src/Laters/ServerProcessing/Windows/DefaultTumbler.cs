@@ -1,10 +1,5 @@
 ﻿namespace Laters;
 
-public static class LatersConstants
-{
-    public static string GlobalTumbler = "global";
-}
-
 public class DefaultTumbler : IDisposable
 {
     private readonly ManualTrigger _trigger = new ();

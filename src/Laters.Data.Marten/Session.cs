@@ -19,11 +19,6 @@ public class Session : ISession, IAsyncDisposable
         return item;
     }
 
-    public Task<IEnumerable<Server>> GetServers()
-    {
-        throw new NotImplementedException();
-    }
-
     public Task<IEnumerable<CronJob>> GetGlobalCronJobs()
     {
         var items = _documentSession.Query<CronJob>().Where(x => x.IsGlobal);

@@ -287,7 +287,7 @@ public static class SetupExtensions
         collection.TryAddSingleton<IProcessJobMiddleware, ProcessJobMiddleware>();
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
         
-        collection.TryAddSingleton<ServerService>();
+        collection.TryAddSingleton<LeaderElectionService>();
         collection.AddHostedService<DefaultHostedService>();
         //collection.Select(x=> x.ServiceType)
     }

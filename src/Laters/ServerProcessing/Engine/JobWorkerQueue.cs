@@ -8,6 +8,7 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
     ConcurrentQueue<Candidate> _candidates = new();
     
     //injected
+    readonly LeaderContext _leaderContext;
     readonly DefaultTumbler _tumbler;
     readonly IServiceProvider _scope;
     readonly LatersConfiguration _configuration;
@@ -18,13 +19,18 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
 
     public ITrigger NextTrigger => _nextTrigger;
 
+    /// <summary>
+    /// the number of item in the in memory queue
+    /// </summary>
     public int Count => _candidates.Count;
     
     public JobWorkerQueue(
+        LeaderContext leaderContext,
         DefaultTumbler tumbler,
         IServiceProvider scope,
         LatersConfiguration configuration)
     {
+        _leaderContext = leaderContext;
         _tumbler = tumbler;
         _scope = scope;
         _configuration = configuration;
@@ -32,11 +38,19 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
         var populateTrigger = new CandidatePopulateTrigger();
 
         _populateLambda =
-            new ContinuousLambda(PopulateCandidates, populateTrigger);
+            new ContinuousLambda(async ()=> await PopulateCandidates(), populateTrigger);
     }
+
 
     public virtual Candidate? Next()
     {
+        //no longer leader.
+        if (!_leaderContext.IsLeader)
+        {
+            _candidates.Clear();
+            return null;
+        }
+        
         Candidate? candidate = null;
         if (_candidates.TryDequeue(out candidate))
         {
@@ -58,8 +72,14 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
         return candidate;
     }
 
+    /// <summary>
+    /// fill the in memory queue with candidates
+    /// </summary>
     protected virtual async Task PopulateCandidates()
     {
+        //no longer leader
+        if (!_leaderContext.IsLeader) return;
+        
         using var workingScope = _scope.CreateScope();
         await using var querySession = _scope.GetRequiredService<ISession>();
         var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
@@ -83,6 +103,15 @@ public class JobWorkerQueue : IJobWorkerQueue, IDisposable
 
 public interface IJobWorkerQueue
 {
+    /// <summary>
+    /// get the next candidate job to process, which has not been rate limited
+    /// </summary>
+    /// <returns>candidate</returns>
     Candidate? Next();
+    
+    /// <summary>
+    /// the mechanism to inform web workers when there are items in the queue
+    /// to be processed
+    /// </summary>
     ITrigger NextTrigger { get; }
 }

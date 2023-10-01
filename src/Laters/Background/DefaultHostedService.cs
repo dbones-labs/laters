@@ -5,20 +5,20 @@
 /// </summary>
 public class DefaultHostedService : IHostedService
 {
-    readonly ServerService _serverService;
+    readonly LeaderElectionService _leaderElectionService;
 
-    public DefaultHostedService(ServerService serverService)
+    public DefaultHostedService(LeaderElectionService leaderElectionService)
     {
-        _serverService = serverService;
+        _leaderElectionService = leaderElectionService;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _serverService.Initialize(cancellationToken);
+        await _leaderElectionService.Initialize(cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _serverService.CleanUp(cancellationToken);
+        await _leaderElectionService.CleanUp(cancellationToken);
     }
 }

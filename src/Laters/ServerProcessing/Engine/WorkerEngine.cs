@@ -12,8 +12,8 @@
 /// </remarks>
 public class WorkerEngine
 {
-    private readonly JobWorkerQueue _jobWorkerQueue;
-    private readonly List<WebWorker> _workers = new();
+    readonly JobWorkerQueue _jobWorkerQueue;
+    readonly List<WebWorker> _workers = new();
     
     public WorkerEngine(JobWorkerQueue jobWorkerQueue, LatersConfiguration latersConfiguration, IServiceProvider provider)
     {

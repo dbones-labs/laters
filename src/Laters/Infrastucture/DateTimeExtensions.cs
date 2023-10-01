@@ -4,11 +4,11 @@ public static class DateTimeExtensions
 {
     
     /// <summary>
-    /// 
+    /// this will truncate a datetime to a provided precision
     /// </summary>
-    /// <param name="dateTime"></param>
-    /// <param name="timeSpan"></param>
-    /// <returns></returns>
+    /// <param name="dateTime">the value to apply against</param>
+    /// <param name="timeSpan">the precision to apply</param>
+    /// <returns>a new datetime, which the precision applied</returns>
     /// <remarks>
     /// https://stackoverflow.com/a/1005222
     /// </remarks>
