@@ -15,7 +15,10 @@ public class WorkerEngine
     readonly JobWorkerQueue _jobWorkerQueue;
     readonly List<WebWorker> _workers = new();
     
-    public WorkerEngine(JobWorkerQueue jobWorkerQueue, LatersConfiguration latersConfiguration, IServiceProvider provider)
+    public WorkerEngine(
+        JobWorkerQueue jobWorkerQueue, 
+        LatersConfiguration latersConfiguration, 
+        IServiceProvider provider)
     {
         _jobWorkerQueue = jobWorkerQueue;
         for (var i = 0; i < latersConfiguration.NumberOfProcessingThreads; i++)

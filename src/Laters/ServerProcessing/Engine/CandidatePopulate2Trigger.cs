@@ -5,27 +5,48 @@
 /// </summary>
 public class CandidatePopulateTrigger : ITrigger
 {
-    private volatile bool _running = false;
-    private readonly ManualTrigger _internalIndicatedTrigger = new();
+    volatile bool _querying;
+    readonly TimeTrigger _internalTimeoutTrigger ;
+
+    public CandidatePopulateTrigger(TimeSpan waitTime)
+    {
+        _internalTimeoutTrigger = new TimeTrigger(waitTime);
+    }
     
     public async Task Wait(CancellationToken cancellationToken)
     {
-        await _internalIndicatedTrigger.Wait(cancellationToken);
+        //its querying
+        if (_querying)
+        {
+            return;
+        }
+        await _internalTimeoutTrigger.Wait(cancellationToken);
     }
+    
+    
 
-    public void UpdateFromQueue(int count)
+    public void RetrievedFromDatabase(int count, int pageSize, int max)
     {
-        if (_running && count == 0)
+        //if empty scan every 3 seconds
+        //if triggered, scan until full or non to process
+
+        var noMoreInData = count < pageSize;
+        var inMemQueueMaxed = count >= max;
+        if (noMoreInData || inMemQueueMaxed)
         {
-            _running = false;
-            _internalIndicatedTrigger.Stop();
+            _querying = false;
+            return;
         }
 
-        if (!_running && count > 0)
+        var itemsInData = count > 0;
+        var spaceForItems = count < max;
+        if (itemsInData && spaceForItems)
         {
-            _running = true;
-            _internalIndicatedTrigger.Continue();
+            _querying = true;
+            return;
         }
+
+        _querying = false;
     }
 }
 
