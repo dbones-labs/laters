@@ -18,19 +18,19 @@ public class LatersConfiguration
     /// <summary>
     /// this is the max size of the in memory queue, for items ready to be processed
     /// </summary>
-    public int InMemoryWorkerQueueMax { get; set; }
+    public int InMemoryWorkerQueueMax { get; set; } = 45;
 
     /// <summary>
     /// the number of items to process at the same time.
     /// </summary>
-    public int NumberOfProcessingThreads { get; set; }
+    public int NumberOfProcessingThreads { get; set; } = 10;
 
     /// <summary>
     /// allow private certs for worker endpoints
     /// </summary>
     public bool AllowPrivateCert { get; set; }
 
-    public Dictionary<string, RateWindow> Windows { get; set; }
+    public Dictionary<string, RateWindow> Windows { get; set; } = new();
     public Roles Role { get; set; } = Roles.Any;
 }
 

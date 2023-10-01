@@ -1,5 +1,6 @@
 ﻿namespace Laters.Tests.Infrastructure;
 
+using JasperFx.Core;
 using Laters.AspNet;
 using Laters.Data.Marten;
 using Marten;
@@ -37,8 +38,15 @@ public class DefaultTestServer : IDisposable
             app.UseAuthorization();
         };
     }
-    
-    public IAdvancedSchedule Schedule { get; private set; }
+
+    public async Task Inscope(Func<IAdvancedSchedule, Task> action)
+    {
+        using var scope = _testServer.Services.CreateScope();
+        using var documentSession = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
+        var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
+        await action(schedule);
+        await documentSession.SaveChangesAsync();
+    } 
     public HttpClient Client { get; private set; }
     public int Port { get; private set; }
 
@@ -56,36 +64,51 @@ public class DefaultTestServer : IDisposable
     public void Setup()
     {
         var builder = new WebHostBuilder();
+        
+        builder.ConfigureLaters((context, setup) =>
+        {
+            _configureLaters?.Invoke(context, setup);
+        });
 
         builder.ConfigureServices((context, collection) =>
         {
             //default database
             collection.AddMarten(config =>
             {
-                config.Connection("host=localhost;database=laters;password=ABC123!!;username=application");
+                var connectionString = "host=localhost;database=laters;password=ABC123!!;username=application";
+                config.Connection(connectionString);
 
                 config.AutoCreateSchemaObjects = AutoCreate.All;
                 
-                config.Policies.ForAllDocuments(dm =>
-                {
-                    if (dm.IdType == typeof(string))
-                    {
-                        dm.IdStrategy = new StringIdGeneration();
-                    }
-                });
+                // config.Policies.ForAllDocuments(dm =>
+                // {
+                //     if (dm.IdType == typeof(string))
+                //     {
+                //         dm.IdStrategy = new StringIdGeneration();
+                //     }
+                // });
+                
+                
+                config.Schema.Include<LatersRegistry>();
 
-                config.DatabaseSchemaName = $"laters-{TestNumber}";
+                config.DatabaseSchemaName = "thisisatest";
                 
                 config.CreateDatabasesForTenants(tenant =>
                 {
+                    tenant.MaintenanceDatabase(connectionString);
                     tenant
                         .ForTenant()
                         .CheckAgainstPgDatabase()
                         .WithOwner("admin")
                         .WithEncoding("UTF-8")
-                        .ConnectionLimit(-1);
+                        .ConnectionLimit(-1)
+                        .OnDatabaseCreated(_ => { });;
                 });
             });
+
+            collection.AddScoped<IDocumentSession>(services =>
+                services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
+            
             
             collection.AddSingleton<TestMonitor>();
             collection.AddControllersWithViews();
@@ -94,34 +117,17 @@ public class DefaultTestServer : IDisposable
             _configureServices?.Invoke(collection);
         });
         
-        builder.ConfigureLaters((context, setup) =>
-        {
-            _configureLaters?.Invoke(context, setup);
-        });
+        
         
         builder
-            .UseStartup<DefaultTestServer>(context => this)
+            .UseStartup(context => this)
             .UseUrls($"http://localhost:{Port}");
         
         _testServer = new TestServer(builder);
         
         Client = _testServer.CreateClient();
-        Schedule = _testServer.Services.GetRequiredService<IAdvancedSchedule>();
         Monitor = _testServer.Services.GetRequiredService<TestMonitor>();
-    }
-
-    public void ConfigureServices(Action<IServiceCollection> configure)
-    {
-        _configureServices = configure;
-    }
-
-    public void ConfigureLaters(Action<WebHostBuilderContext, Setup> configure)
-    {
-        _configureLaters = configure;
-    }
-    
-    public void Dispose()
-    {
+        
         _testServer
             ?.Services
             .GetService<IDocumentStore>()
@@ -129,7 +135,24 @@ public class DefaultTestServer : IDisposable
             .Clean
             .CompletelyRemoveAllAsync()
             .Wait();
-        
-        _testServer?.Dispose();
+    }
+
+    public void ConfigureServices(IServiceCollection configure)
+    {
+    }
+    
+    public void OverrideServices(Action<IServiceCollection> configure)
+    {
+        _configureServices = configure;
+    }
+
+    public void OverrideLaters(Action<WebHostBuilderContext, Setup> configure)
+    {
+        _configureLaters = configure;
+    }
+    
+    public void Dispose()
+    {
+        _testServer?.SafeDispose();
     }
 }

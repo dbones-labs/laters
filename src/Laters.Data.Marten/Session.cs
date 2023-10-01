@@ -64,7 +64,14 @@ public class Session : ISession, IAsyncDisposable
 
     public async Task SaveChanges()
     {
-        await _documentSession.SaveChangesAsync();
+        try
+        {
+            await _documentSession.SaveChangesAsync();
+        }
+        catch (global::Marten.Exceptions.ConcurrencyException e)
+        {
+            throw new ConcurrencyException(e);
+        }
     }
 
     public void Dispose()

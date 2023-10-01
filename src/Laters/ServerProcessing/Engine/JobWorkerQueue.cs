@@ -5,16 +5,16 @@ using System.Collections.Concurrent;
 public class JobWorkerQueue : IJobWorkerQueue, IDisposable
 {
     //state
-    private ConcurrentQueue<Candidate> _candidates = new();
+    ConcurrentQueue<Candidate> _candidates = new();
     
     //injected
-    private readonly DefaultTumbler _tumbler;
-    private readonly IServiceProvider _scope;
-    private readonly LatersConfiguration _configuration;
+    readonly DefaultTumbler _tumbler;
+    readonly IServiceProvider _scope;
+    readonly LatersConfiguration _configuration;
 
     //local
-    private CandidateNextTrigger _nextTrigger;
-    private ContinuousLambda _populateLambda;
+    CandidateNextTrigger _nextTrigger;
+    ContinuousLambda _populateLambda;
 
     public ITrigger NextTrigger => _nextTrigger;
 
