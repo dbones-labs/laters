@@ -1,24 +1,25 @@
 ﻿namespace Laters.Engine;
 
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 
 public class JobWorkerQueue : IDisposable
 {
-    //state
-    ConcurrentQueue<Candidate> _candidates = new();
-    
     //injected
     readonly LeaderContext _leaderContext;
     readonly DefaultTumbler _tumbler;
     readonly IServiceProvider _scope;
     readonly LatersConfiguration _configuration;
 
-    //local
+    //local state
+    ConcurrentQueue<Candidate> _candidates = new();
     CandidatePopulateTrigger _populateTrigger;
     CandidateNextTrigger _nextTrigger;
     ContinuousLambda _populateLambda;
 
+    /// <summary>
+    /// the mechanism to inform web workers when there are items in the queue
+    /// to be processed
+    /// </summary>
     public ITrigger NextTrigger => _nextTrigger;
 
     /// <summary>
@@ -43,13 +44,16 @@ public class JobWorkerQueue : IDisposable
         _populateLambda =
             new ContinuousLambda(async ()=> await PopulateCandidates(), _populateTrigger);
     }
-
+    
     public void Initialize(CancellationToken cancellationToken)
     {
         _populateLambda.Start(cancellationToken);
     }
 
-
+    /// <summary>
+    /// get the next candidate job to process, which has not been rate limited
+    /// </summary>
+    /// <returns>candidate</returns>
     public virtual Candidate? Next()
     {
         //no longer leader.
@@ -92,35 +96,20 @@ public class JobWorkerQueue : IDisposable
         await using var querySession = _scope.GetRequiredService<ISession>();
         var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
 
-        var pageSize = (int)_configuration.InMemoryWorkerQueueMax / 3;
-        var candidates = await querySession.GetJobsToProcess(windowNames, pageSize);
+        var take = _configuration.InMemoryWorkerQueueMax; //for now we will populate the queue (fully)
+        var candidates = await querySession.GetJobsToProcess(windowNames, 0, take);
 
         foreach (var candidate in candidates)
         {
             _candidates.Enqueue(candidate);
         }
         
-        _nextTrigger.UpdateFromReader(candidates.Count, pageSize);
-        _populateTrigger.RetrievedFromDatabase(candidates.Count, pageSize, _configuration.InMemoryWorkerQueueMax);
+        _nextTrigger.UpdateFromReader(candidates.Count, take);
+        _populateTrigger.RetrievedFromDatabase(candidates.Count, take, _configuration.InMemoryWorkerQueueMax);
     }
 
     public void Dispose()
     {
         _populateLambda.Dispose();
     }
-}
-
-public interface IJobWorkerQueue
-{
-    /// <summary>
-    /// get the next candidate job to process, which has not been rate limited
-    /// </summary>
-    /// <returns>candidate</returns>
-    Candidate? Next();
-    
-    /// <summary>
-    /// the mechanism to inform web workers when there are items in the queue
-    /// to be processed
-    /// </summary>
-    ITrigger NextTrigger { get; }
 }

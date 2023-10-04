@@ -10,9 +10,8 @@ public class Entity
     /// <summary>
     /// the unique identifier
     /// </summary>
-    [Required(AllowEmptyStrings = false)] 
-    public virtual string Id { get; set; } = string.Empty;
+    [Required(AllowEmptyStrings = false)]
+    public virtual string Id { get; set; } = "";
     
-
     public virtual Guid? Revision { get; set; }
 }

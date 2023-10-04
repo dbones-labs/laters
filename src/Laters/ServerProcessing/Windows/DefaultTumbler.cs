@@ -9,6 +9,10 @@ public class DefaultTumbler : IDisposable
 
     public DefaultTumbler(LatersConfiguration configuration)
     {
+        var maxWindowConfig = configuration.Windows[LatersConstants.GlobalTumbler];
+        _globalWindow.MaxCount = maxWindowConfig.Max;
+        _globalWindow.Span = TimeSpan.FromSeconds(maxWindowConfig.SizeInSeconds);
+        
         _globalWindow.PropertyChanged += (sender, args) =>
         {
             if (args.PropertyName == "AvailableCapacity")
@@ -16,6 +20,16 @@ public class DefaultTumbler : IDisposable
                 UpdateTrigger();
             }
         };
+
+        var windowConfigs = configuration.Windows.Where(x => x.Key != LatersConstants.GlobalTumbler);
+        foreach (var windowConfig in windowConfigs)
+        {
+            _namedWindows.TryAdd(windowConfig.Key, new Window()
+            {
+                MaxCount = windowConfig.Value.Max,
+                Span = TimeSpan.FromSeconds(windowConfig.Value.SizeInSeconds)
+            });
+        }
     }
 
     public void Initialize(CancellationToken cancellationToken)
@@ -62,7 +76,7 @@ public class DefaultTumbler : IDisposable
         }
     }
 
-    private Task UpdateTrigger()
+    Task UpdateTrigger()
     {
         var shouldRun = _globalWindow.AvailableCapacity;
         if (_trigger.IsRunning)

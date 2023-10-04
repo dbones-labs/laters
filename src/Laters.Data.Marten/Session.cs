@@ -25,21 +25,24 @@ public class Session : ISession, IAsyncDisposable
         return Task.FromResult<IEnumerable<CronJob>>(items);
     }
 
-    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int take = 50)
+    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50)
     {
         var items = _querySession
             .Query<Job>()
+            .Where(x => !x.DeadLettered)
             .Where(x => rateLimitNames.Contains(x.WindowName))
             .OrderByDescending(x => x.ScheduledFor)
+            .Skip(skip)
             .Take(take)
             .Select(x => new Candidate()
             {
                 WindowName = x.WindowName,
                 Id = x.Id,
                 JobType = x.JobType
-            });
+            })
+            .ToList();
 
-        return Task.FromResult<List<Candidate>>(items.ToList());
+        return Task.FromResult(items);
     }
 
     public void Store<T>(T item) where T : Entity

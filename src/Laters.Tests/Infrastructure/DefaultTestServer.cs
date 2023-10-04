@@ -67,6 +67,7 @@ public class DefaultTestServer : IDisposable
         
         builder.ConfigureLaters((context, setup) =>
         {
+            setup.Configuration.NumberOfProcessingThreads = 1;
             _configureLaters?.Invoke(context, setup);
         });
 
@@ -106,14 +107,15 @@ public class DefaultTestServer : IDisposable
                 });
             });
 
+            //quick workaround, you can also the SessionFactory
             collection.AddScoped<IDocumentSession>(services =>
                 services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
-            
             
             collection.AddSingleton<TestMonitor>();
             collection.AddControllersWithViews();
             collection.AddEndpointsApiExplorer();
             collection.AddSwaggerGen();
+            
             _configureServices?.Invoke(collection);
         });
         
