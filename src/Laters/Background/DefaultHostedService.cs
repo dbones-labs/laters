@@ -8,21 +8,26 @@ public class DefaultHostedService : IHostedService
     readonly DefaultTumbler _defaultTumbler;
     readonly JobWorkerQueue _jobWorkerQueue;
     readonly WorkerEngine _workerEngine;
+    readonly LatersConfiguration _latersConfiguration;
 
     public DefaultHostedService(
         LeaderElectionService leaderElectionService,
         DefaultTumbler defaultTumbler,
         JobWorkerQueue jobWorkerQueue, 
-        WorkerEngine workerEngine)
+        WorkerEngine workerEngine,
+        LatersConfiguration latersConfiguration)
     {
         _leaderElectionService = leaderElectionService;
         _defaultTumbler = defaultTumbler;
         _jobWorkerQueue = jobWorkerQueue;
         _workerEngine = workerEngine;
+        _latersConfiguration = latersConfiguration;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        if (_latersConfiguration.Role == Roles.Worker) return;
+        
         await _leaderElectionService.Initialize(cancellationToken);
         _defaultTumbler.Initialize(cancellationToken);
         _jobWorkerQueue.Initialize(cancellationToken);

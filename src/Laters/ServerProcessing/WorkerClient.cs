@@ -20,7 +20,6 @@ public class WorkerClient : IWorkerClient
         LatersMetrics metrics,
         LatersConfiguration configuration)
     {
-       
         _telemetry = telemetry;
         _metrics = metrics;
         _configuration = configuration;

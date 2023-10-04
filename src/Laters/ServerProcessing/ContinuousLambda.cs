@@ -39,8 +39,16 @@ public class ContinuousLambda : IDisposable
 
         while (IsRunning())
         {
-            await _func();
-            await _trigger.Wait(_cancellationToken);
+            try
+            {
+                await _func();
+                await _trigger.Wait(_cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 

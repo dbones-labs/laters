@@ -5,15 +5,15 @@ using System.Runtime.CompilerServices;
 
 public class Window : INotifyPropertyChanged, IDisposable
 {
-    private readonly ReaderWriterLockSlim _lock = new();
-    private volatile int _count = 0; //cached count value.
-    private readonly Dictionary<DateTime, int> _items = new();
-    private ContinuousLambda? _cleanup;
-    private bool _availableCapacity = false;
+    readonly ReaderWriterLockSlim _lock = new();
+    volatile int _count; //cached count value.
+    readonly Dictionary<DateTime, int> _items = new();
+    ContinuousLambda? _cleanup;
+    bool _availableCapacity;
 
     public void Initialize(CancellationToken cancellationToken)
     {
-        _cleanup = new ContinuousLambda(CleanUp, new TimeTrigger(CleanUpInterval));
+        _cleanup = new ContinuousLambda(async ()=> await CleanUp(), new TimeTrigger(CleanUpInterval));
         _cleanup.Start(cancellationToken);
     }
 
@@ -40,7 +40,7 @@ public class Window : INotifyPropertyChanged, IDisposable
     /// </summary>
     public TimeSpan SlicePrecision { get; set; } = TimeSpan.FromMilliseconds(250);
 
-    public TimeSpan CleanUpInterval { get; set; }
+    public TimeSpan CleanUpInterval { get; set; } = TimeSpan.FromSeconds(1);
 
     public void AddItemsToWindow(DateTime slice, int count)
     {
@@ -70,7 +70,7 @@ public class Window : INotifyPropertyChanged, IDisposable
         UpdateCount();
     }
 
-    private void UpdateCount()
+    void UpdateCount()
     {
         var newCapacity = _count < MaxCount;
         if (newCapacity != _availableCapacity)
@@ -80,8 +80,8 @@ public class Window : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(ReachedMax));
         }
     }
-    
-    private Task CleanUp()
+
+    Task CleanUp()
     {
         var deleteAllBefore = SystemDateTime
             .UtcNow
