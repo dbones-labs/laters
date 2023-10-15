@@ -14,7 +14,8 @@ public class DefaultTestServer : IDisposable
     Action<IServiceCollection>? _configureServices;
     Action<WebHostBuilderContext, Setup>? _configureLaters;
     Action<IApplicationBuilder>? _configure;
-    TestServer? _testServer;
+    //TestServer? _testServer;
+    WebApplication _server;
 
     static Random _random = new();
 
@@ -27,21 +28,20 @@ public class DefaultTestServer : IDisposable
         {
             setup.ScanForJobHandlers();
             setup.Configuration.Role = Roles.Any;
-            setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}";
+            setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}/";
             setup.UseStorage<Marten>();
         };
         
         _configure = app =>
         {
-            app.UseDeveloperExceptionPage();
             app.UseLaters();
-            app.UseAuthorization();
+            //app.UseAuthorization();
         };
     }
 
     public async Task Inscope(Func<IAdvancedSchedule, Task> action)
     {
-        using var scope = _testServer.Services.CreateScope();
+        using var scope = _server.Services.CreateScope();
         using var documentSession = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
         var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
         await action(schedule);
@@ -56,22 +56,26 @@ public class DefaultTestServer : IDisposable
     
     public void Configure(IApplicationBuilder app)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        throw new Exception("asdsads");
+        //app.UseSwagger();
+        //app.UseSwaggerUI();
+        app.UseHttpLogging();
+        app.UseRouting();
+        app.UseDeveloperExceptionPage();
         _configure?.Invoke(app);
     }
     
     public void Setup()
     {
-        var builder = new WebHostBuilder();
+        var builder = WebApplication.CreateBuilder();;
         
-        builder.ConfigureLaters((context, setup) =>
+        builder.WebHost.ConfigureLaters((context, setup) =>
         {
             setup.Configuration.NumberOfProcessingThreads = 1;
             _configureLaters?.Invoke(context, setup);
         });
 
-        builder.ConfigureServices((context, collection) =>
+        builder.WebHost.ConfigureServices((context, collection) =>
         {
             //default database
             collection.AddMarten(config =>
@@ -107,6 +111,8 @@ public class DefaultTestServer : IDisposable
                 });
             });
 
+            collection.AddHostedService<ResetDataService>();
+            
             //quick workaround, you can also the SessionFactory
             collection.AddScoped<IDocumentSession>(services =>
                 services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
@@ -115,28 +121,35 @@ public class DefaultTestServer : IDisposable
             collection.AddControllersWithViews();
             collection.AddEndpointsApiExplorer();
             collection.AddSwaggerGen();
+
+            collection.AddLogging();
             
             _configureServices?.Invoke(collection);
         });
+
+
+        builder.WebHost
+            .UseUrls($"http://localhost:{Port}/");
         
+        _server = builder.Build();
         
+        //add some default middleware
+        _server.UseHttpLogging();
+        _server.UseRouting();
+        _server.UseDeveloperExceptionPage();
+        _server.UseSwagger();
+        _server.UseSwaggerUI();
         
-        builder
-            .UseStartup(context => this)
-            .UseUrls($"http://localhost:{Port}");
+        _configure?.Invoke(_server);
         
-        _testServer = new TestServer(builder);
+        _server.RunAsync();
         
-        Client = _testServer.CreateClient();
-        Monitor = _testServer.Services.GetRequiredService<TestMonitor>();
+        //_testServer = new TestServer(builder);
+
+        Client = _server.Services.GetRequiredService<HttpClient>();
         
-        _testServer
-            ?.Services
-            .GetService<IDocumentStore>()
-            ?.Advanced
-            .Clean
-            .CompletelyRemoveAllAsync()
-            .Wait();
+        //Client = _testServer.CreateClient();
+        Monitor = _server.Services.GetRequiredService<TestMonitor>();
     }
 
     public void ConfigureServices(IServiceCollection configure)
@@ -155,6 +168,30 @@ public class DefaultTestServer : IDisposable
     
     public void Dispose()
     {
-        _testServer?.SafeDispose();
+        _server?.SafeDispose();
+    }
+}
+
+
+public class ResetDataService : IHostedService
+{
+    readonly IDocumentStore _documentStore;
+
+    public ResetDataService(IDocumentStore documentStore)
+    {
+        _documentStore = documentStore;
+    }
+    
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await _documentStore
+            .Advanced
+            .Clean
+            .DeleteAllDocumentsAsync(cancellationToken);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 }

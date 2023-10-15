@@ -9,4 +9,6 @@
     &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.When_scheduling_one_task_for_later.should_only_be_processed_once&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.When_scheduling_one_task_for_later.should_only_process_one_job_type&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+&lt;/SessionState&gt;</s:String>
+	
+	</wpf:ResourceDictionary>

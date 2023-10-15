@@ -46,20 +46,27 @@ public class WorkerClient : IWorkerClient
 
         activity?.AddTag("adapter", "laters");
         activity?.SetTag("laters.job-type", processJob.JobType);
-        activity?.AddTag("laters.job-id", processJob.Id);
-
+        activity?.AddTag("laters.job-id", processJob.Id); 
+        
         using (activity)
         {
             var jsonPayload = JsonSerializer.Serialize(processJob);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            var content = new JsonContent(jsonPayload);
 
-            var response = await _httpClient.PostAsync($"/laters/process-job", content);
+            var response = await _httpClient.PostAsync($"laters/process-job", content);
 
             response.EnsureSuccessStatusCode();
         }
 
         // Count the metric
-        //var metric = _meter.CreateCounter("laters.job-type");
+        // var metric = _meter.CreateCounter("laters.job-type");
         _metrics.JobTypeCounter.Add(1, new KeyValuePair<string, object?>("type", processJob.JobType));
     }
+}
+
+public class JsonContent : StringContent
+{
+    public JsonContent(object obj) :
+        base(JsonSerializer.Serialize(obj), Encoding.UTF8, "application/json")
+    { }
 }
