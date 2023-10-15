@@ -29,7 +29,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
         _scope = scope;
         _logger = logger;
         
-        _electServer = new ContinuousLambda(async () => await ElectLeader(), new TimeTrigger(TimeSpan.FromSeconds(3)));
+        _electServer = new ContinuousLambda(nameof(ElectLeader), async () => await ElectLeader(), new TimeTrigger(TimeSpan.FromSeconds(3)));
     }
     
     /// <summary>
@@ -40,13 +40,15 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Initialize the Election component");
         _electServer.Start(cancellationToken);
     }
 
     public async Task CleanUp(CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("CleanUp the Election component");
         using var workingScope = _scope.CreateScope();
-        await using var session = _scope.GetRequiredService<ISession>();
+        using var session = _scope.GetRequiredService<ISession>();
         
         //check leader
         var leader = await session.GetById<Leader>(_electedLeaderName);
@@ -67,60 +69,74 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
     /// </remarks>
     protected virtual async Task ElectLeader()
     {
-        using var loggerScope = _logger.BeginScope($"Server Election: {_leaderContext.ServerId}");
-        //setup our instance
-        bool isLeader = false;
-        using var workingScope = _scope.CreateScope();
-        await using var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
-
-        var leader = await session.GetById<Leader>(_electedLeaderName);
-        _leaderContext.Leader = leader;
-        if (leader is null)
+        try
         {
-            //first time run! we have no leader, lets provide us
-            leader = new Leader()
+            using var _ = _logger.BeginScope(new Dictionary<string, string>
             {
-                Id = _electedLeaderName,
-                Updated = SystemDateTime.UtcNow,
-                ServerId = _leaderContext.ServerId
-            };
+                { "ServerId", _leaderContext.ServerId },
+                { "Action", nameof(ElectLeader) }
+            });
             
-            session.Store(leader);
-        }
-        else
-        {
-            //confirm the current leader
-            var timeout = leader.Updated.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
-            if (timeout > SystemDateTime.UtcNow)
+            bool isLeader = false;
+            using var workingScope = _scope.CreateScope();
+            using var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
+
+            var leader = await session.GetById<Leader>(_electedLeaderName);
+            _leaderContext.Leader = leader;
+            if (leader is null)
             {
-                //all is good
-                return;
+                _logger.LogInformation("no leader found, trying to promote this server");
+                //first time run! we have no leader, lets provide us
+                leader = new Leader()
+                {
+                    Id = _electedLeaderName,
+                    Updated = SystemDateTime.UtcNow,
+                    ServerId = _leaderContext.ServerId
+                };
+                
+                session.Store(leader);
+            }
+            else
+            {
+                _logger.LogInformation("updating our leader registration");
+                //confirm the current leader
+                var timeout = leader.Updated.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
+                if (timeout > SystemDateTime.UtcNow)
+                {
+                    //all is good
+                    return;
+                }
+
+                //leader is old, lets try and promote us
+                leader.ServerId = _leaderContext.ServerId;
+                leader.Updated = SystemDateTime.UtcNow;
             }
 
-            //leader is old, lets try and promote us
-            leader.ServerId = _leaderContext.ServerId;
-            leader.Updated = SystemDateTime.UtcNow;
-        }
+            try
+            { 
+                isLeader = true;
+                _logger.LogInformation("up for Leader (re)-election");
+                await session.SaveChanges();
+                _leaderContext.Leader = leader; //was updated
+                _logger.LogInformation("promoted to new leader");
+            }
+            catch (ConcurrencyException exception)
+            {
+                isLeader = false;
+                _logger.LogWarning("Unable to promote to leader, check to see if there is another leader");
+            }
 
-        try
-        { 
-            isLeader = true;
-            _logger.LogInformation("up for Leader (re)-election");
-            await session.SaveChanges();
-            _leaderContext.Leader = leader; //was updated
-            _logger.LogInformation("promoted to new leader");
+            if (isLeader != IsLeader)
+            {
+                IsLeader = isLeader;
+                OnPropertyChanged(nameof(IsLeader));
+            }
         }
-        catch (ConcurrencyException exception)
+        catch (Exception e)
         {
-            _logger.LogWarning("Unable to promote to leader, check to see if there is another leader");
+            _logger.LogWarning(e,"Unable to update the data with leader information");
+            //_hostApplicationLifetime.StopApplication();
         }
-
-        if (isLeader != IsLeader)
-        {
-            IsLeader = isLeader;
-            OnPropertyChanged(nameof(IsLeader));
-        }
-        
     }
 
     public async ValueTask DisposeAsync()

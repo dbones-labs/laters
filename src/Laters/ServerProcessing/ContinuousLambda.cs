@@ -5,6 +5,7 @@
 /// </summary>
 public class ContinuousLambda : IDisposable
 {
+    readonly string _name; // for debug purposes
     readonly Func<Task> _func;
     readonly ITrigger _trigger;
     bool _initialWait;
@@ -12,8 +13,9 @@ public class ContinuousLambda : IDisposable
     Task? _backgroundWorker;
     CancellationToken _cancellationToken;
 
-    public ContinuousLambda(Func<Task> func, ITrigger trigger, bool runAtStart = true)
+    public ContinuousLambda(string name, Func<Task> func, ITrigger trigger, bool runAtStart = true)
     {
+        _name = name;
         _func = func;
         _trigger = trigger;
         _initialWait = !runAtStart;

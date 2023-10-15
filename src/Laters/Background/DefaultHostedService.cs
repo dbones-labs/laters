@@ -9,25 +9,29 @@ public class DefaultHostedService : IHostedService
     readonly JobWorkerQueue _jobWorkerQueue;
     readonly WorkerEngine _workerEngine;
     readonly LatersConfiguration _latersConfiguration;
+    readonly ILogger<DefaultHostedService> _logger;
 
     public DefaultHostedService(
         LeaderElectionService leaderElectionService,
         DefaultTumbler defaultTumbler,
         JobWorkerQueue jobWorkerQueue, 
         WorkerEngine workerEngine,
-        LatersConfiguration latersConfiguration)
+        LatersConfiguration latersConfiguration,
+        ILogger<DefaultHostedService> logger)
     {
         _leaderElectionService = leaderElectionService;
         _defaultTumbler = defaultTumbler;
         _jobWorkerQueue = jobWorkerQueue;
         _workerEngine = workerEngine;
         _latersConfiguration = latersConfiguration;
+        _logger = logger;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (_latersConfiguration.Role == Roles.Worker) return;
-        
+     
+        _logger.LogInformation("initializing the server components");
         await _leaderElectionService.Initialize(cancellationToken);
         _defaultTumbler.Initialize(cancellationToken);
         _jobWorkerQueue.Initialize(cancellationToken);

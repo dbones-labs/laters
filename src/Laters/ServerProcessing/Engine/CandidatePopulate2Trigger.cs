@@ -5,48 +5,44 @@
 /// </summary>
 public class CandidatePopulateTrigger : ITrigger
 {
-    volatile bool _querying;
-    readonly TimeTrigger _internalTimeoutTrigger ;
+    volatile bool _processing;
+    volatile bool _newlyEmpty = true;
+    readonly TimeTrigger _internalTimeoutTrigger;
+    readonly ManualTrigger _manualTrigger = new ();
 
     public CandidatePopulateTrigger(TimeSpan waitTime)
     {
+        //if empty scan every 3 seconds
+        //newly empty then trigger
         _internalTimeoutTrigger = new TimeTrigger(waitTime);
+
+        _manualTrigger.Continue();
     }
     
     public async Task Wait(CancellationToken cancellationToken)
     {
-        //its querying
-        if (_querying)
-        {
-            return;
-        }
-        await _internalTimeoutTrigger.Wait(cancellationToken);
+        ITrigger waitWith = !_newlyEmpty && !_processing
+            ? _internalTimeoutTrigger //nothing new, lets wait
+            : _manualTrigger; // we just finished processing
+        
+        await waitWith.Wait(cancellationToken);
     }
-    
-    
 
-    public void RetrievedFromDatabase(int count, int pageSize, int max)
+    public void UpdateFromQueue(int count)
     {
-        //if empty scan every 3 seconds
-        //if triggered, scan until full or non to process
-
-        var noMoreInData = count < pageSize;
-        var inMemQueueMaxed = count >= max;
-        if (noMoreInData || inMemQueueMaxed)
+        if (count == 0)
         {
-            _querying = false;
-            return;
+            _processing = false;
+            _newlyEmpty = true;
+            //lets kick off another query
+            _manualTrigger.Continue(); 
         }
+    }
 
-        var itemsInData = count > 0;
-        var spaceForItems = count < max;
-        if (itemsInData && spaceForItems)
-        {
-            _querying = true;
-            return;
-        }
-
-        _querying = false;
+    public void RetrievedFromDatabase(int candidatesCount, int take)
+    {
+        _processing = candidatesCount > 0;
+        _newlyEmpty = false;
+        _manualTrigger.Stop();
     }
 }
-

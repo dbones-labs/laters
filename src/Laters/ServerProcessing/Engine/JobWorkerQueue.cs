@@ -7,8 +7,9 @@ public class JobWorkerQueue : IDisposable
     //injected
     readonly LeaderContext _leaderContext;
     readonly DefaultTumbler _tumbler;
-    readonly IServiceProvider _scope;
+    readonly IServiceProvider _serviceProvider;
     readonly LatersConfiguration _configuration;
+    readonly ILogger<JobWorkerQueue> _logger;
 
     //local state
     ConcurrentQueue<Candidate> _candidates = new();
@@ -30,23 +31,26 @@ public class JobWorkerQueue : IDisposable
     public JobWorkerQueue(
         LeaderContext leaderContext,
         DefaultTumbler tumbler,
-        IServiceProvider scope,
-        LatersConfiguration configuration)
+        IServiceProvider serviceProvider,
+        LatersConfiguration configuration,
+        ILogger<JobWorkerQueue> logger)
     {
         _leaderContext = leaderContext;
         _tumbler = tumbler;
-        _scope = scope;
+        _serviceProvider = serviceProvider;
         _configuration = configuration;
+        _logger = logger;
         _nextTrigger = new CandidateNextTrigger();
         
         _populateTrigger = new CandidatePopulateTrigger(TimeSpan.FromSeconds(3));
 
         _populateLambda =
-            new ContinuousLambda(async ()=> await PopulateCandidates(), _populateTrigger);
+            new ContinuousLambda(nameof(PopulateCandidates), async ()=> await PopulateCandidates(), _populateTrigger);
     }
     
     public void Initialize(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Initialize the JobWorkerQueue component");
         _populateLambda.Start(cancellationToken);
     }
 
@@ -80,7 +84,7 @@ public class JobWorkerQueue : IDisposable
         }
         
         _nextTrigger.UpdateFromQueue(Count);
-        
+        _populateTrigger.UpdateFromQueue(Count);
         return candidate;
     }
 
@@ -92,8 +96,8 @@ public class JobWorkerQueue : IDisposable
         //no longer leader
         if (!_leaderContext.IsLeader) return;
         
-        using var workingScope = _scope.CreateScope();
-        await using var querySession = _scope.GetRequiredService<ISession>();
+        using var workingScope = _serviceProvider.CreateScope();
+        await using var querySession = workingScope.ServiceProvider.GetRequiredService<ISession>();
         var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
 
         var take = _configuration.InMemoryWorkerQueueMax; //for now we will populate the queue (fully)
@@ -104,8 +108,9 @@ public class JobWorkerQueue : IDisposable
             _candidates.Enqueue(candidate);
         }
         
+        _logger.LogInformation("found {num} candiate jobs", candidates.Count);
         _nextTrigger.UpdateFromReader(candidates.Count, take);
-        _populateTrigger.RetrievedFromDatabase(candidates.Count, take, _configuration.InMemoryWorkerQueueMax);
+        _populateTrigger.RetrievedFromDatabase(candidates.Count, take);
     }
 
     public void Dispose()

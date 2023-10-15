@@ -14,7 +14,7 @@ public class WebWorker : IDisposable
         _jobWorkerQueue = jobWorkerQueue;
         _workerClient = workerClient;
 
-        _lambda = new ContinuousLambda(async ()=> await Process(), _jobWorkerQueue.NextTrigger, false);
+        _lambda = new ContinuousLambda(nameof(SendJobToWorker), async ()=> await SendJobToWorker(), _jobWorkerQueue.NextTrigger, false);
     }
 
     public Task Initialize(CancellationToken cancellationToken)
@@ -24,7 +24,7 @@ public class WebWorker : IDisposable
     }
 
 
-    async Task Process()
+    async Task SendJobToWorker()
     {
         var candidate = _jobWorkerQueue.Next();
         
