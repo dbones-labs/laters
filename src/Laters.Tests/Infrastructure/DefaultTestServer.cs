@@ -1,11 +1,10 @@
 ﻿namespace Laters.Tests.Infrastructure;
 
 using JasperFx.Core;
-using Laters.AspNet;
+using AspNet;
 using Laters.Data.Marten;
 using Marten;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Weasel.Core;
 
@@ -39,7 +38,17 @@ public class DefaultTestServer : IDisposable
         };
     }
 
-    public async Task Inscope(Func<IAdvancedSchedule, Task> action)
+    
+    public async Task InScope<T>(Func<IAdvancedSchedule, T> action)
+    {
+        using var scope = _server.Services.CreateScope();
+        using var documentSession = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
+        var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
+        action(schedule);
+        await documentSession.SaveChangesAsync();
+    } 
+    
+    public async Task InScope(Func<IAdvancedSchedule, Task> action)
     {
         using var scope = _server.Services.CreateScope();
         using var documentSession = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
@@ -67,7 +76,7 @@ public class DefaultTestServer : IDisposable
     
     public void Setup()
     {
-        var builder = WebApplication.CreateBuilder();;
+        var builder = WebApplication.CreateBuilder();
         
         builder.WebHost.ConfigureLaters((context, setup) =>
         {

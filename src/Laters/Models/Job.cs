@@ -26,4 +26,9 @@ public class Job : JobBase
     /// the parent cron, if this was created via a cron.
     /// </summary>
     public virtual string? ParentCron { get; set; }
+
+    /// <summary>
+    /// time of last execution
+    /// </summary>
+    public DateTime LastAttempted { get; set; }
 }

@@ -3,19 +3,27 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Text.Unicode;
+using Middleware;
 
 public class ClientMiddleware
 {
     readonly RequestDelegate _next;
     readonly IServiceProvider _serviceProvider;
-    readonly IProcessJobMiddleware _middleware;
+    readonly MiddlewareDelegateFactory _middlewareDelegateFactory;
+    readonly ILogger<ClientMiddleware> _logger;
 
-    public ClientMiddleware(RequestDelegate next, IServiceProvider serviceProvider, IProcessJobMiddleware middleware)
+    readonly Func<IServiceProvider, Job, Task> _execute;
+
+    public ClientMiddleware(
+        RequestDelegate next, 
+        IServiceProvider serviceProvider, 
+        MiddlewareDelegateFactory middlewareDelegateFactory,
+        ILogger<ClientMiddleware> logger)
     {
         _next = next;
         _serviceProvider = serviceProvider;
-        _middleware = middleware;
+        _middlewareDelegateFactory = middlewareDelegateFactory;
+        _logger = logger;
     }
 
     public async Task Invoke(HttpContext context)
@@ -37,7 +45,7 @@ public class ClientMiddleware
         {
             using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
             var bodyContent = await reader.ReadToEndAsync();
-            //workaround, this fix
+            //TODO: workaround, fix this
             bodyContent = bodyContent
                 .Substring(1, bodyContent.Length - 2)
                 .Replace("\\u0022", "\"");
@@ -46,44 +54,46 @@ public class ClientMiddleware
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception, exception.Message);
             context.Response.StatusCode = 412;
             await context.Response.WriteAsync("Body did not contain a valid Process Job");
             return;
         }
-        
-        //load from the database
-        var session = _serviceProvider.GetRequiredService<ISession>();
-        var job = await session.GetById<Job>(processJob.Id);
 
-        if (job == null)
+        try
         {
+            var execute = _middlewareDelegateFactory.GetExecute(processJob.JobType);
+            await execute(_serviceProvider, processJob.Id);
+        }
+        catch (JobNotFoundException exception)
+        {
+            _logger.LogError(exception, exception.Message);
             context.Response.StatusCode = 404;
             await context.Response.WriteAsync("Job does not exist");
-            return;
-        }
-
-        await _middleware.Execute(_serviceProvider, job);
-    }
-    
-    public static String Decode(string content)
-    {
-        String text;
-        Byte[] bytes;
-        using (StreamReader sr = new StreamReader(content))
-        {
-            text = sr.ReadToEnd();
-            
-            return text;
         }
     }
 }
 
-public static class ApplicationBuilderExtensions
+public class JobTypeWithMoreThanOneHandler : LatersException
 {
-    public static void UseLaters(this IApplicationBuilder app)
+    public string JobType { get; }
+
+    public JobTypeWithMoreThanOneHandler(string jobType)
+        : base($"there is more than one handler for {jobType}")
     {
-        app.UseMiddleware<ClientMiddleware>();
+        JobType = jobType;
     }
 }
 
+public class NoJobTypeFoundException : LatersException
+{
+    public string JobType { get; }
 
+    public NoJobTypeFoundException(string jobType) 
+        : base($"Cannot find job {jobType}")
+    {
+        JobType = jobType;
+    }
+}
+
+public delegate Task Execute(IServiceProvider scope, string jobId);

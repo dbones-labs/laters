@@ -1,6 +1,7 @@
 ﻿namespace Laters;
 
 using System.ComponentModel.DataAnnotations;
+using Middleware;
 
 /// <summary>
 /// this is a cron job, which will create a job when the cron is met. 
@@ -18,12 +19,19 @@ public class CronJob : JobBase
     /// this was setup via the global mechanism, and will be managed via this.
     /// </summary>
     public virtual bool IsGlobal { get; set; }
-}
 
-[Obsolete("do not think this is in use")]
-public class CronJobCtx<T>
-{
-    public T? Payload { get; set; }
-    public CronJob? CronJob { get; set; }
+    public Job GetNextJob(ICrontab crontab)
+    {
+        return new Job()
+        {
+            ScheduledFor = crontab.Next(Cron),
+            JobType = JobType,
+            Payload = Payload,
+            Headers = Headers,
+            ParentCron = Id,
+            TimeToLiveInSeconds = TimeToLiveInSeconds,
+            WindowName = WindowName
+        };
+    }
 }
 
