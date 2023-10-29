@@ -1,9 +1,10 @@
 ﻿namespace Laters;
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using AspNet;
 using Engine;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Middleware;
 
 public abstract class StorageSetup
 {
@@ -15,9 +16,16 @@ public class Setup
     List<Type> _jobHandlerTypes = new();
     StorageSetup _storageSetup;
 
+    /// <summary>
+    /// update the ioc config
+    /// </summary>
+    /// <param name="serviceCollection"></param>
+    /// <exception cref="MissingStorageConfigurationException"></exception>
     internal void Apply(IServiceCollection serviceCollection)
     {
-        if (_storageSetup == null) throw new Exception("Please setup a storage");
+        ArgumentNullException.ThrowIfNull(serviceCollection);
+        
+        if (_storageSetup == null) throw new MissingStorageConfigurationException();
         _storageSetup.Apply(serviceCollection);
 
         foreach (var type in _jobHandlerTypes)
@@ -25,7 +33,21 @@ public class Setup
             serviceCollection.AddScoped(type);
         }
     }
+    
+    
+    /// <summary>
+    ///scan an assembly for &lt;see cref="IJobHandler{T}"/&gt; and wire them up, ready for use
+    /// </summary>
+    /// <typeparam name="T">a type which is within the target assembly</typeparam>
+    public void ScanForJobHandlers<T>()
+    {
+        ScanForJobHandlers(typeof(T).Assembly);
+    }
 
+    /// <summary>
+    /// scan an assembly for <see cref="IJobHandler{T}"/> and wire them up, ready for use
+    /// </summary>
+    /// <param name="fromHere">the target assembly</param>
     public void ScanForJobHandlers(Assembly? fromHere = null)
     {
         var jobHandlerType = typeof(IJobHandler<>);
@@ -47,10 +69,32 @@ public class Setup
             .ToList();
     }
 
+    /// <summary>
+    /// configure the rate limiting windows
+    /// </summary>
     public Windows Windows { get; set; }
+    
+    /// <summary>
+    /// this is the laters configuration, which you can configure directly or via this class
+    /// </summary>
     public LatersConfiguration Configuration { get; set; }
+    
+    /// <summary>
+    /// this is the raw configuration section, please leave this alone
+    /// </summary>
     public IConfigurationSection ConfigurationSection { get; set; }
-
+    
+    /// <summary>
+    /// this is where we can setup the middleware processing of any job
+    /// </summary>
+    public ClientActions ClientActions { get; set; }
+    
+    /// <summary>
+    /// mainly used the find if the type implements <see cref="jobHandlerType"/> and what the type it is against.
+    /// </summary>
+    /// <param name="svcType">the type we are inspecting to see if it implements the desired type</param>
+    /// <param name="jobHandlerType">the type we are looking for</param>
+    /// <returns>the generic type it implements</returns>
     static Type? GetImplementedType(Type svcType, Type jobHandlerType)
     {
         if (svcType.IsInterface && svcType.IsGenericType &&
@@ -72,6 +116,15 @@ public class Setup
         _storageSetup = storageSetup;
     }
 }
+
+public class MissingStorageConfigurationException : LatersException
+{
+    public MissingStorageConfigurationException() : base("no storage has been setup")
+    {
+    }
+}
+
+
 
 public static class WindowsExtensions
 {
@@ -239,6 +292,7 @@ public static class SetupExtensions
         string configEntry, 
         Action<Setup> configure)
     {
+        //----
         //config
         var latersConfigurationSection = configuration.GetSection(configEntry);
         var latersConfiguration = latersConfigurationSection.Get<LatersConfiguration>() ?? new LatersConfiguration();
@@ -255,19 +309,20 @@ public static class SetupExtensions
         setup.Configuration = latersConfiguration;
         setup.ConfigurationSection = latersConfigurationSection;
         
-        //this was ANNOYING
+        //apply the config override from the application
+        //apply the changes to the IoC
         configure?.Invoke(setup);
         
-        //apply the changes to the IoC
         setup.Apply(collection);
 
+        //------
         //apply all other defaults to the IoC
-        
         //infra
         collection.TryAddSingleton<Telemetry>();
         collection.TryAddScoped<TelemetryContext>();
         collection.TryAddSingleton<LatersMetrics>();
         collection.TryAddSingleton(latersConfiguration);
+        collection.TryAddSingleton<ICrontab, DefaultCrontab>();
         
         //api
         collection.TryAddScoped<IAdvancedSchedule, DefaultSchedule>();
@@ -296,9 +351,20 @@ public static class SetupExtensions
             handler.MaxConnectionsPerServer = latersConfiguration.NumberOfProcessingThreads;
             return handler;
         });
-
-        collection.TryAddSingleton<IProcessJobMiddleware, ProcessJobMiddleware>();
+        
+        
+        //client side
+        collection.TryAddSingleton<Middleware.ClientActions>();
+        collection.TryAddSingleton(typeof(IProcessJobMiddleware<>), typeof(ProcessJobMiddleware<>));
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
+        
+        collection.TryAddSingleton(services =>
+        {
+            var factory = new MiddlewareDelegateFactory();
+            factory.RegisterMiddlewareForAllHandlers(collection);
+            return factory;
+        });
+        
     }
 
 }

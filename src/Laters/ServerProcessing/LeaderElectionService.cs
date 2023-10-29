@@ -118,7 +118,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
                 _logger.LogInformation("up for Leader (re)-election");
                 await session.SaveChanges();
                 _leaderContext.Leader = leader; //was updated
-                _logger.LogInformation("promoted to new leader");
+                _logger.LogInformation("updated leader info in store");
             }
             catch (ConcurrencyException exception)
             {
@@ -128,6 +128,8 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
 
             if (isLeader != IsLeader)
             {
+                var message = isLeader ? "Promoted to leader" : "No longer leader";
+                _logger.LogInformation(message);
                 IsLeader = isLeader;
                 OnPropertyChanged(nameof(IsLeader));
             }

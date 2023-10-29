@@ -3,36 +3,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
+using Middleware;
 using NCrontab;
 using Pipes;
-
-//EXEUTE
-public class JobContext<T>
-{
-    /// <summary>
-    /// the information the job is bring processed for
-    /// </summary>
-    [Required]
-    public virtual T? Payload { get; set; }
-
-    public Job Job { get; set; }
-}
-
-/// <summary>
-/// the job handler
-/// </summary>
-/// <typeparam name="T">the type which is being handled</typeparam>
-public interface IJobHandler<T>
-{
-    /// <summary>
-    /// the logic of the delayed task
-    /// </summary>
-    /// <param name="jobContext">the context the handler is running under</param>
-    /// <returns>task complete</returns>
-    Task Execute(JobContext<T> jobContext);
-}
 
 //CONFIGURE
 public class OnceOptions
@@ -127,16 +100,20 @@ public interface IScheduleCron
 
 public interface IAdvancedSchedule : ISchedule
 {
-    void ForLaterNext(CronJob cronJob);
+    string ForLaterNext(CronJob cronJob);
 }
 
 public class DefaultSchedule : IAdvancedSchedule
 {
     private readonly ISession _session;
+    readonly ICrontab _crontab;
 
-    public DefaultSchedule(ISession session)
+    public DefaultSchedule(
+        ISession session,
+        ICrontab crontab)
     {
         _session = session;
+        _crontab = crontab;
     }
     
     public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options = null)
@@ -203,22 +180,11 @@ public class DefaultSchedule : IAdvancedSchedule
         _session.Delete<Job>(id);
     }
 
-    public void ForLaterNext(CronJob cronJob)
+    public string ForLaterNext(CronJob cronJob)
     {
-        var crontab = CrontabSchedule.Parse(cronJob.Cron);
-        var nextRun = crontab.GetNextOccurrence(SystemDateTime.UtcNow);
-        
-        ForLater(cronJob.Payload, new OnceOptions
-        {
-            Headers = cronJob.Headers,
-            ScheduleFor = nextRun,
-            Delivery = new QualityDelivery()
-            {
-                TimeToLiveInSeconds = cronJob.TimeToLiveInSeconds,
-                WindowName = cronJob.WindowName,
-                MaxRetries = cronJob.MaxRetries
-            }
-        });
+        var job = cronJob.GetNextJob(_crontab);
+        _session.Store(job);
+        return job.Id;
     }
 }
 

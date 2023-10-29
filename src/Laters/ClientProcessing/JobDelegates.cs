@@ -6,7 +6,7 @@ using Pipes;
 
 public class JobDelegates
 {
-    private Dictionary<string, Func<IServiceProvider, Job, Task>> _delegates = new();
+    Dictionary<string, Func<IServiceProvider, Job, Task>> _delegates = new();
     
     public JobDelegates(IServiceCollection collection)
     {
@@ -94,15 +94,15 @@ public class JobDelegates
 }
 
 
-public interface IProcessJobMiddleware
+public interface IProcessJobMiddleware<T> 
 {
-    Task Execute(IServiceProvider scope, Job context);
+    public Task Execute(IServiceProvider scope, JobContext<T> context);
 }
 
 /// <summary>
 /// this is to process the Job
 /// </summary>
-public class ProcessJobMiddleware : IProcessJobMiddleware, IMiddleware<Job>
+public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<JobContext<T>>
 {
     readonly Middleware<Job> _internalMiddleware;
 
@@ -116,22 +116,15 @@ public class ProcessJobMiddleware : IProcessJobMiddleware, IMiddleware<Job>
         //Ijobhandler
 
     }
-    
-    public async Task Execute(IServiceProvider scope, Job context)
+
+    public Task Execute(IServiceProvider scope, JobContext<T> context)
     {
-        await _internalMiddleware.Execute(scope, context);
+        throw new NotImplementedException();
     }
 }
 
 
-public class ProcessContextActions
-{
-    public Type PrepareMessageContextForPublish { get; set; }
-    public Type InvokePublisherAction { get; set; }
-    public Type ApmAction { get; set; }
-    //public Type LoggingAction { get; set; }
-    public List<Type> CustomActions { get; set; } = new List<Type>();
-}
+
 
 
 public class InvokeJobHandlerAction : IProcessAction

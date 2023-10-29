@@ -3,6 +3,7 @@
 using Contexts.Simple;
 using Infrastructure;
 using Machine.Specifications;
+using Middleware;
 using PowerAssert;
 
 [Subject("Later")]
@@ -18,7 +19,7 @@ class When_scheduling_one_task_for_later
 
     Because of = async () =>
     {
-        await _testServer.Inscope(async schedule => schedule.ForLater(new Hello() { Name = "dave" }));
+        await _testServer.InScope(schedule => schedule.ForLater(new Hello() { Name = "dave" }));
             
         // we need to wait to ensure we only process it once
         await Task.Delay(TimeSpan.FromSeconds(5)); 

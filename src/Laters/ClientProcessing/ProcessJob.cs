@@ -1,7 +1,7 @@
 ﻿namespace Laters;
 
 /// <summary>
-/// this is the payload we pass to the workers so they know what 
+/// this is the payload we pass to the workers so they know what to process 
 /// </summary>
 public class ProcessJob
 {
