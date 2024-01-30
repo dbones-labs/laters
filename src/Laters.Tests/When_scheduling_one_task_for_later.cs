@@ -18,8 +18,8 @@ class When_scheduling_one_task_for_later
 
     Because of = async () =>
     {
-        await _testServer.InScope(schedule => schedule.ForLater(new Hello() { Name = "dave" }));
-            
+        await _testServer.InScope(schedule => schedule.ForLater(new Hello() { Name = "dave" } ));
+        
         // we need to wait to ensure we only process it once
         await Task.Delay(TimeSpan.FromSeconds(5)); 
         await Rig.Wait(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() > 0);
