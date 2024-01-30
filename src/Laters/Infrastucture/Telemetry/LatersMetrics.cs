@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.Infrastucture.Telemetry;
 
 using System.Diagnostics.Metrics;
 

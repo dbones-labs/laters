@@ -1,7 +1,9 @@
-﻿namespace Laters;
+﻿namespace Laters.ServerProcessing.Windows;
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Infrastucture;
+using Triggers;
 
 public class Window : INotifyPropertyChanged, IDisposable
 {

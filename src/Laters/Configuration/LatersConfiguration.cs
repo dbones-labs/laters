@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.Configuration;
 
 using System.ComponentModel.DataAnnotations;
 

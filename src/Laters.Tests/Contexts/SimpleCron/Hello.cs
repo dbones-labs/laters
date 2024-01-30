@@ -2,6 +2,8 @@
 
 namespace Laters.Tests.Contexts.SimpleCron;
 
+using ClientProcessing;
+
 public class Hello
 {
     public string Name { get; set; } = string.Empty;

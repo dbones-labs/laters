@@ -2,6 +2,7 @@
 
 using JasperFx.Core;
 using AspNet;
+using Configuration;
 using Laters.Data.Marten;
 using Marten;
 using Microsoft.AspNetCore.Hosting;

@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.ClientProcessing;
 
 /// <summary>
 /// this is the payload we pass to the workers so they know what to process 

@@ -1,4 +1,6 @@
-﻿namespace Laters.Engine;
+﻿namespace Laters.ServerProcessing.Engine;
+
+using ClientProcessing;
 
 public class WebWorker : IDisposable
 {

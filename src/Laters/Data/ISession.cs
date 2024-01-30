@@ -1,4 +1,7 @@
-﻿namespace Laters;
+﻿namespace Laters.Data;
+
+using Models;
+using ServerProcessing;
 
 /// <summary>
 /// datastore interactions

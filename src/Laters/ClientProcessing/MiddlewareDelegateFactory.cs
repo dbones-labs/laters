@@ -1,7 +1,8 @@
-﻿namespace Laters.AspNet;
+﻿namespace Laters.ClientProcessing;
 
 using System.Linq.Expressions;
 using System.Reflection;
+using AspNet;
 
 public class MiddlewareDelegateFactory
 {

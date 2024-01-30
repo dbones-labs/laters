@@ -2,9 +2,17 @@
 
 using System.Reflection;
 using AspNet;
-using Engine;
+using Background;
+using ClientProcessing;
+using ClientProcessing.Middleware;
+using Configuration;
+using Default;
+using Exceptions;
+using Infrastucture.Telemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Middleware;
+using ServerProcessing;
+using ServerProcessing.Engine;
+using ServerProcessing.Windows;
 
 public abstract class StorageSetup
 {
@@ -356,7 +364,7 @@ public static class SetupExtensions
         
         
         //client side
-        collection.TryAddSingleton<Middleware.ClientActions>();
+        collection.TryAddSingleton<ClientActions>();
 
         
         collection.TryAddSingleton(typeof(IProcessJobMiddleware<>), typeof(ProcessJobMiddleware<>));

@@ -3,7 +3,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Middleware;
+using ClientProcessing;
+using ClientProcessing.Middleware;
+using Exceptions;
+using Models;
 
 public class ClientMiddleware
 {

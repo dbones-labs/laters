@@ -1,4 +1,7 @@
-﻿namespace Laters;
+﻿namespace Laters.ServerProcessing.Windows;
+
+using Configuration;
+using Triggers;
 
 public class DefaultTumbler : IDisposable
 {

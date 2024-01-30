@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.ServerProcessing.Triggers;
 
 /// <summary>
 /// this is used to pause a running thread, until a condition is met

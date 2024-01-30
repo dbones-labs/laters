@@ -1,4 +1,6 @@
-﻿namespace Laters;
+﻿namespace Laters.ServerProcessing;
+
+using Triggers;
 
 /// <summary>
 /// this is how we can run a function when a trigger is met
