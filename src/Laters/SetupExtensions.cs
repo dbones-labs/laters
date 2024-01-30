@@ -28,9 +28,11 @@ public class Setup
         if (_storageSetup == null) throw new MissingStorageConfigurationException();
         _storageSetup.Apply(serviceCollection);
 
+        var jobHandlerType = typeof(IJobHandler<>);
         foreach (var type in _jobHandlerTypes)
         {
-            serviceCollection.AddScoped(type);
+            var handlerInterfaceType = jobHandlerType.MakeGenericType(GetImplementedType(type, jobHandlerType));
+            serviceCollection.AddScoped(handlerInterfaceType,type);
         }
     }
     
@@ -355,6 +357,8 @@ public static class SetupExtensions
         
         //client side
         collection.TryAddSingleton<Middleware.ClientActions>();
+
+        
         collection.TryAddSingleton(typeof(IProcessJobMiddleware<>), typeof(ProcessJobMiddleware<>));
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
         
@@ -364,6 +368,12 @@ public static class SetupExtensions
             factory.RegisterMiddlewareForAllHandlers(collection);
             return factory;
         });
+        
+        //out of the box middleware
+        collection.TryAddScoped(typeof(FailureAction<>));
+        collection.TryAddScoped(typeof(LoadJobIntoContextAction<>));
+        collection.TryAddScoped(typeof(QueueNextAction<>));
+        collection.TryAddScoped(typeof(HandlerAction<>));
         
     }
 

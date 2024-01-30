@@ -2,7 +2,7 @@
 
 namespace Laters.Tests.Contexts.Simple;
 
-public class Hello
+public class Hello : Entity
 {
     public string Name { get; set; } = string.Empty;
 }

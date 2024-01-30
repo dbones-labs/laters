@@ -23,15 +23,15 @@ public class MiddlewareDelegateFactory
         var jobTypes = collection
             .Select(x => new
             {
-                Params = GetParamsWhereImplements(x.GetType(), requiredOpenGeneric).Distinct()
+                Params = GetParamsWhereImplements(x.ImplementationType, requiredOpenGeneric).Distinct()
             })
-            .Where(x=> x.Params.Any())
+            .Where(x => x.Params.Any())
             .SelectMany(x => x.Params);
 
         foreach (var jobType in jobTypes)
         {
             var name = jobType.FullName!;
-            var execute = CreateExecuteDelegate2(jobType);
+            var execute = CreateExecuteDelegate(jobType);
             if (!_middlewareDelegates.TryAdd(name, execute))
             {
                 throw new JobTypeWithMoreThanOneHandler(name);
@@ -48,19 +48,23 @@ public class MiddlewareDelegateFactory
             .Where(x => x.IsGenericType)
             .Where(x => x.GetGenericTypeDefinition() == requiredOpenGeneric)
             .SelectMany(x => x.GenericTypeArguments);
+        
         foreach (var candidate in candidates)
         {
             yield return candidate;
         }
 
+        //check interface higherarchy
         var upperCandidates = actual
             .GetInterfaces()
             .SelectMany(x => GetParamsWhereImplements(x, requiredOpenGeneric));
+        
         foreach (var candidate in upperCandidates)
         {
             yield return candidate;
         }
 
+        //check base types
         var parentCandidates = GetParamsWhereImplements(actual.BaseType, requiredOpenGeneric);
         foreach (var candidate in parentCandidates)
         {
@@ -83,7 +87,7 @@ public class MiddlewareDelegateFactory
             jobProperty.SetValue(ctxInstance, job);
 
             var middleware = scope.GetRequiredService(processJobMiddlewareType);
-            return (Task)executeMethod.Invoke(middleware, new object[] { scope, job });
+            return (Task)executeMethod.Invoke(middleware, new object[] { scope, ctxInstance });
         };
     }
 

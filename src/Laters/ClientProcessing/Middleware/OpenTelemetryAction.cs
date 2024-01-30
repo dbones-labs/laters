@@ -5,7 +5,7 @@ using NCrontab;
 using Pipes;
 
 /// <summary>
-/// these actions are the Job Handling pipeline
+/// these actions are the Job Handling pipeline (remember to register with the IoC container)
 /// </summary>
 public class ClientActions
 {
@@ -25,18 +25,18 @@ public class ClientActions
     public Type QueueNextAction { get; set; } = typeof(QueueNextAction<>);
     
     /// <summary>
-    /// any and all custom actions (applied 4th and onwards)
+    /// any and all custom actions (applied 4th and onwards, in order)
     /// </summary>
     public List<Type> CustomActions { get; set; } = new();
 
     /// <summary>
-    /// this is the handler action (applied last)
+    /// this is the handler action, which will execute the job (applied last)
     /// </summary>
     public Type MainAction { get; set; } = typeof(HandlerAction<>);
 }
 
 
-public class FailureAction<T> : IProcessAction<T> where T : Entity
+public class FailureAction<T> : IProcessAction<T>
 {
     static Random _random = new();
     
@@ -94,7 +94,7 @@ public class FailureAction<T> : IProcessAction<T> where T : Entity
     }
 }
 
-public class LoadJobIntoContextAction<T> : IProcessAction<T> where T : Entity
+public class LoadJobIntoContextAction<T> : IProcessAction<T> 
 {
     readonly ISession _session;
     readonly ILogger<LoadJobIntoContextAction<T>> _logger;
@@ -110,7 +110,7 @@ public class LoadJobIntoContextAction<T> : IProcessAction<T> where T : Entity
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
         //load from the database
-        var job = await _session.GetById<Job>(context.JobId) 
+        var job = await _session.GetById<Job>(context.JobId)
                   ?? throw new JobNotFoundException(context.JobId);
         
 
@@ -123,16 +123,16 @@ public class LoadJobIntoContextAction<T> : IProcessAction<T> where T : Entity
         await next(context);
         
         //processed, lets remove
-        _session.Delete<T>(job.Id);
+        _session.Delete<Job>(context.JobId);
         _logger.LogInformation("Completed");
         
         //update any un saved changes.
-        _session.SaveChanges();
+        await _session.SaveChanges();
     }
 }
 
  
-public class QueueNextAction<T> : IProcessAction<T> where T : Entity
+public class QueueNextAction<T> : IProcessAction<T>
 {
     readonly ISession _session;
     readonly ICrontab _crontab;
@@ -167,7 +167,7 @@ public class QueueNextAction<T> : IProcessAction<T> where T : Entity
 }
 
 
-public class HandlerAction<T> : IProcessAction<T> where T : Entity
+public class HandlerAction<T> : IProcessAction<T>
 {
     readonly IJobHandler<T> _handler;
 
@@ -203,11 +203,11 @@ public class JobNotFoundException : LatersException
 {
     public string JobId { get; }
 
-    public JobNotFoundException(string jobId)
+    public JobNotFoundException(string jobId) : base($"Cannot find {jobId}")
     {
         JobId = jobId;
     }
 }
 
-public interface IProcessAction<T> : IAction<JobContext<T>> where T : Entity {}
+public interface IProcessAction<T> : IAction<JobContext<T>> {}
 

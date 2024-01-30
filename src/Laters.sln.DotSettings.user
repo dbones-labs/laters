@@ -1,4 +1,7 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
+  &lt;Assembly Path="C:\Users\geo45\.nuget\packages\pipes\1.0.1\lib\net5.0\Pipes.dll" /&gt;&#xD;
+&lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a83fcc1d_002D9286_002D4232_002D914d_002De0825bea62d2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Authentication, When authenticating an admin user" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.When_scheduling_one_task_for_later.should_only_be_processed_once&lt;/TestId&gt;&#xD;

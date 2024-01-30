@@ -2,6 +2,7 @@
 
 using System.Linq.Expressions;
 using System.Text.Json;
+using Middleware;
 using Pipes;
 
 public class JobDelegates
@@ -104,11 +105,23 @@ public interface IProcessJobMiddleware<T>
 /// </summary>
 public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<JobContext<T>>
 {
-    readonly Middleware<Job> _internalMiddleware;
+    readonly Middleware<JobContext<T>> _internalMiddleware;
 
-    public ProcessJobMiddleware()
+    public ProcessJobMiddleware(ClientActions clientActions)
     {
-        _internalMiddleware = new Middleware<Job>();
+        _internalMiddleware = new Middleware<JobContext<T>>();
+        
+       // _internalMiddleware.Add(MakeGeneric<T>(typeof(OpenTelemetryProcessAction<>)));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.FailureAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.LoadJobIntoContextAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.QueueNextAction));
+
+        foreach (var customActionType in clientActions.CustomActions)
+        {
+            _internalMiddleware.Add(MakeGeneric<T>(customActionType));
+        }
+        
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.MainAction));
         
         //we have loaded from the dataabse
         //Otel
@@ -116,10 +129,17 @@ public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<Job
         //Ijobhandler
 
     }
-
-    public Task Execute(IServiceProvider scope, JobContext<T> context)
+    
+    
+    private static Type MakeGeneric<T>(Type type)
     {
-        throw new NotImplementedException();
+        return type.MakeGenericType(typeof(T));
+    }
+
+    public async Task Execute(IServiceProvider scope, JobContext<T> context)
+    {
+        using var transactionScope = scope.CreateScope();
+        await _internalMiddleware.Execute(transactionScope.ServiceProvider, context);
     }
 }
 

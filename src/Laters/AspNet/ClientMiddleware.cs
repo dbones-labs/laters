@@ -26,7 +26,7 @@ public class ClientMiddleware
         _logger = logger;
     }
 
-    public async Task Invoke(HttpContext context)
+    public async Task InvokeAsync(HttpContext context)
     {
         var httpMethod = context.Request.Method;
         var path = context.Request.Path.Value;
@@ -70,6 +70,10 @@ public class ClientMiddleware
             _logger.LogError(exception, exception.Message);
             context.Response.StatusCode = 404;
             await context.Response.WriteAsync("Job does not exist");
+        }
+        catch (Exception ex)
+        {
+            throw;
         }
     }
 }
