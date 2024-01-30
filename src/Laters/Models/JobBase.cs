@@ -11,7 +11,7 @@ public abstract class JobBase : Entity
     /// <summary>
     /// the name of the window to apply
     /// </summary>
-    [Required]
+    [Required(AllowEmptyStrings = false)]
     public virtual string? WindowName { get; set; } = "global";
  
     /// <summary>
@@ -28,13 +28,13 @@ public abstract class JobBase : Entity
     /// <summary>
     /// the job payload which the <see cref="IJobHandler{T}"/> will be provided to process with.
     /// </summary>
-    [Required]
+    [Required(AllowEmptyStrings = false)]
     public virtual string? Payload { get; set; }
 
     /// <summary>
     /// the job type, this is used to let us know which job handler to process
     /// </summary>
-    [Required]
+    [Required(AllowEmptyStrings = false)]
     public virtual string? JobType { get; set; }
     
     /// <summary>

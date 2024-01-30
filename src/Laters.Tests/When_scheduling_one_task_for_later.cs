@@ -3,7 +3,6 @@
 using Contexts.Simple;
 using Infrastructure;
 using Machine.Specifications;
-using Middleware;
 using PowerAssert;
 
 [Subject("Later")]

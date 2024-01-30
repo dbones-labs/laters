@@ -30,5 +30,5 @@ public class Job : JobBase
     /// <summary>
     /// time of last execution
     /// </summary>
-    public DateTime LastAttempted { get; set; }
+    public virtual DateTime LastAttempted { get; set; }
 }

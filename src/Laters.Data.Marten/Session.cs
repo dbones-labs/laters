@@ -52,7 +52,7 @@ public class Session : ISession, IAsyncDisposable
 
     public void Delete<T>(string id) where T : Entity
     {
-        _documentSession.Delete(id);
+        _documentSession.Delete<T>(id);
     }
 
     public void DeleteOrphin(string cronName)
