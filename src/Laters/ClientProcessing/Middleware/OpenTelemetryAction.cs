@@ -1,6 +1,9 @@
-﻿namespace Laters.Middleware;
+﻿namespace Laters.ClientProcessing.Middleware;
 
 using System.Text.Json;
+using Data;
+using Exceptions;
+using Models;
 using NCrontab;
 using Pipes;
 

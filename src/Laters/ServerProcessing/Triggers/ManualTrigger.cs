@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.ServerProcessing.Triggers;
 
 public class ManualTrigger : ITrigger, IDisposable
 {

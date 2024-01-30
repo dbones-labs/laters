@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.Models;
 
 /// <summary>
 /// this denotes a SINGLE entry in the data, which 

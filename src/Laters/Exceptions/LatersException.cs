@@ -1,4 +1,4 @@
-namespace Laters;
+namespace Laters.Exceptions;
 
 /// <summary>
 /// base exception for Laters

@@ -1,8 +1,9 @@
-﻿namespace Laters;
+﻿namespace Laters.ClientProcessing;
 
 using System.Linq.Expressions;
 using System.Text.Json;
 using Middleware;
+using Models;
 using Pipes;
 
 public class JobDelegates
@@ -147,19 +148,3 @@ public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<Job
 
 
 
-public class InvokeJobHandlerAction : IProcessAction
-{
-    readonly IServiceProvider _scope;
-    readonly JobDelegates _jobDelegates;
-
-    public InvokeJobHandlerAction(IServiceProvider scope, JobDelegates jobDelegates)
-    {
-        _scope = scope;
-        _jobDelegates = jobDelegates;
-    }
-    
-    public async Task Execute(Job context, Next<Job> next)
-    {
-        await _jobDelegates.Execute(_scope, context);
-    }
-}

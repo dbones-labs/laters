@@ -1,4 +1,4 @@
-namespace Laters;
+namespace Laters.Exceptions;
 
 public class ConcurrencyException : LatersException
 {

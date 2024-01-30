@@ -1,6 +1,7 @@
-﻿namespace Laters;
+﻿namespace Laters.ClientProcessing;
 
 using System.ComponentModel.DataAnnotations;
+using Models;
 
 public class JobContext<T>
 {

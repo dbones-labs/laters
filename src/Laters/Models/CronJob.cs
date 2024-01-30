@@ -1,7 +1,7 @@
-﻿namespace Laters;
+﻿namespace Laters.Models;
 
 using System.ComponentModel.DataAnnotations;
-using Middleware;
+using ClientProcessing.Middleware;
 
 /// <summary>
 /// this is a cron job, which will create a job when the cron is met. 

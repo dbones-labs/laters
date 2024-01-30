@@ -1,6 +1,7 @@
 namespace Laters.Data.Marten;
 
 using global::Marten.Schema.Identity;
+using Models;
 
 public class LatersRegistry : global::Marten.MartenRegistry
 {

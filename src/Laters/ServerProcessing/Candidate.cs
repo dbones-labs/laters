@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.ServerProcessing;
 
 /// <summary>
 /// this represents the candidate job we want the workers to process
