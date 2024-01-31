@@ -2,7 +2,7 @@
 
 using JasperFx.Core;
 using AspNet;
-using Configuration;
+using Laters.Configuration;
 using Laters.Data.Marten;
 using Marten;
 using Microsoft.AspNetCore.Hosting;
@@ -21,6 +21,7 @@ public class DefaultTestServer : IDisposable
 
     public DefaultTestServer()
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         Port = _random.Next(5001, 5500);
         TestNumber = _random.Next(1, 999_999);
 
@@ -75,6 +76,9 @@ public class DefaultTestServer : IDisposable
         _configure?.Invoke(app);
     }
     
+    /// <summary>
+    /// call this to build the app and run it.
+    /// </summary>
     public void Setup()
     {
         var builder = WebApplication.CreateBuilder();
@@ -183,29 +187,5 @@ public class DefaultTestServer : IDisposable
     public void Dispose()
     {
         _server?.SafeDispose();
-    }
-}
-
-
-public class ResetDataService : IHostedService
-{
-    readonly IDocumentStore _documentStore;
-
-    public ResetDataService(IDocumentStore documentStore)
-    {
-        _documentStore = documentStore;
-    }
-    
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        await _documentStore
-            .Advanced
-            .Clean
-            .DeleteAllDocumentsAsync(cancellationToken);
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

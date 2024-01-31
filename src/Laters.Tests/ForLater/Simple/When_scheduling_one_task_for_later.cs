@@ -1,11 +1,15 @@
-﻿namespace Laters.Tests;
+﻿namespace Laters.Tests.ForLater.Simple;
 
 using Contexts.Simple;
-using Infrastructure;
+using Laters.Tests.Infrastructure;
 using Machine.Specifications;
 using PowerAssert;
 
-[Subject("Later")]
+/// <summary>
+/// at best we only really want to process a job once, under ideal conditions.
+/// </summary>
+[Tags("quality")]
+[Subject("for-later")]
 class When_scheduling_one_task_for_later
 {
     static DefaultTestServer _testServer;
@@ -18,7 +22,7 @@ class When_scheduling_one_task_for_later
 
     Because of = async () =>
     {
-        await _testServer.InScope(schedule => schedule.ForLater(new Hello() { Name = "dave" } ));
+        await _testServer.InScope(schedule => schedule.ForLater(new Hello { Name = "dave" } ));
         
         // we need to wait to ensure we only process it once
         await Task.Delay(TimeSpan.FromSeconds(5)); 

@@ -1,17 +1,11 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Users\geo45\.nuget\packages\pipes\1.0.1\lib\net5.0\Pipes.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\geo45\.nuget\packages\marten\6.0.5\lib\net6.0\Marten.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a83fcc1d_002D9286_002D4232_002D914d_002De0825bea62d2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Authentication, When authenticating an admin user" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.When_scheduling_one_task_for_later.should_only_be_processed_once&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
+	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c161fc21_002D50c5_002D4e49_002Db8ee_002D0e613038269d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="should only be processed once" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.When_scheduling_one_task_for_later.should_only_be_processed_once&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.When_scheduling_one_task_for_later.should_only_process_one_job_type&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+  &lt;Project Location="D:\_code\gh-dbones-labs\laters\src\Laters.Tests" Presentation="&amp;lt;Laters.Tests&amp;gt;" /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
 	</wpf:ResourceDictionary>

@@ -13,7 +13,7 @@ public class LatersConfiguration
     /// this is the location of the lb which will point at all the workers.
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public string WorkerEndpoint { get; set; } = string.Empty;
+    public string? WorkerEndpoint { get; set; }
 
     /// <summary>
     /// this is the max size of the in memory queue, for items ready to be processed

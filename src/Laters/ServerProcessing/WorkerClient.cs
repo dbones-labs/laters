@@ -28,7 +28,7 @@ public class WorkerClient : IWorkerClient
         _configuration = configuration;
         _httpClient = httpClient;
 
-        var ep = _configuration.WorkerEndpoint ?? throw new Exception("please provide a worker-endpoint");
+        var ep = _configuration.WorkerEndpoint ?? throw new NoWorkerEndpointException();
         _httpClient.BaseAddress = new Uri(ep);
     }
 

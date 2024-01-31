@@ -1,7 +1,6 @@
 ﻿namespace Laters;
 
 using System.Reflection;
-using AspNet;
 using Background;
 using ClientProcessing;
 using ClientProcessing.Middleware;
@@ -43,10 +42,28 @@ public class Setup
             serviceCollection.AddScoped(handlerInterfaceType,type);
         }
     }
+
+
+    public void AddJobHandler<T>()
+    {
+        AddJobHandler(typeof(T));
+    }
     
+    public void AddJobHandler(Type handlerType)
+    {
+        var jobHandlerType = typeof(IJobHandler<>);
+        var handlesJobType = GetImplementedType(handlerType, jobHandlerType);
+
+        if (handlesJobType is null)
+        {
+            throw new NotSupportedException($"{handlerType} does not implement {jobHandlerType.Name}");
+        }
+        
+        _jobHandlerTypes.Add(handlerType);
+    }
     
     /// <summary>
-    ///scan an assembly for &lt;see cref="IJobHandler{T}"/&gt; and wire them up, ready for use
+    /// scan an assembly for &lt;see cref="IJobHandler{T}"/&gt; and wire them up, ready for use
     /// </summary>
     /// <typeparam name="T">a type which is within the target assembly</typeparam>
     public void ScanForJobHandlers<T>()
@@ -62,9 +79,12 @@ public class Setup
     {
         var jobHandlerType = typeof(IJobHandler<>);
 
-        fromHere ??= Assembly.GetCallingAssembly();
+        //default to the running project
+        fromHere ??= Assembly.GetCallingAssembly(); 
+        
         var types = fromHere.GetTypes()
             .Where(x => x.IsClass && !x.IsAbstract)
+            .Where(ShouldIncludeJobHandler)
             .Select(x => new
             {
                 JobType = GetImplementedType(x, jobHandlerType),
@@ -118,6 +138,10 @@ public class Setup
             .FirstOrDefault(x => x != null);
     }
 
+    private bool ShouldIncludeJobHandler(Type type)
+    {
+        return !type.GetCustomAttributes(typeof(IgnoreAttribute), false).Any();
+    }
 
     public void UseStorage<T>(Action<T>? storage = null) where T : StorageSetup, new()
     {

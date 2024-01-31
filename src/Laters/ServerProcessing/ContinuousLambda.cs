@@ -60,6 +60,6 @@ public class ContinuousLambda : IDisposable
     {
         if (!_isRunning) return;
         _isRunning = false;
-        _backgroundWorker?.Dispose();
+        //_backgroundWorker?.Dispose(); seems the cancel token as done its work
     }
 }
