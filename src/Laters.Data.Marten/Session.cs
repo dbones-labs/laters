@@ -32,6 +32,7 @@ public class Session : ISession, IAsyncDisposable
     {
         var items = _querySession
             .Query<Job>()
+            .Where(x => x.ScheduledFor < SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
             .Where(x => rateLimitNames.Contains(x.WindowName))
             .OrderByDescending(x => x.ScheduledFor)

@@ -1,21 +1,27 @@
 ﻿namespace Laters.Tests.Infrastructure;
 
+using System.Linq.Expressions;
+using PowerAssert;
+
 public static class Rig
 {
-    public static Task Wait(Func<bool> predicate, TimeSpan timeSpan)
+    public static async Task Wait(Expression<Func<bool>> predicate, TimeSpan timeSpan)
     {
-        DateTime failedAt = DateTime.UtcNow.Add(timeSpan);
-        while (!predicate())
+        var compiledPredicate = predicate.Compile();
+        var failedAt = DateTime.UtcNow.Add(timeSpan);
+        while (!compiledPredicate())
         {
-            if (DateTime.UtcNow > failedAt) throw new TimeoutException("took too long");
-            Task.Delay(50);
+            if (DateTime.UtcNow > failedAt)
+            {
+                Console.WriteLine("took to long");
+                PAssert.IsTrue(predicate); // we want it to print out the values
+            }
+            await Task.Delay(50);
         }
-
-        return Task.CompletedTask;
     }
     
-    public static async Task Wait(Func<bool> predicate)
+    public static async Task Wait(Expression<Func<bool>> predicate)
     {
-        await Wait(predicate, TimeSpan.FromSeconds(200));
+        await Wait(predicate, TimeSpan.FromSeconds(130));
     }
 }

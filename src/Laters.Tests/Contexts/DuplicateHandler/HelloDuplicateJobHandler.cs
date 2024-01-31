@@ -1,13 +1,16 @@
-﻿namespace Laters.Tests.Contexts.Simple;
+﻿namespace Laters.Tests.Contexts.DuplicateHandler;
 
-using ClientProcessing;
-using Infrastructure;
+using Laters.ClientProcessing;
+using Laters.Configuration;
+using Laters.Tests.Infrastructure;
+using Simple;
 
-public class HelloJobHandler : IJobHandler<Hello>
+[Ignore]
+public class HelloDuplicateJobHandler : IJobHandler<Hello>
 {
     private readonly TestMonitor _monitor;
 
-    public HelloJobHandler(TestMonitor monitor)
+    public HelloDuplicateJobHandler(TestMonitor monitor)
     {
         _monitor = monitor;
     }
@@ -21,3 +24,4 @@ public class HelloJobHandler : IJobHandler<Hello>
         return Task.CompletedTask;
     }
 }
+
