@@ -9,12 +9,11 @@ using PowerAssert;
 class When_scheduling_a_job_for_later
 {
     static DefaultTestServer _testServer;
-    static DateTime _enqueuedTime = new(2032, 01, 01, 12,12,12);
-    static DateTime _firstProcessingTime = new(2032, 01, 01, 12,12, 20);
+    static DateTime _enqueuedTime =         new(2032, 01, 01, 12,12, 12);
+    static DateTime _firstProcessingTime =  new(2032, 01, 01, 12,12, 20);
     
-    static DateTime _whenToProcess= new(2032, 01, 02, 12,12,12);
-    static DateTime _secondProcessingTime = new(2032, 01, 18, 12,12, 20);
-
+    static DateTime _whenToProcess=         new(2032, 01, 02, 12,12, 12);
+    static DateTime _secondProcessingTime = new(2032, 01, 02, 12,12, 20);
     
 
     Establish context = async () =>

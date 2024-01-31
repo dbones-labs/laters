@@ -16,16 +16,19 @@ public class WorkerClient : IWorkerClient
     readonly Telemetry _telemetry;
     readonly LatersMetrics _metrics;
     readonly LatersConfiguration _configuration;
+    readonly ILogger<WorkerClient> _logger;
 
     public WorkerClient(
         HttpClient httpClient,
         Telemetry telemetry, 
         LatersMetrics metrics,
-        LatersConfiguration configuration)
+        LatersConfiguration configuration,
+        ILogger<WorkerClient> logger)
     {
         _telemetry = telemetry;
         _metrics = metrics;
         _configuration = configuration;
+        _logger = logger;
         _httpClient = httpClient;
 
         var ep = _configuration.WorkerEndpoint ?? throw new NoWorkerEndpointException();
@@ -53,12 +56,18 @@ public class WorkerClient : IWorkerClient
         
         using (activity)
         {
-            var jsonPayload = JsonSerializer.Serialize(processJob);
-            var content = new JsonContent(jsonPayload);
+            try
+            {
+                var jsonPayload = JsonSerializer.Serialize(processJob);
+                var content = new JsonContent(jsonPayload);
 
-            var response = await _httpClient.PostAsync($"laters/process-job", content);
-
-            response.EnsureSuccessStatusCode();
+                var response = await _httpClient.PostAsync($"laters/process-job", content);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,e.Message);
+            }
         }
 
         // Count the metric
