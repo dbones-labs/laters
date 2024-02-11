@@ -1,7 +1,11 @@
-﻿namespace Laters.Mnimal;
+﻿namespace Laters.Minimal;
 
 using System.Linq.Expressions;
+using ClientProcessing;
 
+/// <summary>
+/// this is where we register a handler via the minimal api
+/// </summary>
 public class MinimalMapper
 {
     readonly MinimalLambdaHandlerRegistry _registry;
@@ -11,6 +15,14 @@ public class MinimalMapper
         _registry = registry;
     }
     
+    /// <summary>
+    /// register a delegate to handle a job
+    /// </summary>
+    /// <param name="impl">the code to run when the job is fired, all params supports injection from the container, and one should be the <see cref="JobContext{T}"/> which will be the job data</param>
+    /// <typeparam name="T">the type of job this will handle</typeparam>
+    /// <remarks>
+    /// this is one way to support handling a job, you can create a class which implements <see cref="IJobHandler{T}"/>
+    /// </remarks>
     public void Map<T>(Delegate impl)
     {
         var handler = CompileHandler<T>(impl);

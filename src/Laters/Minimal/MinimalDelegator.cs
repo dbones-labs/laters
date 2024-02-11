@@ -1,5 +1,8 @@
-namespace Laters.Mnimal;
+namespace Laters.Minimal;
 
+/// <summary>
+/// used in the pipeline to provide the correct delegate to execute for a job, using the minimal handler
+/// </summary>
 public class MinimalDelegator
 {
     readonly IServiceProvider _serviceProvider;

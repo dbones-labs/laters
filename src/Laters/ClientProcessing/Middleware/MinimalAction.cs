@@ -1,6 +1,6 @@
 namespace Laters.ClientProcessing.Middleware;
 
-using Mnimal;
+using Minimal;
 using Pipes;
 
 /// <summary>

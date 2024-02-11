@@ -7,7 +7,7 @@ using Configuration;
 using Infrastucture.Telemetry;
 
 /// <summary>
-/// todo register
+/// used to call the workers with a job to process
 /// </summary>
 public class WorkerClient : IWorkerClient
 {

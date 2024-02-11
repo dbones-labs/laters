@@ -5,6 +5,9 @@ using ServerProcessing;
 using ServerProcessing.Engine;
 using ServerProcessing.Windows;
 
+/// <summary>
+/// all the background processes are started here.
+/// </summary>
 public class DefaultHostedService : IHostedService
 {
     readonly LeaderElectionService _leaderElectionService;
