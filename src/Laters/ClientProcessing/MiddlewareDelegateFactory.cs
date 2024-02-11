@@ -3,8 +3,11 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using AspNet;
-using Mnimal;
+using Minimal;
 
+/// <summary>
+/// this is used to store the complete collection of handler pipelines
+/// </summary>
 public class MiddlewareDelegateFactory
 {
     Dictionary<string, Execute> _middlewareDelegates = new();

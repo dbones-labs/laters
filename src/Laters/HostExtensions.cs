@@ -1,7 +1,7 @@
 namespace Laters;
 
 using ClientProcessing;
-using Mnimal;
+using Minimal;
 
 public static class HostExtensions
 {

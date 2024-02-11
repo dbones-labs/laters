@@ -8,7 +8,7 @@ using Default;
 using Infrastucture.Cron;
 using Infrastucture.Telemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Mnimal;
+using Minimal;
 using ServerProcessing;
 using ServerProcessing.Engine;
 using ServerProcessing.Windows;

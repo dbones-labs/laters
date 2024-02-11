@@ -1,5 +1,8 @@
-namespace Laters.Mnimal;
+namespace Laters.Minimal;
 
+/// <summary>
+/// the complete collection of minimal handlers
+/// </summary>
 public class MinimalLambdaHandlerRegistry
 {
     readonly Dictionary<Type, object> _commands = new();

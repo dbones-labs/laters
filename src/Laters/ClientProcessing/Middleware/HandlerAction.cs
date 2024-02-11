@@ -2,6 +2,10 @@ namespace Laters.ClientProcessing.Middleware;
 
 using Pipes;
 
+/// <summary>
+/// used to execute any <see cref="IJobHandler{T}"/> provided by the client code
+/// </summary>
+/// <typeparam name="T">the job type</typeparam>
 public class HandlerAction<T> : IProcessAction<T>
 {
     readonly IJobHandler<T> _handler;

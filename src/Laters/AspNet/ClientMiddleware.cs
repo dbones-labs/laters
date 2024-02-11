@@ -7,6 +7,10 @@ using ClientProcessing;
 using ClientProcessing.Middleware;
 using Models;
 
+
+/// <summary>
+/// this is the middleware which will listen for jobs to process
+/// </summary>
 public class ClientMiddleware
 {
     readonly RequestDelegate _next;

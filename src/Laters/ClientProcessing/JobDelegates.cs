@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using Models;
 
+[Obsolete("not in use", false)]
 public class JobDelegates
 {
     Dictionary<string, Func<IServiceProvider, Job, Task>> _delegates = new();

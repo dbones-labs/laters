@@ -2,6 +2,9 @@ namespace Laters.ClientProcessing.Middleware;
 
 using Exceptions;
 
+/// <summary>
+/// 
+/// </summary>
 public class JobNotFoundException : LatersException
 {
     public string JobId { get; }
