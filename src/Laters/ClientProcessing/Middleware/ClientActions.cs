@@ -24,9 +24,4 @@ public class ClientActions
     /// any and all custom actions (applied 4th and onwards, in order)
     /// </summary>
     public List<Type> CustomActions { get; set; } = new();
-
-    /// <summary>
-    /// this is the handler action, which will execute the job (applied last)
-    /// </summary>
-    public Type MainAction { get; set; } = typeof(HandlerAction<>);
 }

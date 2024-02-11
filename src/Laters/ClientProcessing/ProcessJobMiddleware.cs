@@ -1,6 +1,7 @@
 namespace Laters.ClientProcessing;
 
 using Middleware;
+using Mnimal;
 using Pipes;
 
 /// <summary>
@@ -10,28 +11,30 @@ public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<Job
 {
     readonly Middleware<JobContext<T>> _internalMiddleware;
 
-    public ProcessJobMiddleware(ClientActions clientActions)
+    public ProcessJobMiddleware(ClientActions clientActions, MinimalLambdaHandlerRegistry minimalLambdaHandlerRegistry)
     {
+        //we setup a pipline to process a job
         _internalMiddleware = new Middleware<JobContext<T>>();
         
+        //these are actions we need to do
         // _internalMiddleware.Add(MakeGeneric<T>(typeof(OpenTelemetryProcessAction<>)));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.FailureAction));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.LoadJobIntoContextAction));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.QueueNextAction));
 
+        //these are actions which people may want to add
         foreach (var customActionType in clientActions.CustomActions)
         {
             _internalMiddleware.Add(MakeGeneric<T>(customActionType));
         }
         
-        _internalMiddleware.Add(MakeGeneric<T>(typeof(MinimalAction<>)));
-        _internalMiddleware.Add(MakeGeneric<T>(clientActions.MainAction));
+        //lastly is the actual handler logic, which can be provided in 2 ways
+        var isFullHandler = minimalLambdaHandlerRegistry.Get<JobContext<T>>() is null;
+        var handlerToUse = isFullHandler
+            ? MakeGeneric<T>(typeof(HandlerAction<>))
+            : MakeGeneric<T>(typeof(MinimalAction<>));
         
-        //we have loaded from the dataabse
-        //Otel
-        //custom processing
-        //Ijobhandler
-
+        _internalMiddleware.Add(handlerToUse);
     }
     
     

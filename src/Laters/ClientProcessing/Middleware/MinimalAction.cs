@@ -3,28 +3,21 @@ namespace Laters.ClientProcessing.Middleware;
 using Mnimal;
 using Pipes;
 
+/// <summary>
+/// this will execute the minimal api job handler logic
+/// </summary>
+/// <typeparam name="T">the message type </typeparam>
 public class MinimalAction<T> : IProcessAction<T>
 {
-    readonly MinimalLambdaHandlerRegistry _minimalLambdaHandlerRegistry;
     readonly MinimalDelegator _minimalDelegator;
     
-    public MinimalAction(MinimalLambdaHandlerRegistry minimalLambdaHandlerRegistry, MinimalDelegator minimalDelegator)
+    public MinimalAction(MinimalDelegator minimalDelegator)
     {
-        _minimalLambdaHandlerRegistry = minimalLambdaHandlerRegistry;
         _minimalDelegator = minimalDelegator;
     }
     
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
-
-        var isFullHandler = _minimalLambdaHandlerRegistry.Get<JobContext<T>>() is null;
-        if (isFullHandler)
-        {
-            await next(context);
-        }
-        else
-        {
-            await _minimalDelegator.Execute(context);
-        }
+        await _minimalDelegator.Execute(context);
     }
 }
