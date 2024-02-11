@@ -1,4 +1,4 @@
-namespace Laters;
+namespace Laters.Configuration;
 
 using Exceptions;
 

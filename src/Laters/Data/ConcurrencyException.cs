@@ -1,4 +1,6 @@
-namespace Laters.Exceptions;
+namespace Laters.Data;
+
+using Exceptions;
 
 /// <summary>
 /// when a concurrency happens, we run logic on this mainly
