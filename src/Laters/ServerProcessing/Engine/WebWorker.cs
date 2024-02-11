@@ -1,20 +1,24 @@
 ﻿namespace Laters.ServerProcessing.Engine;
 
 using ClientProcessing;
+using LeaderContext = Laters.ServerProcessing.LeaderContext;
 
 public class WebWorker : IDisposable
 {
     readonly JobWorkerQueue _jobWorkerQueue;
     readonly WorkerClient _workerClient;
+    readonly LeaderContext _leaderContext;
     readonly ContinuousLambda _lambda;
 
     public WebWorker(
         JobWorkerQueue jobWorkerQueue,
-        WorkerClient workerClient
+        WorkerClient workerClient,
+        LeaderContext leaderContext
     )
     {
         _jobWorkerQueue = jobWorkerQueue;
         _workerClient = workerClient;
+        _leaderContext = leaderContext;
 
         _lambda = new ContinuousLambda(nameof(SendJobToWorker), async ()=> await SendJobToWorker(), _jobWorkerQueue.NextTrigger, false);
     }
@@ -37,7 +41,8 @@ public class WebWorker : IDisposable
             return;
         }
         
-        await _workerClient.DelegateJob(new ProcessJob() { Id = candidate.Id, JobType = candidate.JobType });
+        var jobToProcess = new ProcessJob(candidate.Id, candidate.JobType, _leaderContext.ServerId);
+        await _workerClient.DelegateJob(jobToProcess);
     }
 
 
