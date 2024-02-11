@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using ClientProcessing;
 using ClientProcessing.Middleware;
-using Exceptions;
 using Models;
 
 public class ClientMiddleware
@@ -80,27 +79,3 @@ public class ClientMiddleware
         }
     }
 }
-
-public class JobTypeWithMoreThanOneHandler : LatersException
-{
-    public string JobType { get; }
-
-    public JobTypeWithMoreThanOneHandler(string jobType)
-        : base($"there is more than one handler for {jobType}")
-    {
-        JobType = jobType;
-    }
-}
-
-public class NoJobTypeFoundException : LatersException
-{
-    public string JobType { get; }
-
-    public NoJobTypeFoundException(string jobType) 
-        : base($"Cannot find job {jobType}")
-    {
-        JobType = jobType;
-    }
-}
-
-public delegate Task Execute(IServiceProvider scope, string jobId);

@@ -21,12 +21,3 @@ public class JobContext<T>
     /// </summary>
     public string JobId { get; set; }
 }
-
-
-/// <summary>
-/// this is 
-/// </summary>
-public interface IStartUpFilter
-{
-    void Configure();
-}
