@@ -22,7 +22,7 @@ class When_using_a_minimal_handler_with_a_single_job
             var marker = new MinimalHello();
             app.UseLaters();
             
-            app.MapHandler<Hello>(async (JobContext<Hello> ctx, TestMonitor monitor, ILogger<MinimalMapper> logger) =>
+            app.MapHandler<Hello>(async (JobContext<Hello> ctx, TestMonitor monitor, ILogger<MinimalHello> logger) =>
             {
                 monitor.AddCallTick(marker);
                 monitor.Observed.Add("ctx", ctx);
@@ -45,7 +45,7 @@ class When_using_a_minimal_handler_with_a_single_job
         PAssert.IsTrue(() => _testServer.Monitor.GetObserved<JobContext<Hello>>("ctx") != null);
     
     It should_inject_params_from_container = () =>
-        PAssert.IsTrue(() => _testServer.Monitor.GetObserved<ILogger<MinimalMapper>>("logger") != null);
+        PAssert.IsTrue(() => _testServer.Monitor.GetObserved<ILogger<MinimalHello>>("logger") != null);
 
     Cleanup after = () =>
     {
