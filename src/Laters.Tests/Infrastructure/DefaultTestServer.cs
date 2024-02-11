@@ -5,9 +5,19 @@ using AspNet;
 using Laters.Configuration;
 using Laters.Data.Marten;
 using Marten;
+using Marten.Linq.Filters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Weasel.Core;
+using Serilog;
+using Serilog.Core.Enrichers;
+using Serilog.Filters;
+using Serilog.Sinks.OpenTelemetry;
 
 public class DefaultTestServer : IDisposable
 {
@@ -83,6 +93,34 @@ public class DefaultTestServer : IDisposable
     {
         var builder = WebApplication.CreateBuilder();
         
+        builder.Host.UseSerilog((context, config) =>
+        {
+            config
+                .Enrich.FromLogContext()
+                .Enrich.With(new PropertyEnricher("service_name","Laters"))
+                .Filter.ByIncludingOnly(Matching.FromSource("Laters"))
+                .WriteTo.OpenTelemetry(opt =>
+                {
+                    opt.IncludedData = IncludedData.SpanIdField | 
+                                       IncludedData.TraceIdField |
+                                       IncludedData.TemplateBody;
+                })
+                .WriteTo.Console()
+                .MinimumLevel.Information();
+        });
+
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(b => b.AddPrometheusExporter())
+            .WithTracing(b =>
+            {
+                b.AddSource("Laters")
+                    .ConfigureResource(r => r.AddService("Laters"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddNpgsql()
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter();
+            });
+        
         builder.WebHost.ConfigureLaters((context, setup) =>
         {
             setup.Configuration.NumberOfProcessingThreads = 1;
@@ -135,7 +173,8 @@ public class DefaultTestServer : IDisposable
             collection.AddControllersWithViews();
             collection.AddEndpointsApiExplorer();
             collection.AddSwaggerGen();
-
+            
+           
             collection.AddLogging();
             
             _configureServices?.Invoke(collection);
@@ -153,6 +192,7 @@ public class DefaultTestServer : IDisposable
         _server.UseDeveloperExceptionPage();
         _server.UseSwagger();
         _server.UseSwaggerUI();
+        _server.UseOpenTelemetryPrometheusScrapingEndpoint();
         
         _configure?.Invoke(_server);
         
