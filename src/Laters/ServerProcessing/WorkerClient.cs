@@ -1,7 +1,6 @@
 ﻿namespace Laters.ServerProcessing;
 
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using ClientProcessing;
 using Configuration;
@@ -74,11 +73,4 @@ public class WorkerClient : IWorkerClient
         // var metric = _meter.CreateCounter("laters.job-type");
         _metrics.JobTypeCounter.Add(1, new KeyValuePair<string, object?>("type", processJob.JobType));
     }
-}
-
-public class JsonContent : StringContent
-{
-    public JsonContent(object obj) :
-        base(JsonSerializer.Serialize(obj), Encoding.UTF8, "application/json")
-    { }
 }
