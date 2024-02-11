@@ -1,4 +1,4 @@
-namespace Laters.ClientProcessing.Middleware;
+namespace Laters.Infrastucture.Cron;
 
 public interface ICrontab
 {
