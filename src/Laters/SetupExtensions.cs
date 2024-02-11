@@ -9,6 +9,7 @@ using Default;
 using Exceptions;
 using Infrastucture.Telemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Mnimal;
 using ServerProcessing;
 using ServerProcessing.Engine;
 using ServerProcessing.Windows;
@@ -391,13 +392,17 @@ public static class SetupExtensions
         collection.TryAddSingleton<ClientActions>();
 
         
+        collection.TryAddSingleton<MinimalLambdaHandlerRegistry>();
+        collection.TryAddSingleton<MinimalMapper>();
+        collection.AddScoped<MinimalDelegator>();
+        
         collection.TryAddSingleton(typeof(IProcessJobMiddleware<>), typeof(ProcessJobMiddleware<>));
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
         
         collection.TryAddSingleton(services =>
         {
             var factory = new MiddlewareDelegateFactory();
-            factory.RegisterMiddlewareForAllHandlers(collection);
+            factory.RegisterMiddlewareForAllHandlers(collection, services.GetRequiredService<MinimalLambdaHandlerRegistry>());
             return factory;
         });
         
@@ -406,7 +411,7 @@ public static class SetupExtensions
         collection.TryAddScoped(typeof(LoadJobIntoContextAction<>));
         collection.TryAddScoped(typeof(QueueNextAction<>));
         collection.TryAddScoped(typeof(HandlerAction<>));
-        
+        collection.TryAddScoped(typeof(MinimalAction<>));
     }
 
 }

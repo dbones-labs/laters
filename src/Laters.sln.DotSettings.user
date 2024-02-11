@@ -3,9 +3,10 @@
   &lt;Assembly Path="C:\Users\geo45\.nuget\packages\pipes\1.0.1\lib\net5.0\Pipes.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\geo45\.nuget\packages\marten\6.0.5\lib\net6.0\Marten.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
+	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Laters_002ETests_003B_002A_003B_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">C:\Users\geo45\AppData\Local\JetBrains\Rider2023.3\resharper-host\temp\Rider\vAny\CoverageData\_Laters.-1723468962\Snapshot\snapshot.utdcvr</s:String>
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c161fc21_002D50c5_002D4e49_002Db8ee_002D0e613038269d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="should only be processed once" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c161fc21_002D50c5_002D4e49_002Db8ee_002D0e613038269d/@EntryIndexedValue">&lt;SessionState ContinuousTestingIsOn="True" ContinuousTestingMode="1" IsActive="True" Name="should only be processed once" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Project Location="D:\_code\gh-dbones-labs\laters\src\Laters.Tests" Presentation="&amp;lt;Laters.Tests&amp;gt;" /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	

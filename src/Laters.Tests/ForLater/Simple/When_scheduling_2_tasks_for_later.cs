@@ -10,7 +10,7 @@ using PowerAssert;
 /// </summary>
 [Tags("quality")]
 [Subject("for-later")]
-class When_scheduling_2_tasks_for_later
+class When_scheduling_several_tasks_for_later
 {
     static DefaultTestServer _testServer;
 

@@ -8,6 +8,8 @@ public class TestMonitor
     public List<Type> CallOrder { get; set; } = new();
     public IDictionary<object, int> CreationTicks { get; set; } = new ConcurrentDictionary<object, int>();
     public IDictionary<object, int> DisposeTicks { get; set; } = new ConcurrentDictionary<object, int>();
+    
+    public IDictionary<string, object> Observed { get; set; } = new ConcurrentDictionary<string, object>();
 
     public int NumberOfCallTicksFor<T>()
     {
@@ -53,4 +55,9 @@ public class TestMonitor
         DisposeTicks[instance]++;
     }
 
+    public T? GetObserved<T>(string name)
+    {
+        var result = Observed.TryGetValue(name, out var t) ? (T?)t : default;
+        return result;
+    }
 }
