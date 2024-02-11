@@ -174,6 +174,11 @@ public class DefaultTestServer : IDisposable
     {
         _configureServices = configure;
     }
+    
+    public void OverrideBuilder(Action<IApplicationBuilder> configure)
+    {
+        _configure = configure;
+    }
 
     /// <summary>
     /// this is

@@ -122,6 +122,7 @@ public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<Job
             _internalMiddleware.Add(MakeGeneric<T>(customActionType));
         }
         
+        _internalMiddleware.Add(MakeGeneric<T>(typeof(MinimalAction<>)));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.MainAction));
         
         //we have loaded from the dataabse

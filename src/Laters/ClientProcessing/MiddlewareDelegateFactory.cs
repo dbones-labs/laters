@@ -3,6 +3,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using AspNet;
+using Mnimal;
 
 public class MiddlewareDelegateFactory
 {
@@ -18,8 +19,9 @@ public class MiddlewareDelegateFactory
         throw new NoJobTypeFoundException(typeName);
     }
 
-    public void RegisterMiddlewareForAllHandlers(IServiceCollection collection)
+    public void RegisterMiddlewareForAllHandlers(IServiceCollection collection, MinimalLambdaHandlerRegistry registry)
     {
+        //check the ioc for types which implement the IJobHandler<>
         var requiredOpenGeneric = typeof(IJobHandler<>);
         var jobTypes = collection
             .Select(x => new
@@ -29,7 +31,10 @@ public class MiddlewareDelegateFactory
             .Where(x => x.Params.Any())
             .SelectMany(x => x.Params);
 
-        foreach (var jobType in jobTypes)
+        //add minimal api types too
+        var allJobTypes = jobTypes.Union(registry.Supported.SelectMany(x => x.GenericTypeArguments));
+        
+        foreach (var jobType in allJobTypes)
         {
             var name = jobType.FullName!;
             var execute = CreateExecuteDelegate(jobType);
