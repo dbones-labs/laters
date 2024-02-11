@@ -97,6 +97,8 @@ public class DefaultTestServer : IDisposable
         {
             config
                 .Enrich.FromLogContext()
+                .
+                .Enrich.With(new PropertyEnricher("test_number", $"{TestNumber}"))
                 .Enrich.With(new PropertyEnricher("service_name","Laters"))
                 .Filter.ByIncludingOnly(Matching.FromSource("Laters"))
                 .WriteTo.OpenTelemetry(opt =>
