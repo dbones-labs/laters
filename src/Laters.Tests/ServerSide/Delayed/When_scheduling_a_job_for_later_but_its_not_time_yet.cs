@@ -2,6 +2,7 @@
 
 using Contexts.Simple;
 using Infrastructure;
+using Infrastucture;
 using Machine.Specifications;
 using PowerAssert;
 

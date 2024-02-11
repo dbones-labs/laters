@@ -1,8 +1,8 @@
-namespace Laters;
+namespace Laters.Configuration;
 
 using System.Reflection;
-using ClientProcessing.Middleware;
-using Configuration;
+using Data;
+using Laters.ClientProcessing.Middleware;
 
 public class Setup
 {

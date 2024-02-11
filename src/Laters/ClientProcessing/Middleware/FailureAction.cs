@@ -1,6 +1,7 @@
 namespace Laters.ClientProcessing.Middleware;
 
 using Data;
+using Infrastucture;
 using Models;
 using Pipes;
 

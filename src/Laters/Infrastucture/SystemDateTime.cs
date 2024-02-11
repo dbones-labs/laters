@@ -1,4 +1,4 @@
-﻿namespace Laters;
+﻿namespace Laters.Infrastucture;
 
 public static class SystemDateTime
 {
