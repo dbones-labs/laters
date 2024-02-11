@@ -65,6 +65,9 @@ public class WorkerClient : IWorkerClient
             }
             catch (Exception e)
             {
+                //TODO, act on different error messgaes
+                //404 forget, the job was processed
+                //all other messages
                 _logger.LogError(e,e.Message);
             }
         }
