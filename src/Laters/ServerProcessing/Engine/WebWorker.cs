@@ -43,6 +43,8 @@ public class WebWorker : IDisposable
         
         var jobToProcess = new ProcessJob(candidate.Id, candidate.JobType, _leaderContext.ServerId);
         await _workerClient.DelegateJob(jobToProcess);
+        
+        _jobWorkerQueue.MarkAsDone(candidate);
     }
 
 

@@ -29,12 +29,13 @@ public class Session : ISession, IAsyncDisposable
         return Task.FromResult<IEnumerable<CronJob>>(items);
     }
 
-    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50)
+    public Task<List<Candidate>> GetJobsToProcess(List<string> ids, List<string> rateLimitNames, int skip = 0, int take = 50)
     {
         var items = _querySession
             .Query<Job>()
             .Where(x => x.ScheduledFor < SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
+            .Where(x => !ids.Contains(x.Id))
             .Where(x => rateLimitNames.Contains(x.WindowName))
             .OrderByDescending(x => x.ScheduledFor)
             .Skip(skip)
