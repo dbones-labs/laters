@@ -68,8 +68,9 @@ public class ClientMiddleware
 
         try
         {
+            //_leaderInformation.Id = processJob.LeaderId;
             var execute = _middlewareDelegateFactory.GetExecute(processJob.JobType);
-            await execute(_serviceProvider, processJob.Id);
+            await execute(_serviceProvider, processJob);
         }
         catch (JobNotFoundException exception)
         {

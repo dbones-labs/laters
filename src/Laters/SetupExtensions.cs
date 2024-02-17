@@ -141,13 +141,13 @@ public static class SetupExtensions
         
         
         //client side
-        collection.TryAddSingleton<ClientActions>();
-
+        collection.TryAddScoped<LeaderInformation>();
         
         collection.TryAddSingleton<MinimalLambdaHandlerRegistry>();
         collection.TryAddSingleton<MinimalMapper>();
         collection.AddScoped<MinimalDelegator>();
         
+        collection.TryAddSingleton<ClientActions>();
         collection.TryAddSingleton(typeof(IProcessJobMiddleware<>), typeof(ProcessJobMiddleware<>));
         collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
         

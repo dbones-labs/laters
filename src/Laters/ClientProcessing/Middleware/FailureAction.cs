@@ -5,6 +5,11 @@ using Infrastucture;
 using Models;
 using Pipes;
 
+/// <summary>
+/// this is the catch all error handler, where we handle if we requeue
+/// the job
+/// </summary>
+/// <typeparam name="T">the job type</typeparam>
 public class FailureAction<T> : IProcessAction<T>
 {
     static Random _random = new();
@@ -26,6 +31,11 @@ public class FailureAction<T> : IProcessAction<T>
         {
             await next(context);
         }
+        catch (JobNotFoundException)
+        {
+            //the job has been processed or does not exist
+            //there is nothing to process
+        }
         catch (Exception)
         {
             _logger.LogInformation("marking job as failed");
@@ -42,17 +52,15 @@ public class FailureAction<T> : IProcessAction<T>
             {
                 //we have reached our limit
                 job.DeadLettered = true;
-                _logger.LogWarning("Dead lettered");
+                _logger.DeadLettered();
             }
             else
             {
-                var exponent = context.Job.Attempts * _random.Next(300, 350);
+                var exponent = job.Attempts * _random.Next(300, 350);
                 var ts = TimeSpan.FromTicks(exponent);
-                context.Job.ScheduledFor = SystemDateTime.UtcNow.Add(ts);
+                job.ScheduledFor = SystemDateTime.UtcNow.Add(ts);
                 
-                _logger.LogWarning("requeue for attempt {number} at {date}", 
-                    job.Attempts, 
-                    job.ScheduledFor);
+                _logger.Requeueing(job.Attempts, job.ScheduledFor);
             }
             
             //update any un saved changes.
@@ -61,4 +69,15 @@ public class FailureAction<T> : IProcessAction<T>
             throw;
         }
     }
+}
+
+[LoggerFor(Type = typeof(FailureAction<>), Registry = EventId.FailureActionLogging)]
+static partial class FailureActionLogging
+{
+    [LoggerMessage(201, LogLevel.Warning, "Dead lettered")]
+    public static partial void DeadLettered(this ILogger logger);
+    
+    
+    [LoggerMessage(202, LogLevel.Information, "requeue for attempt {number} at {date}")]
+    public static partial void Requeueing(this ILogger logger, int number, DateTime date);
 }
