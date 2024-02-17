@@ -40,7 +40,6 @@
 
 
     <ItemGroup>
-      <Folder Include="ServerSide\Election\" />
       <Folder Include="ServerSide\Throttling\" />
     </ItemGroup>
 

@@ -5,11 +5,9 @@ using AspNet;
 using Laters.Configuration;
 using Laters.Data.Marten;
 using Marten;
-using Marten.Linq.Filters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -18,38 +16,57 @@ using Serilog;
 using Serilog.Core.Enrichers;
 using Serilog.Filters;
 using Serilog.Sinks.OpenTelemetry;
+using ServerProcessing;
 
 public class DefaultTestServer : IDisposable
 {
+    readonly Roles _role;
+    readonly TestData _data;
     Action<IServiceCollection>? _configureServices;
-    Action<WebHostBuilderContext, Setup>? _configureLaters;
+    Action<WebHostBuilderContext, Setup> _defaultConfigureLaters;
+    Action<WebHostBuilderContext, Setup> _configureLaters;
+    Action<IApplicationBuilder>? _minimalApiConfigure;
     Action<IApplicationBuilder>? _configure;
     //TestServer? _testServer;
     WebApplication _server;
 
     static Random _random = new();
 
-    public DefaultTestServer()
+    public DefaultTestServer(int port = 0, Roles role = Roles.All, TestData data = TestData.Clear)
     {
+        _role = role;
+        _data = data;
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-        Port = _random.Next(5001, 5500);
+        Port = port == 0 ? _random.Next(5001, 5500) : port;
         TestNumber = _random.Next(1, 999_999);
 
-        _configureLaters = (context, setup) =>
+        _defaultConfigureLaters = (context, setup) =>
         {
             setup.ScanForJobHandlers();
-            setup.Configuration.Role = Roles.Any;
+            setup.Configuration.Role = _role;
             setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}/";
             setup.UseStorage<Marten>();
         };
         
+        _configureLaters = _defaultConfigureLaters;
+
+        _minimalApiConfigure = builder => { };
+
         _configure = app =>
         {
             app.UseLaters();
-            //app.UseAuthorization();
         };
     }
 
+    public HttpClient Client { get; private set; }
+    public int Port { get; init; }
+
+    public int TestNumber { get; init; }
+
+    public TestMonitor Monitor { get; private set; }
+
+    public LeaderContext Leader { get; private set; }
+    
     
     public async Task InScope<T>(Func<IAdvancedSchedule, T> action)
     {
@@ -68,23 +85,7 @@ public class DefaultTestServer : IDisposable
         await action(schedule);
         await documentSession.SaveChangesAsync();
     } 
-    public HttpClient Client { get; private set; }
-    public int Port { get; private set; }
-
-    public int TestNumber { get; set; }
-
-    public TestMonitor Monitor { get; set; }
     
-    public void Configure(IApplicationBuilder app)
-    {
-        throw new Exception("asdsads");
-        //app.UseSwagger();
-        //app.UseSwaggerUI();
-        app.UseHttpLogging();
-        app.UseRouting();
-        app.UseDeveloperExceptionPage();
-        _configure?.Invoke(app);
-    }
     
     /// <summary>
     /// call this to build the app and run it.
@@ -146,7 +147,6 @@ public class DefaultTestServer : IDisposable
                 //     }
                 // });
                 
-                
                 config.Schema.Include<LatersRegistry>();
 
                 config.DatabaseSchemaName = "thisisatest";
@@ -164,7 +164,11 @@ public class DefaultTestServer : IDisposable
                 });
             });
 
-            collection.AddHostedService<ResetDataService>();
+            if (_data == TestData.Clear)
+            {
+                collection.AddHostedService<ResetDataService>();
+            }
+            
             
             //quick workaround, you can also the SessionFactory
             collection.AddScoped<IDocumentSession>(services =>
@@ -196,6 +200,7 @@ public class DefaultTestServer : IDisposable
         _server.UseOpenTelemetryPrometheusScrapingEndpoint();
         
         _configure?.Invoke(_server);
+        _minimalApiConfigure?.Invoke(_server);
         
         _server.RunAsync();
         
@@ -205,10 +210,8 @@ public class DefaultTestServer : IDisposable
         
         //Client = _testServer.CreateClient();
         Monitor = _server.Services.GetRequiredService<TestMonitor>();
-    }
-
-    public void ConfigureServices(IServiceCollection configure)
-    {
+        
+        Leader = _server.Services.GetRequiredService<LeaderContext>();
     }
     
     public void OverrideServices(Action<IServiceCollection> configure)
@@ -220,9 +223,14 @@ public class DefaultTestServer : IDisposable
     {
         _configure = configure;
     }
+    
+    public void MinimalApi(Action<IApplicationBuilder> configure)
+    {
+        _minimalApiConfigure = configure;
+    }
 
     /// <summary>
-    /// this is
+    ///  override all the test defaults for laters
     /// </summary>
     /// <param name="configure"></param>
     public void OverrideLaters(Action<WebHostBuilderContext, Setup> configure)
@@ -230,8 +238,47 @@ public class DefaultTestServer : IDisposable
         _configureLaters = configure;
     }
     
+    /// <summary>
+    /// add more configuration for laters
+    /// </summary>
+    /// <param name="configure"></param>
+    public void AdditionalOverrideLaters(Action<WebHostBuilderContext, Setup> configure)
+    {
+        _configureLaters = (context, setup) =>
+        {
+            _defaultConfigureLaters(context, setup);
+            configure(context,setup);
+        };
+    }
+    
     public void Dispose()
     {
         _server?.SafeDispose();
     }
+
+    #region DoNotUse
+    
+    public void ConfigureServices(IServiceCollection configure)
+    {
+    }
+    
+    public void Configure(IApplicationBuilder app)
+    {
+        throw new Exception("asdsads");
+        //app.UseSwagger();
+        //app.UseSwaggerUI();
+        app.UseHttpLogging();
+        app.UseRouting();
+        app.UseDeveloperExceptionPage();
+        _configure?.Invoke(app);
+    }
+
+    #endregion
+    
+}
+
+public enum TestData
+{
+    Clear,
+    Keep
 }

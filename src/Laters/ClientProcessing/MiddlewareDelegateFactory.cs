@@ -103,14 +103,14 @@ public class MiddlewareDelegateFactory
     Execute CreateExecuteDelegate2(Type jobType)
     {
         var processJobMiddlewareType = typeof(IProcessJobMiddleware<>).MakeGenericType(jobType);
-        var executeMethod = processJobMiddlewareType.GetMethod("Execute", BindingFlags.Instance | BindingFlags.Public);
+        var executeMethod = processJobMiddlewareType.GetMethod(nameof(Execute), BindingFlags.Instance | BindingFlags.Public);
 
         var jobContextType = typeof(JobContext<>).MakeGenericType(jobType);
         var jobContextCtor = jobContextType.GetConstructor(Type.EmptyTypes);
-        var jobProperty = jobContextType.GetProperty("JobId");
+        var jobProperty = jobContextType.GetProperty(nameof(JobContext<object>.ServerRequested));
 
         var scopeParam = Expression.Parameter(typeof(IServiceProvider), "scope");
-        var jobParam = Expression.Parameter(typeof(string), "jobId");
+        var jobParam = Expression.Parameter(typeof(string), "jobRequest");
 
         var ctxInstanceExpr = Expression.New(jobContextCtor);
         var setJobPropertyExpr = Expression.Call(ctxInstanceExpr, jobProperty.SetMethod, jobParam);
