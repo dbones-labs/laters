@@ -43,5 +43,5 @@ public class LatersConfiguration
     /// <summary>
     /// this is the role of this instance.
     /// </summary>
-    public Roles Role { get; set; } = Roles.Any;
+    public Roles Role { get; set; } = Roles.All;
 }

@@ -9,7 +9,7 @@ public enum Roles
     /// the running instance has the possibility to be promoted to the leader
     /// and will also be a worker, this is the default
     /// </summary>
-    Any,
+    All,
     
     /// <summary>
     /// for a single instance, this does not need to know of domain logic (as it will)
@@ -20,7 +20,7 @@ public enum Roles
     /// <remarks>
     /// This will not pole for leader election, it will always assume this instance is the leader
     /// </remarks>
-    OnlyLeader,
+    Leader,
     
     /// <summary>
     /// this instance will only process jobs, it will contain the business logic. 

@@ -1,7 +1,7 @@
-﻿namespace Laters.Tests.ForLater.Delayed;
+﻿namespace Laters.Tests.ServerSide.Delayed;
 
-using Contexts.Simple;
-using Infrastucture;
+using Laters.Infrastucture;
+using Laters.Tests.Contexts.Simple;
 using Laters.Tests.Infrastructure;
 using Machine.Specifications;
 using PowerAssert;

@@ -165,5 +165,4 @@ public static class SetupExtensions
         collection.TryAddScoped(typeof(HandlerAction<>));
         collection.TryAddScoped(typeof(MinimalAction<>));
     }
-
 }

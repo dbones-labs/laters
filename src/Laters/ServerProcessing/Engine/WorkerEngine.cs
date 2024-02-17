@@ -3,7 +3,7 @@
 using Configuration;
 
 /// <summary>
-/// 
+/// setup the worker pool
 /// </summary>
 /// <remarks>
 /// this will bring the
@@ -32,9 +32,7 @@ public class WorkerEngine
 
     public async Task Initialize(CancellationToken cancellationToken)
     {
-        foreach (var worker in _workers)
-        {
-            await worker.Initialize(cancellationToken);
-        }
+        var initialisedWorkers = _workers.Select(x => x.Initialize(cancellationToken)).ToArray();
+        await Task.WhenAll(initialisedWorkers);
     }
 }

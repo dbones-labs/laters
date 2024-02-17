@@ -17,7 +17,6 @@ public class ClientMiddleware
     readonly IServiceProvider _serviceProvider;
     readonly MiddlewareDelegateFactory _middlewareDelegateFactory;
     readonly ILogger<ClientMiddleware> _logger;
-
     readonly Func<IServiceProvider, Job, Task> _execute;
 
     public ClientMiddleware(
