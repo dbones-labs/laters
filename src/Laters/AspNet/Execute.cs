@@ -6,4 +6,4 @@ using ClientProcessing;
 /// this is used to cache the <see cref="IProcessJobMiddleware{T}.Execute"/> method
 /// so we can just call it with the scope and id
 /// </summary>
-public delegate Task Execute(IServiceProvider scope, string jobId);
+public delegate Task Execute(IServiceProvider scope, ProcessJob jobRequest);

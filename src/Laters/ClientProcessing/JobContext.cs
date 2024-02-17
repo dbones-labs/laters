@@ -15,9 +15,14 @@ public class JobContext<T>
     /// the job, consider this the envelope for the Payload
     /// </summary>
     public Job? Job { get; set; }
-    
+
     /// <summary>
     /// the id of the job
     /// </summary>
-    public string JobId { get; set; }
+    public string JobId => ServerRequested?.Id ?? "";
+    
+    /// <summary>
+    /// the information we are provided by the leader
+    /// </summary>
+    public ProcessJob? ServerRequested{ get; set; }
 }
