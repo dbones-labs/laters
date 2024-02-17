@@ -1,6 +1,6 @@
 namespace Laters.ClientProcessing.Middleware;
 
-using Pipes;
+using Dbones.Pipes;
 
 /// <summary>
 /// used to execute any <see cref="IJobHandler{T}"/> provided by the client code

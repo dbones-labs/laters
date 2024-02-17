@@ -3,7 +3,7 @@ namespace Laters.ClientProcessing.Middleware;
 using Data;
 using Infrastucture.Cron;
 using Models;
-using Pipes;
+using Dbones.Pipes;
 
 public class QueueNextAction<T> : IProcessAction<T>
 {

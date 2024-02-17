@@ -10,11 +10,12 @@
 
     <ItemGroup>
 
+      <PackageReference Include="Dbones.Pipes" Version="1.0.4" />
+
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
 
       <PackageReference Include="NCrontab.Signed" Version="3.3.3" />
       <PackageReference Include="OpenTelemetry" Version="1.5.1" />
-      <PackageReference Include="pipes" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>
