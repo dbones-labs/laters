@@ -15,14 +15,17 @@ using Configuration;
 public class WorkerEngine
 {
     readonly JobWorkerQueue _jobWorkerQueue;
+    readonly ILogger<WorkerEngine> _logger;
     readonly List<WebWorker> _workers = new();
     
     public WorkerEngine(
         JobWorkerQueue jobWorkerQueue, 
         LatersConfiguration latersConfiguration, 
-        IServiceProvider provider)
+        IServiceProvider provider,
+        ILogger<WorkerEngine> logger)
     {
         _jobWorkerQueue = jobWorkerQueue;
+        _logger = logger;
         for (var i = 0; i < latersConfiguration.NumberOfProcessingThreads; i++)
         {
             var worker = provider.GetRequiredService<WebWorker>();
@@ -33,6 +36,7 @@ public class WorkerEngine
     public async Task Initialize(CancellationToken cancellationToken)
     {
         var initialisedWorkers = _workers.Select(x => x.Initialize(cancellationToken)).ToArray();
+        _logger.LogInformation("Setting up workers ({NumberOfThreads})", initialisedWorkers.Length);
         await Task.WhenAll(initialisedWorkers);
     }
 }

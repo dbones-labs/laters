@@ -15,7 +15,7 @@ public class Window : INotifyPropertyChanged, IDisposable
 
     public void Initialize(CancellationToken cancellationToken)
     {
-        _cleanup = new ContinuousLambda(nameof(_cleanup), async ()=> await CleanUp(), new TimeTrigger(CleanUpInterval));
+        _cleanup = new ContinuousLambda(nameof(_cleanup), async () => await CleanUp(), new TimeTrigger(CleanUpInterval));
         _cleanup.Start(cancellationToken);
     }
 

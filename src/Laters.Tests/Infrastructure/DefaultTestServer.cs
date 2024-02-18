@@ -2,6 +2,7 @@
 
 using JasperFx.Core;
 using AspNet;
+using Infrastucture.Telemetry;
 using Laters.Configuration;
 using Laters.Data.Marten;
 using Marten;
@@ -108,13 +109,14 @@ public class DefaultTestServer : IDisposable
                                        IncludedData.TemplateBody;
                 })
                 .WriteTo.Console()
-                .MinimumLevel.Information();
+                .MinimumLevel.Debug();
         });
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(b => b.AddPrometheusExporter())
             .WithTracing(b =>
             {
+                b.AddSource(Telemetry.Name);
                 b.AddSource("Laters")
                     .ConfigureResource(r => r.AddService("Laters"))
                     .AddAspNetCoreInstrumentation()
