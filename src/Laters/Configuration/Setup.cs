@@ -84,11 +84,6 @@ public class Setup
             .Distinct()
             .ToList();
     }
-
-    /// <summary>
-    /// configure the rate limiting windows
-    /// </summary>
-    public Windows Windows { get; set; }
     
     /// <summary>
     /// this is the laters configuration, which you can configure directly or via this class

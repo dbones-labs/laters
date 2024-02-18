@@ -5,6 +5,13 @@
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Laters_002ETests_003B_002A_003B_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">C:\Users\geo45\AppData\Local\JetBrains\Rider2023.3\resharper-host\temp\Rider\vAny\CoverageData\_Laters.-1723468962\Snapshot\snapshot.utdcvr</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6918187f_002Dfa84_002D4ac7_002Da2b7_002De9651ce48c3a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="should remove obsolete entries" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.ServerSide.Windows.When_entries_are_outside_of_the_window&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.ServerSide.Windows.When_default_has_entries_are_outside_of_the_global_window.should_remove_obsolete_entries&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;Machine.Specifications::45F3C607-DE49-4FE9-A00D-C24536648DA6::net6.0::Laters.Tests.ServerSide.Windows.When_queueing_over_the_global_max.should_process_items_in_tumberling_windows&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=70a98f8b_002D4b5a_002D45e7_002Da5eb_002D8911d5c7d558/@EntryIndexedValue">&lt;SessionState ContinuousTestingIsOn="True" ContinuousTestingMode="3" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>

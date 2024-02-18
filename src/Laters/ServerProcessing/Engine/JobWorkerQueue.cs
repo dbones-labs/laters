@@ -48,7 +48,7 @@ public class JobWorkerQueue : IDisposable
         _logger = logger;
         _nextTrigger = new CandidateNextTrigger();
 
-        _populateTrigger = new CandidatePopulateTrigger(TimeSpan.FromSeconds(3));
+        _populateTrigger = new CandidatePopulateTrigger(TimeSpan.FromSeconds(3), logger);
 
         _populateLambda =
             new ContinuousLambda(nameof(PopulateCandidates), async () => await PopulateCandidates(), _populateTrigger);

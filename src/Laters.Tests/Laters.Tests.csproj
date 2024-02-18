@@ -39,11 +39,5 @@
 
 
 
-    <ItemGroup>
-      <Folder Include="ServerSide\Throttling\" />
-    </ItemGroup>
-
-
-
 
 </Project>
