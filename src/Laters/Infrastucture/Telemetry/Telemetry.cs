@@ -19,6 +19,11 @@ public class Telemetry : IDisposable
 
     public Activity? StartActivity<T>(ActivityKind kind, string? parentId = null)
     {
+        return StartActivity(typeof(T).FullName!, kind, parentId);
+    }
+    
+    public Activity? StartActivity(string name, ActivityKind kind, string? parentId = null)
+    {
         //try and find the parentId
         if (parentId is null)
         {
@@ -31,8 +36,8 @@ public class Telemetry : IDisposable
         }
         
         var activity = parentId != null
-            ? ActivitySource.StartActivity(typeof(T).FullName!, kind, parentId)
-            : ActivitySource.StartActivity(typeof(T).FullName!, kind);
+            ? ActivitySource.StartActivity(name, kind, parentId)
+            : ActivitySource.StartActivity(name, kind);
         
         activity?.AddTag("adapter", "laters");
         return activity;

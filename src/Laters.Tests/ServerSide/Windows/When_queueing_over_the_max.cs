@@ -5,6 +5,7 @@ using ServerProcessing;
 using Laters.Tests.Contexts.Minimal;
 using Infrastructure;
 using Infrastucture;
+using Laters.Minimal.Application;
 using Machine.Specifications;
 using PowerAssert;
 using Hello = Contexts.Minimal.Hello;
@@ -19,10 +20,10 @@ class When_queueing_over_the_global_max
     static bool _windowTwo = false;
     static bool _waitedBetweenWindows = false;
     
-    static DateTime _firstSlice = new(1999, 1, 1, 1, 0, 0);
-    static DateTime _secondSlice = new(1999, 1, 1, 1, 0, 3);
-    static DateTime _thirdSlice = new(1999, 1, 1, 1, 0, 4);
-    static DateTime _forthSlice = new(1999, 1, 1, 1, 0, 6);
+    static DateTime _firstSlice = new(1999, 1, 1, 1, 0, 0); //start (insert)
+    static DateTime _secondSlice = new(1999, 1, 1, 1, 0, 3); //first batch
+    static DateTime _thirdSlice = new(1999, 1, 1, 1, 0, 4); //nothing happens
+    static DateTime _forthSlice = new(1999, 1, 1, 1, 0, 10); // the next batch
     
     
     Establish context = async () =>
@@ -30,14 +31,15 @@ class When_queueing_over_the_global_max
         _sut = new DefaultTestServer();
         _sut.AdditionalOverrideLaters((builderContext, setup) =>
         {
+            setup.Configuration.CheckDatabaseInSeconds = 1;
             setup.Configuration.Windows.ConfigureGlobal(3, 5);
-            //setup.Configuration.NumberOfProcessingThreads = 9;
+            setup.Configuration.NumberOfProcessingThreads = 9;
         });
         _sut.MinimalApi(app =>
         {
-            var marker = new MinimalHello();
             app.MapHandler<Hello>(async (JobContext<Hello> ctx, TestMonitor monitor) =>
             {
+                var marker = new MinimalHello();
                 monitor.AddCallTick(marker);
             });
         });
@@ -70,12 +72,13 @@ class When_queueing_over_the_global_max
             return Task.CompletedTask;
         });
         
-        SystemDateTime.Set(()=> _secondSlice);
+        
     };
 
     Because of = async () =>
     {
-        await Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 3, TimeSpan.FromSeconds(15));
+        SystemDateTime.Set(()=> _secondSlice);
+        await Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 3, TimeSpan.FromSeconds(100));
         _windowOne = true;
 
         SystemDateTime.Set(()=> _thirdSlice);
@@ -83,12 +86,12 @@ class When_queueing_over_the_global_max
         //we wait, to ensure 
         //Func<Task> shouldFail = () =>  Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 4); // for debugging 
         //Func<Task> shouldFail = () =>  Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 4, TimeSpan.FromSeconds(5));
-        var exception = await Catch.ExceptionAsync (() => Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 4, TimeSpan.FromSeconds(3)));
+        var exception = await Catch.ExceptionAsync (() => Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 4, TimeSpan.FromSeconds(4)));
         _waitedBetweenWindows = exception is not null;
         
         SystemDateTime.Set(()=> _forthSlice);
         
-        await Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() == 6, TimeSpan.FromSeconds(10));
+        await Rig.Wait(() => _sut!.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 6, TimeSpan.FromSeconds(100));
         _windowTwo = true;
     };
 

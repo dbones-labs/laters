@@ -31,7 +31,7 @@ class When_scheduling_a_job_for_later_but_its_not_time_yet
         await Rig.Wait(() => _testServer.Monitor.NumberOfCallTicksFor<ByeJobHandler>() > 0);
     };
 
-    It should_stil_yet_to_process_hello_once = () =>
+    It should_still_yet_to_process_the_delayed_message = () =>
         PAssert.IsTrue(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() == 0);
     
     

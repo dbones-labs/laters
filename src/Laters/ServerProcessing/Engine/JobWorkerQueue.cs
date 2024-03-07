@@ -1,54 +1,46 @@
 ﻿namespace Laters.ServerProcessing.Engine;
 
-using System.Collections.Concurrent;
+using System.Diagnostics;
 using Windows;
 using Configuration;
 using Data;
-using Triggers;
+using Infrastucture;
+using Infrastucture.Telemetry;
 
-public class JobWorkerQueue : IDisposable
+public class JobWorkerQueue2 : IDisposable
 {
     //injected
+    readonly WebWorker2 _worker;
     readonly LeaderContext _leaderContext;
     readonly DefaultTumbler _tumbler;
     readonly IServiceProvider _serviceProvider;
     readonly LatersConfiguration _configuration;
-    readonly ILogger<JobWorkerQueue> _logger;
+    readonly Telemetry _telemetry;
+    readonly ILogger<JobWorkerQueue2> _logger;
 
     //local state
     ReaderWriterLockSlim _lock = new();
-    Queue<Candidate> _candidates = new();
-    HashSet<Candidate> _inProcess = new();
     CandidatePopulateTrigger _populateTrigger;
-    CandidateNextTrigger _nextTrigger;
     ContinuousLambda _populateLambda;
 
-    /// <summary>
-    /// the mechanism to inform web workers when there are items in the queue
-    /// to be processed
-    /// </summary>
-    public ITrigger NextTrigger => _nextTrigger;
-
-    /// <summary>
-    /// the number of item in the in memory queue
-    /// </summary>
-    public int Count => _candidates.Count;
-
-    public JobWorkerQueue(
+    public JobWorkerQueue2(
+        WebWorker2 worker,
         LeaderContext leaderContext,
         DefaultTumbler tumbler,
         IServiceProvider serviceProvider,
         LatersConfiguration configuration,
-        ILogger<JobWorkerQueue> logger)
+        Telemetry telemetry,
+        ILogger<JobWorkerQueue2> logger)
     {
+        _worker = worker;
         _leaderContext = leaderContext;
         _tumbler = tumbler;
         _serviceProvider = serviceProvider;
         _configuration = configuration;
+        _telemetry = telemetry;
         _logger = logger;
-        _nextTrigger = new CandidateNextTrigger();
 
-        _populateTrigger = new CandidatePopulateTrigger(TimeSpan.FromSeconds(3), logger);
+        _populateTrigger = new CandidatePopulateTrigger(TimeSpan.FromSeconds(_configuration.CheckDatabaseInSeconds), logger);
 
         _populateLambda =
             new ContinuousLambda(nameof(PopulateCandidates), async () => await PopulateCandidates(), _populateTrigger);
@@ -60,82 +52,60 @@ public class JobWorkerQueue : IDisposable
         _populateLambda.Start(cancellationToken);
     }
 
-    public virtual void MarkAsDone(Candidate? candidate)
-    {
-        if (candidate is null) return;
-        using var writeLock = _lock.CreateWriteLock();
-        _inProcess.Remove(candidate);
-    }
-
     /// <summary>
-    /// get the next candidate job to process, which has not been rate limited
+    /// LETS GOOO
     /// </summary>
-    /// <returns>candidate</returns>
-    public virtual Candidate? Next()
-    {
-        //need to ensure we are thread safe
-        using var locked = _lock.CreateWriteLock();
-        
-        //no longer leader.
-        if (!_leaderContext.IsLeader)
-        {
-            _candidates.Clear();
-            return null;
-        }
-
-        Candidate? candidate = null;
-        if (_candidates.TryDequeue(out candidate))
-        {
-            //confirm this window is still open
-            if (_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName))
-            {
-                //update the windows!
-                _tumbler.RecordJobQueue(candidate.WindowName);
-                //update the candidate as in progress
-                _inProcess.Add(candidate);
-            }
-            else
-            {
-                //ok lets set this to null, and we will pick this up in the next data read.
-                candidate = null;
-            }
-        }
-
-        _nextTrigger.UpdateFromQueue(Count);
-        _populateTrigger.UpdateFromQueue(Count);
-
-        return candidate;
-    }
-
-    /// <summary>
-    /// fill the in memory queue with candidates
-    /// </summary>
-    protected virtual async Task PopulateCandidates()
+    protected virtual async Task PopulateCandidates(CancellationToken cancellationToken = default)
     {
         //no longer leader
         if (!_leaderContext.IsLeader) return;
 
-        using var readLock = _lock.CreateUpgradeableReadLock();
+        using var activity = _telemetry.StartActivity(nameof(PopulateCandidates), ActivityKind.Internal);
         using var workingScope = _serviceProvider.CreateScope();
-        await using var querySession = workingScope.ServiceProvider.GetRequiredService<ISession>();
-        var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
 
-        var take = _configuration.InMemoryWorkerQueueMax; //for now we will populate the queue (fully)
-        var inProcessIds = _inProcess.Select(x => x.Id).ToList();
-        var candidates = await querySession.GetJobsToProcess(inProcessIds, windowNames, 0, take);
-
-        using (var writeLock = readLock.EnterWrite())
+        IList<Candidate> candidates;
+        await using (var querySession = workingScope.ServiceProvider.GetRequiredService<ISession>())
         {
-            foreach (var candidate in candidates)
-            {
-                _candidates.Enqueue(candidate);
-                _inProcess.Add(candidate);
-            }
+            var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
+
+            var take = _configuration.InMemoryWorkerQueueMax; //this is the in memory queue. (batch)
+            candidates = await querySession.GetJobsToProcess(windowNames, 0, take);
+            _logger.LogInformation("found {num} candiate jobs", candidates.Count);
+
+            var fetch = take > candidates.Count ? FetchStrategy.Wait : FetchStrategy.Continue;
+            _populateTrigger.SetWhenToFetch(fetch);
         }
 
-        _logger.LogInformation("found {num} candiate jobs", candidates.Count);
-        _nextTrigger.UpdateFromReader(candidates.Count, take);
-        _populateTrigger.RetrievedFromDatabase(candidates.Count, take);
+        activity?.AddTag("queued", candidates.Count);
+        
+        await candidates.ParallelForEachAsync(
+            candidate => SendJobToWorker(cancellationToken, candidate, activity),
+            _configuration.NumberOfProcessingThreads);
+    }
+
+    Task SendJobToWorker(CancellationToken cancellationToken, Candidate candidate, Activity? activity)
+    {
+        using (var read = _lock.CreateUpgradeableReadLock())
+        {
+            var noLongerLeader = !_leaderContext.IsLeader;
+            var windowMaxedOut = !_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName);
+
+            if (noLongerLeader || windowMaxedOut)
+            {
+                _logger.LogInformation(
+                    "candidate {num} will be processed later, as the window has reached its limit", candidate.Id);
+                return Task.CompletedTask;
+            }
+
+            using (var _ = read.EnterWrite())
+            {
+                //we cannot process this job at this time as we have hit the limit.
+                //update the windows!
+                _tumbler.RecordJobQueue(candidate.WindowName);
+            }
+            
+            return _worker.SendJobToWorker(candidate, activity.Id, cancellationToken);
+        }
     }
 
     public void Dispose()

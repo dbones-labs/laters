@@ -31,14 +31,14 @@ public class WorkerClient : IWorkerClient
         _httpClient.BaseAddress = new Uri(ep);
     }
 
-    public async Task DelegateJob(ProcessJob processJob)
+    public async Task DelegateJob(ProcessJob processJob, CancellationToken cancellationToken = default)
     {
         try
         {
             var jsonPayload = JsonSerializer.Serialize(processJob);
             var content = new JsonContent(jsonPayload);
 
-            var response = await _httpClient.PostAsync($"laters/process-job", content);
+            var response = await _httpClient.PostAsync($"laters/process-job", content, cancellationToken);
             response.EnsureSuccessStatusCode();
         }
         catch (Exception e)

@@ -44,7 +44,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
     public bool IsLeader { get; set; } = false;
 
 
-    public async Task Initialize(CancellationToken cancellationToken = default)
+    public void Initialize(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Initialize the Election component");
         _electServer.Start(cancellationToken);
