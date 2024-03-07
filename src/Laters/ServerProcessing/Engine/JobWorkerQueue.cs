@@ -2,41 +2,42 @@
 
 using System.Diagnostics;
 using Windows;
+using ClientProcessing;
 using Configuration;
 using Data;
 using Infrastucture;
 using Infrastucture.Telemetry;
 
-public class JobWorkerQueue2 : IDisposable
+public class JobWorkerQueue : IDisposable
 {
     //injected
-    readonly WebWorker2 _worker;
     readonly LeaderContext _leaderContext;
     readonly DefaultTumbler _tumbler;
     readonly IServiceProvider _serviceProvider;
     readonly LatersConfiguration _configuration;
+    readonly WorkerClient _workerClient;
     readonly Telemetry _telemetry;
-    readonly ILogger<JobWorkerQueue2> _logger;
+    readonly ILogger<JobWorkerQueue> _logger;
 
     //local state
     ReaderWriterLockSlim _lock = new();
     CandidatePopulateTrigger _populateTrigger;
     ContinuousLambda _populateLambda;
 
-    public JobWorkerQueue2(
-        WebWorker2 worker,
+    public JobWorkerQueue(
         LeaderContext leaderContext,
         DefaultTumbler tumbler,
         IServiceProvider serviceProvider,
         LatersConfiguration configuration,
+        WorkerClient workerClient,
         Telemetry telemetry,
-        ILogger<JobWorkerQueue2> logger)
+        ILogger<JobWorkerQueue> logger)
     {
-        _worker = worker;
         _leaderContext = leaderContext;
         _tumbler = tumbler;
         _serviceProvider = serviceProvider;
         _configuration = configuration;
+        _workerClient = workerClient;
         _telemetry = telemetry;
         _logger = logger;
 
@@ -79,33 +80,66 @@ public class JobWorkerQueue2 : IDisposable
         activity?.AddTag("queued", candidates.Count);
         
         await candidates.ParallelForEachAsync(
-            candidate => SendJobToWorker(cancellationToken, candidate, activity),
+            candidate => SendJobToWorker(cancellationToken, candidate, activity.Id),
             _configuration.NumberOfProcessingThreads);
     }
 
-    Task SendJobToWorker(CancellationToken cancellationToken, Candidate candidate, Activity? activity)
+    static object _lock2 = new object();
+    
+    async Task SendJobToWorker(CancellationToken cancellationToken, Candidate candidate, string? traceId)
     {
-        using (var read = _lock.CreateUpgradeableReadLock())
+        using var __ = _logger.BeginScope(new Dictionary<string, string>
         {
-            var noLongerLeader = !_leaderContext.IsLeader;
-            var windowMaxedOut = !_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName);
+            { "LeaderId", _leaderContext.ServerId },
+            { "Action", nameof(SendJobToWorker) }
+        });
+        
+        var noLongerLeader = !_leaderContext.IsLeader;
+        var windowMaxedOut = !_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName);
 
-            if (noLongerLeader || windowMaxedOut)
-            {
-                _logger.LogInformation(
-                    "candidate {num} will be processed later, as the window has reached its limit", candidate.Id);
-                return Task.CompletedTask;
-            }
+        if (noLongerLeader || windowMaxedOut)
+        {
+            //try and exit out asap. if we cannot process the item.
+            _logger.LogInformation(
+                "candidate {num} will be processed later, as the window has reached its limit", candidate.Id);
+            return;
+        }
 
-            using (var _ = read.EnterWrite())
+        lock (_lock2)
+        {
+            //confirm one more time (as we have a full lock)
+            windowMaxedOut = !_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName);
+            if (windowMaxedOut)
             {
-                //we cannot process this job at this time as we have hit the limit.
-                //update the windows!
-                _tumbler.RecordJobQueue(candidate.WindowName);
+                return;
             }
             
-            return _worker.SendJobToWorker(candidate, activity.Id, cancellationToken);
+            //we cannot process this job at this time as we have hit the limit.
+            //update the windows!
+            _tumbler.RecordJobQueue(candidate.WindowName);
         }
+        
+        using var activity = _telemetry.StartActivity(nameof(SendJobToWorker), ActivityKind.Internal, traceId);
+        if (activity != null)
+        {
+            Activity.Current = activity;
+        }
+        activity?.AddTag("leader.id", _leaderContext.ServerId);
+        activity?.AddTag("job.id", candidate.Id);
+        activity?.AddTag("job.type", candidate.JobType);
+        activity?.AddTag("job.windowName", candidate.WindowName);
+        
+        _logger.LogInformation("sending job {num} to be processed", candidate.Id);
+        
+        _logger.LogInformation("sending work jobId {JobId}", candidate.Id);
+        var jobToProcess = new ProcessJob(candidate.Id, candidate.JobType, _leaderContext.ServerId);
+        await _workerClient.DelegateJob(jobToProcess, cancellationToken);
+        
+        _logger.LogInformation("completed work");
+        
+        // await _worker.SendJobToWorker(candidate, activity.Id, cancellationToken);
+        
+        activity?.SetStatus(ActivityStatusCode.Ok);
     }
 
     public void Dispose()

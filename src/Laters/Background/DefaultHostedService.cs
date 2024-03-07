@@ -12,14 +12,14 @@ public class DefaultHostedService : IHostedService
 {
     readonly LeaderElectionService _leaderElectionService;
     readonly DefaultTumbler _defaultTumbler;
-    readonly JobWorkerQueue2 _jobWorkerQueue;
+    readonly JobWorkerQueue _jobWorkerQueue;
     readonly LatersConfiguration _latersConfiguration;
     readonly ILogger<DefaultHostedService> _logger;
 
     public DefaultHostedService(
         LeaderElectionService leaderElectionService,
         DefaultTumbler defaultTumbler,
-        JobWorkerQueue2 jobWorkerQueue, 
+        JobWorkerQueue jobWorkerQueue, 
         LatersConfiguration latersConfiguration,
         ILogger<DefaultHostedService> logger)
     {

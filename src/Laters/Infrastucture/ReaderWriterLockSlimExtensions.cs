@@ -29,7 +29,8 @@ public static class ReaderWriterLockSlimExtensions
         
         public void Dispose()
         {
-            _locker.ExitUpgradeableReadLock();
+            if(_locker.IsReadLockHeld)
+                _locker.ExitUpgradeableReadLock();
         }
     }
     
@@ -46,7 +47,8 @@ public static class ReaderWriterLockSlimExtensions
 
         public void Dispose()
         {
-            _locker.ExitWriteLock();
+            if(_locker.IsWriteLockHeld)
+                _locker.ExitWriteLock();
         }
     }
 }
