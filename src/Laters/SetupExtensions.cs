@@ -118,12 +118,10 @@ public static class SetupExtensions
 
         //server side
         collection.TryAddSingleton<DefaultTumbler>();
-        //collection.TryAddSingleton<WorkerEngine>();
-        collection.TryAddSingleton<JobWorkerQueue2>();
+        collection.TryAddSingleton<JobWorkerQueue>();
         collection.TryAddSingleton<LeaderContext>();
         collection.TryAddSingleton<LeaderElectionService>();
         collection.AddHostedService<DefaultHostedService>();
-        collection.TryAddTransient<WebWorker2>();
         
         collection.AddHttpClient<WorkerClient>().ConfigurePrimaryHttpMessageHandler(provider =>
         {
