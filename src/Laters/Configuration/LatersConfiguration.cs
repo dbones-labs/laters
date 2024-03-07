@@ -44,4 +44,6 @@ public class LatersConfiguration
     /// this is the role of this instance.
     /// </summary>
     public Roles Role { get; set; } = Roles.All;
+
+    public int CheckDatabaseInSeconds { get; set; } = 3;
 }

@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// Please consider adding support for UTC datetime 
 /// <code>AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);</code>
 /// </remarks>
-public class Marten : StorageSetup
+public class UseMarten : StorageSetup
 {
     protected override void Apply(IServiceCollection collection)
     {
