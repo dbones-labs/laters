@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations;
 /// </summary>
 public class LatersConfiguration
 { 
-    
     /// <summary>
     /// the length of time a leader has before it checks in
     /// letting all other potential leaders its still alive
@@ -45,5 +44,9 @@ public class LatersConfiguration
     /// </summary>
     public Roles Role { get; set; } = Roles.All;
 
+    
+    /// <summary>
+    /// how long to wait before checking the DB for jobs
+    /// </summary>
     public int CheckDatabaseInSeconds { get; set; } = 3;
 }

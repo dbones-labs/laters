@@ -23,6 +23,12 @@ public class DefaultSchedule : IAdvancedSchedule
     public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options = null)
     {
         options ??= new CronOptions();
+        ManyForLater(name, jobPayload, cron, options, false);
+    }
+    
+    public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options, bool isGlobal)
+    {
+        options ??= new CronOptions();
         var delivery = options.Delivery;
 
         var cronJob = new CronJob()
@@ -35,16 +41,17 @@ public class DefaultSchedule : IAdvancedSchedule
             MaxRetries = delivery.MaxRetries,
             TimeToLiveInSeconds = delivery.TimeToLiveInSeconds,
             WindowName = delivery.WindowName ?? LatersConstants.GlobalTumbler,
-            IsGlobal = false
+            IsGlobal = isGlobal
         };
         
         _session.Store(cronJob);
         ForLaterNext(cronJob);
     }
+    
 
     public virtual void ForgetAboutAllOfIt<T>(string name, bool removeOrphins = true)
     {
-        _session.Delete<Job>(name);
+        _session.Delete<CronJob>(name);
         if (removeOrphins)
         {
             _session.DeleteOrphin(name);

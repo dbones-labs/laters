@@ -49,27 +49,26 @@ class When_queueing_over_the_global_max
         
         await _sut.InScope(schedule =>
         {
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            schedule.ForLater(new Hello { Name = "dave" });
-            return Task.CompletedTask;
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
+            schedule.ForLater(new Hello { Name = "goku" });
         });
         
         

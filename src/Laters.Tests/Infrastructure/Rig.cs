@@ -22,6 +22,25 @@ public static class Rig
     
     public static async Task Wait(Expression<Func<bool>> predicate)
     {
-        await Wait(predicate, TimeSpan.FromSeconds(130));
+        await Wait(predicate, TimeSpan.FromSeconds(30));
+    }
+    
+    
+    public static async Task<Exception?> TryWait(Expression<Func<bool>> predicate, TimeSpan timeSpan)
+    {
+        try
+        {
+            await Wait(predicate, timeSpan);
+            return null;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+    
+    public static async Task<Exception?> TryWait(Expression<Func<bool>> predicate)
+    {
+        return await TryWait(predicate, TimeSpan.FromSeconds(30));
     }
 }

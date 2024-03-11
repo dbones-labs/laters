@@ -130,7 +130,7 @@ public class Window : INotifyPropertyChanged, IDisposable
     public void Dispose()
     {
         _lock.Dispose();
-        _cleanup.Dispose();
+        _cleanup?.Dispose();
     }
     
     

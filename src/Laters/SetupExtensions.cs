@@ -139,6 +139,9 @@ public static class SetupExtensions
         
         
         //client side
+        collection.AddHostedService<GlobalCronSetup>();
+        collection.AddTransient<GlobalScheduleCronProxy>();
+        
         collection.TryAddScoped<LeaderInformation>();
         
         collection.TryAddSingleton<MinimalLambdaHandlerRegistry>();
