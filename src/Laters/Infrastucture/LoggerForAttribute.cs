@@ -1,4 +1,4 @@
-namespace Laters.ClientProcessing.Middleware;
+namespace Laters.Infrastucture;
 
 /// <summary>
 /// if we are gonna do separate files, we will use this attribute to link the class which

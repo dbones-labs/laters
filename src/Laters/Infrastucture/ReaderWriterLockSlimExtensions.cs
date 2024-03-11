@@ -1,4 +1,4 @@
-namespace Laters.ServerProcessing.Engine;
+namespace Laters.Infrastucture;
 
 public static class ReaderWriterLockSlimExtensions
 {
