@@ -5,6 +5,7 @@ using ClientProcessing;
 using ClientProcessing.Middleware;
 using Configuration;
 using Default;
+using Infrastucture;
 using Infrastucture.Cron;
 using Infrastucture.Telemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;

@@ -1,4 +1,4 @@
-namespace Laters.ClientProcessing.Middleware;
+namespace Laters.Infrastucture;
 
 /// <summary>
 /// list of all the blocks (of 100), and where its assigned. 

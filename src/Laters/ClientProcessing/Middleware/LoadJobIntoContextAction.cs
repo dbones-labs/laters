@@ -4,6 +4,7 @@ using System.Text.Json;
 using Data;
 using Models;
 using Dbones.Pipes;
+using Infrastucture;
 
 /// <summary>
 /// as we only have the id of the job, this will handle the persistance (load and save) of the job processing

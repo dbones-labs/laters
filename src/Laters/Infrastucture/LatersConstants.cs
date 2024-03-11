@@ -1,4 +1,4 @@
-namespace Laters.ServerProcessing.Windows;
+namespace Laters.Infrastucture;
 
 public static class LatersConstants
 {
