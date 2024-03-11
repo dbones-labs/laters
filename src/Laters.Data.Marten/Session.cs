@@ -1,12 +1,11 @@
 ﻿namespace Laters.Data.Marten;
 
-using Exceptions;
 using global::Marten;
 using Infrastucture;
 using Models;
 using ServerProcessing;
 
-public class Session : ISession, IAsyncDisposable
+public class Session : ISession
 {
     readonly IDocumentSession _documentSession;
     readonly IQuerySession _querySession;
@@ -33,7 +32,7 @@ public class Session : ISession, IAsyncDisposable
     {
         var items = _querySession
             .Query<Job>()
-            .Where(x => x.ScheduledFor < SystemDateTime.UtcNow)
+            .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
             .Where(x => rateLimitNames.Contains(x.WindowName))
             .OrderByDescending(x => x.ScheduledFor)

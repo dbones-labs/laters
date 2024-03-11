@@ -5,7 +5,7 @@
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Laters_002ETests_003B_002A_003B_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">C:\Users\geo45\AppData\Local\JetBrains\Rider2023.3\resharper-host\temp\Rider\vAny\CoverageData\_Laters.-1723468962\Snapshot\snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ede0e7b8_002D6de8_002D4254_002Dba4c_002D8a8963d075f2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="should process items in tumberling windows" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ede0e7b8_002D6de8_002D4254_002Dba4c_002D8a8963d075f2/@EntryIndexedValue">&lt;SessionState ContinuousTestingIsOn="True" ContinuousTestingMode="1" IsActive="True" Name="should process items in tumberling windows" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	

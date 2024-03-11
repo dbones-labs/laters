@@ -52,19 +52,27 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
 
     public async Task CleanUp(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("CleanUp the Election component");
-        using var workingScope = _scope.CreateScope();
-        using var session = _scope.GetRequiredService<ISession>();
-        
-        //check leader
-        var leader = await session.GetById<Leader>(_electedLeaderName);
-        var isCurrentLeader = leader is not null && _leaderContext.IsThisServer(leader);
-        if (isCurrentLeader)
+        try
         {
-            session.Delete<Leader>(_electedLeaderName);   
+            _logger.LogInformation("CleanUp the Election component");
+            using var workingScope = _scope.CreateScope();
+            using var session = _scope.GetRequiredService<ISession>();
+
+            //check leader
+            var leader = await session.GetById<Leader>(_electedLeaderName);
+            var isCurrentLeader = leader is not null && _leaderContext.IsThisServer(leader);
+            if (isCurrentLeader)
+            {
+                session.Delete<Leader>(_electedLeaderName);
+            }
+
+            await session.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            //the ioc container may be disposed already.
         }
         
-        await session.SaveChanges();
     }
 
     /// <summary>
@@ -106,7 +114,12 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
             {
                 _logger.LogInformation("updating our leader registration");
                 //confirm the current leader
-                var timeout = leader.Updated.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
+                
+                var delay = _leaderContext.IsLeader 
+                    ? (2.0 * _configuration.LeaderTimeToLiveInSeconds) / 3.0
+                    : _configuration.LeaderTimeToLiveInSeconds;
+                
+                var timeout = leader.Updated.AddSeconds(delay);
                 if (timeout > SystemDateTime.UtcNow)
                 {
                     //all is good
