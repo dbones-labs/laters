@@ -162,8 +162,8 @@ public static class SetupExtensions
         
         //out of the box middleware
         collection.TryAddScoped(typeof(FailureAction<>));
-        collection.TryAddScoped(typeof(LoadJobIntoContextAction<>));
-        collection.TryAddScoped(typeof(QueueNextAction<>));
+        collection.TryAddScoped(typeof(PersistenceAction<>));
+        collection.TryAddScoped(typeof(CronAction<>));
         collection.TryAddScoped(typeof(HandlerAction<>));
         collection.TryAddScoped(typeof(MinimalAction<>));
     }

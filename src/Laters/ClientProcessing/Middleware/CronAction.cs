@@ -5,16 +5,16 @@ using Infrastucture.Cron;
 using Models;
 using Dbones.Pipes;
 
-public class QueueNextAction<T> : IProcessAction<T>
+public class CronAction<T> : IProcessAction<T>
 {
     readonly ISession _session;
     readonly ICrontab _crontab;
-    readonly ILogger<QueueNextAction<T>> _logger;
+    readonly ILogger<CronAction<T>> _logger;
 
-    public QueueNextAction(
+    public CronAction(
         ISession session, 
         ICrontab crontab,
-        ILogger<QueueNextAction<T>> logger)
+        ILogger<CronAction<T>> logger)
     {
         _session = session;
         _crontab = crontab;
