@@ -10,14 +10,14 @@ using Infrastucture;
 /// as we only have the id of the job, this will handle the persistance (load and save) of the job processing
 /// </summary>
 /// <typeparam name="T">the job type</typeparam>
-public class LoadJobIntoContextAction<T> : IProcessAction<T> 
+public class PersistenceAction<T> : IProcessAction<T> 
 {
     readonly ISession _session;
-    readonly ILogger<LoadJobIntoContextAction<T>> _logger;
+    readonly ILogger<PersistenceAction<T>> _logger;
 
-    public LoadJobIntoContextAction(
+    public PersistenceAction(
         ISession session, 
-        ILogger<LoadJobIntoContextAction<T>> logger)
+        ILogger<PersistenceAction<T>> logger)
     {
         _session = session;
         _logger = logger;
@@ -44,7 +44,7 @@ public class LoadJobIntoContextAction<T> : IProcessAction<T>
     }
 }
 
-[LoggerFor(Type = typeof(LoadJobIntoContextAction<>), Registry = EventId.LoadJobIntoContextActionLogging)]
+[LoggerFor(Type = typeof(PersistenceAction<>), Registry = EventId.LoadJobIntoContextActionLogging)]
 static partial class LoadJobIntoContextActionLogging
 {
     [LoggerMessage(101, LogLevel.Information, "loaded and about to process {jobId}")]
