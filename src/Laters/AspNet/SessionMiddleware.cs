@@ -8,19 +8,16 @@ using Data;
 public class SessionMiddleware
 {
     readonly RequestDelegate _next;
-    readonly ISession _session;
     
     public SessionMiddleware(
-        RequestDelegate next, 
-        ISession session)
+        RequestDelegate next)
     {
         _next = next;
-        _session = session;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, ISession session)
     {
         await _next(context);
-        await _session.SaveChanges();
+        await session.SaveChanges();
     }
 }

@@ -18,7 +18,7 @@ builder.WebHost.ConfigureServices((context, collection) =>
         var connectionString = "host=localhost;database=laters;password=ABC123!!;username=application";
         config.Connection(connectionString);
         config.AutoCreateSchemaObjects = AutoCreate.All;
-        config.DatabaseSchemaName = "todo.app";
+        config.DatabaseSchemaName = "todoapp";
 
         config.CreateDatabasesForTenants(tenant =>
         {
@@ -97,10 +97,11 @@ app.MapPut("/todoitems/{id}", async (
 });
 
 
-app.MapHandler<RemoveOldItem>((JobContext<RemoveOldItem> ctx, IDocumentSession session) =>
+app.MapHandler<RemoveOldItem>(async (JobContext<RemoveOldItem> ctx, IDocumentSession session) =>
 {
     var itemId = ctx.Payload!.Id;
     session.Delete<TodoItem>(itemId);
+    await Task.CompletedTask;
 });
 
 app.Run();
