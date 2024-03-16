@@ -4,6 +4,21 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+        <LangVersion>10</LangVersion>
+        <IsPackable>true</IsPackable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>1.0.0-preview2</Version>
+        <Authors>dbones labs</Authors>
+        <Description>schedule jobs to happen later!</Description>
+        <Copyright>dbones labs</Copyright>
+        <PackageProjectUrl>https://dbones-labs.github.io/laters</PackageProjectUrl>
+        <PackageIcon>logo.png</PackageIcon>
+        <RepositoryUrl>https://github.com/dbones-labs/laters</RepositoryUrl>
+        <RepositoryType>https://opensource.org/license/apache-2-0</RepositoryType>
+        <PackageTags>schedule</PackageTags>
+        <PackageReleaseNotes>PREVIEW</PackageReleaseNotes>
+        <Title>Laters.Data.EntityFramework</Title>
     </PropertyGroup>
 
     <ItemGroup>
