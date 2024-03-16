@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laters.Data.Marten", "Later
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EpicTodoList", "EpicTodoList\EpicTodoList.csproj", "{F356A418-D2D3-43CE-B2FC-103FE54A9CD8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laters.Data.EntityFrameworkCore", "Laters.Data.EntityFrameworkCore\Laters.Data.EntityFrameworkCore.csproj", "{42A314B6-2102-40BA-94B4-2B95BF8B6794}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{F356A418-D2D3-43CE-B2FC-103FE54A9CD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F356A418-D2D3-43CE-B2FC-103FE54A9CD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F356A418-D2D3-43CE-B2FC-103FE54A9CD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42A314B6-2102-40BA-94B4-2B95BF8B6794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42A314B6-2102-40BA-94B4-2B95BF8B6794}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42A314B6-2102-40BA-94B4-2B95BF8B6794}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42A314B6-2102-40BA-94B4-2B95BF8B6794}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

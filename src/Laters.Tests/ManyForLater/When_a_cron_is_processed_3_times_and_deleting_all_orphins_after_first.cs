@@ -8,7 +8,6 @@ using Infrastucture;
 using Laters.Minimal.Application;
 using Machine.Specifications;
 using PowerAssert;
-using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 [Subject("cron")]
 class When_a_cron_is_processed_3_times_and_deleting_all_orphins_after_first

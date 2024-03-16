@@ -6,7 +6,7 @@ using ServerProcessing;
 /// <summary>
 /// datastore interactions
 /// </summary>
-public interface ISession : IDisposable, IAsyncDisposable
+public interface ISession
 {
     /// <summary>
     /// the an entity by its ID
