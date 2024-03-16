@@ -62,11 +62,11 @@ public class JobWorkerQueue : IDisposable
         if (!_leaderContext.IsLeader) return;
 
         using var activity = _telemetry.StartActivity(nameof(PopulateCandidates), ActivityKind.Internal);
-        using var workingScope = _serviceProvider.CreateScope();
-
+        
         IList<Candidate> candidates;
-        await using (var querySession = workingScope.ServiceProvider.GetRequiredService<ISession>())
+        using (var workingScope = _serviceProvider.CreateScope())
         {
+            var querySession = workingScope.ServiceProvider.GetRequiredService<ISession>();
             var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
 
             var take = _configuration.InMemoryWorkerQueueMax; //this is the in memory queue. (batch)

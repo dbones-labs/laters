@@ -56,7 +56,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
         {
             _logger.LogInformation("CleanUp the Election component");
             using var workingScope = _scope.CreateScope();
-            using var session = _scope.GetRequiredService<ISession>();
+            var session = _scope.GetRequiredService<ISession>();
 
             //check leader
             var leader = await session.GetById<Leader>(_electedLeaderName);
@@ -93,7 +93,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
             
             bool isLeader = false;
             using var workingScope = _scope.CreateScope();
-            using var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
+            var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
 
             var leader = await session.GetById<Leader>(_electedLeaderName);
             _leaderContext.Leader = leader;

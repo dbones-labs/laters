@@ -1,7 +1,7 @@
-using Laters.Data.Marten;
 using Laters;
 using Laters.AspNet;
 using Laters.ClientProcessing;
+using Laters.Data.Marten;
 using Laters.Minimal.Application;
 using Marten;
 using Weasel.Core;
@@ -19,7 +19,7 @@ builder.WebHost.ConfigureServices((context, collection) =>
         config.Connection(connectionString);
         config.AutoCreateSchemaObjects = AutoCreate.All;
         config.DatabaseSchemaName = "todoapp";
-
+    
         config.CreateDatabasesForTenants(tenant =>
         {
             tenant.MaintenanceDatabase(connectionString);
@@ -30,18 +30,18 @@ builder.WebHost.ConfigureServices((context, collection) =>
                 .WithEncoding("UTF-8")
                 .ConnectionLimit(-1)
                 .OnDatabaseCreated(_ => { });
-            ;
         });
-
+    
         //Setup Laters State!  
         config.Schema.Include<LatersRegistry>();
-
+    
     });
     
     //quick workaround, you can also the SessionFactory
     collection.AddScoped<IDocumentSession>(services =>
         services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
 });
+
 
 builder.WebHost.ConfigureLaters((context, setup) =>
 {

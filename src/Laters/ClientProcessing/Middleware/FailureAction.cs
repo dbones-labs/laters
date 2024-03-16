@@ -41,7 +41,7 @@ public class FailureAction<T> : IProcessAction<T>
             _logger.LogInformation("marking job as failed");
             // we need a clean session
             using var failureScope =  _serviceProvider.CreateScope();
-            await using var session = failureScope.ServiceProvider.GetRequiredService<ISession>();
+            var session = failureScope.ServiceProvider.GetRequiredService<ISession>();
             var job = await session.GetById<Job>(context.JobId)
                       ?? throw new JobNotFoundException(context.JobId);
             

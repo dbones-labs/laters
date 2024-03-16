@@ -75,16 +75,5 @@ public class Session : ISession
             throw new ConcurrencyException(e);
         }
     }
-
-    public void Dispose()
-    {
-        _documentSession.Dispose();
-        _querySession.Dispose();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _documentSession.DisposeAsync();
-        await _querySession.DisposeAsync();
-    }
+    
 }
