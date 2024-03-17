@@ -4,7 +4,7 @@ outline: deep
 
 # Program.cs
 
-the main parts to make `Laters` works 
+the main parts to make `Laters` work 
 
 Against the `HostBuilder`
 
@@ -18,18 +18,18 @@ Against the `ApplicationBuilder`
 
 ## HostBuilder
 
-This is where you can setup some core fundimentals of how Laters will work.
+This is where you can set up some core fundamentals of how Laters will work.
 
 ```csharp
 builder.WebHost.ConfigureLaters((context, setup) =>
 {
-    //overide this endpoint to point at your loadbalancer in production/when-deployed.
+    //override this endpoint to point at your load balancer in production/when-deployed.
     setup.Configuration.WorkerEndpoint = "http://localhost:5000/"; 
     setup.UseStorage<UseMarten>();
 });
 ```
 
-against the `setup` object you can
+against the `setup` object, you can:
 
 - Register [Handlers](../processing/job-handler)
 - Register [Custom Client Actions](../processing/custom-actions)
@@ -39,9 +39,9 @@ against the `setup` object you can
 ### Configuration object
 
 > [!NOTE]
-> Each propery has .NET comments against then.
+> Each property has .NET comments against then.
 
-You can use either the .NET configurtion classes or code to override any default configuraion that Laters uses
+You can use either the .NET configuration classes or code to override any default configuration that Laters uses
 
 **Via code:**
 
@@ -71,20 +71,8 @@ builder.WebHost.ConfigureLaters("Laters", (context, setup) =>
 
 ## ApplicationBuilder
 
-This is where you setup the middleware for `Laters` to work with `Asp.NET`
+This is where you register the middleware for `Laters` to work with `Asp.NET`
 
 ```
 app.UseLaters();
 ```
-
-
-
-
-> [!NOTE]
-> `Laters` checks the datastore every 3 seconds, this can be overriden.
-
-This mechanism allows you to queue work (a single instance) to be processed now on another process/thread, or delay it to laters (to a datetime).
-
-there are a few commands we can do, here are some to give you a feel of the API.
-
-## ForLater - ASAP

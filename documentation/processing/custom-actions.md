@@ -2,18 +2,18 @@
 outline: deep
 ---
 
-# Custom Actions
+# Custom Actions.
 
-When you need to apply custom cross cutting code on processing jobs (i.e. `validation`, `caching` etc)
+When you need to apply custom cross-cutting code on processing jobs (i.e. `validation`, `caching` etc)
 
-## Implementing
+## Implementing.
 
-each action has a few things you need to todo in order to apply logic while processing jobs.
+each action has a few things you need to consider to apply logic while processing jobs.
 
 - 1️⃣ - implement the `IProcessAction<T>` interface, use the `<T>` to apply the action against any class.
 - 2️⃣ - dependency injection
-- 3️⃣ - implement `Execute`, which takes in 2 objects
-  - `context` - this is the job that is being processed any any addition context.
+- 3️⃣ - implement `Execute`, which takes 2 objects
+  - `context` - this is the job that is being processed and any additional context.
   - `next` - is the delegate to invoke the next Action in the pipeline.
 
 ```csharp
@@ -49,30 +49,30 @@ public class EpicAction<T> : IProcessAction<T> //1️⃣
 
 Step 3️⃣, allows you to implement logic before and after the execution of the other Actions (including Handler) in the pipeline chain.
 
-It also allows you to stop the execution the rest of the down stream pipeline items.
+It also allows you to stop the execution of the rest of the downstream pipeline items.
 
-## Configuring
+## Configuring.
 
-### IoC registration
+### IoC registration.
 
 > [!IMPORTANT]
-> you are required to register the type directly, not aginst an interface.
+> you are required to register the type directly, not against an interface.
 
 > [!NOTE]
 > The `Scope` is up to you, select the correct one.
 
-You require to tell the IoC container of the type, so it can apply dependency injection correctly.
+You are required to tell the IoC container of the type, so it can apply dependency injection correctly.
 
 ```csharp
 collection.TryAddScoped(typeof(EpicAction<>));
 ```
 
-### Inform the pipeline of this action
+### Inform the pipeline of this action.
 
 > [!WARNING]
 > This is under review, however the following will work, with minimal refactoring.
 
-We need to inform of `Laters` in which order to apply your Custom Actions, it only needs to happen at the application start, here is how you can apply this
+We need to inform `Laters` in which order to apply your Custom Actions, it only needs to happen at the application start, here is how you can apply this
 
 - 1️⃣ - Apply the `ConfigureLaters` located on the `HostBuilder`
 - 2️⃣ - Add to the CustomActions list (add your items in order)
