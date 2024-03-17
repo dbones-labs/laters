@@ -3,7 +3,7 @@
 layout: home
 sidebar: false
 
-title: laters
+title: Laters
 titleTemplate: .NET scheduler
 
 hero:
@@ -29,8 +29,8 @@ hero:
 
 features:
   - title: Fire-Forget
-    details: scehdule a task to be done in a seperate thread
-  - title: Recuring
+    details: schedule a task to be done in a separate thread
+  - title: Recurring
     details: support for CRON, to allow a job to be queued many times.
   - title: Minimal Api
     details: support for simple fast development.

@@ -2,28 +2,28 @@
 outline: deep
 ---
 
-# Quick Start
+# Quick Start.
 
 > [!IMPORTANT]
 > This is demo code, with the purpose to get you into using `Laters`
 
-`Laters` is designed to be fast to pick up, with its use of Minimal Api and its default use of `Marten`
+`Laters` is designed to be fast to pick up, with its use of Minimal Api and its default use of `Marten`.
 
-Lets build a simple todo application (just to get you started with the API)
+Let's build a simple Todo application (just to get you started with the API).
 
-we want to be able to
+we want to be able to:
 
-- create a new Todo Item
-- update the Todo Item as Completed
-- After 1 day of it being completed, remove it from the application (Laters will be used for this)
+- create a new Todo Item.
+- update the Todo Item as Completed.
+- After 1 day of it being completed, remove it from the application (Laters will be used for this).
 
-## Pre-requirement
+## Pre-requirement.
 
 - Postgres
 - .NET
 
 
-## Nuget Packages
+## Nuget Packages.
 
 The 2 default packages we need to install are
 
@@ -33,16 +33,16 @@ The 2 default packages we need to install are
 dotnet add package Laters
 ```
 
-- Laters.Marten <- the default persistence library, which proivdies a Unit Of Work (for full transiational support) 
+- Laters.Marten <- the default persistence library, which provides a Unit Of Work (for full transitional support) 
  
 ```sh
 dotnet add package Laters.Marten
 ```
-## Models
+## Models.
 
-### Simple Domain
+### Simple Domain.
 
-This is our simple todo class, the CompleteDate is indicate when the TodoItem is completed.
+This is our simple todo class, the CompleteDate is indicated when the TodoItem is completed.
 
 ```csharp
 public class TodoItem
@@ -53,9 +53,9 @@ public class TodoItem
 }
 ```
 
-### Job Model
+### Job Model.
 
-This class represent a work we want to queue and execute later, we only need the Id of the Todo Item.
+This class represents a work we want to queue and execute later, we only need the `Id` of the Todo Item.
 
 ```csharp
 public class RemoveOldItem
@@ -64,28 +64,28 @@ public class RemoveOldItem
 }
 ```
 
-## Minimal Api
+## Minimal Api.
 
-We have tried to compliment Asp.NET's Minimal Api, with a similar Api
+We have tried to complement Asp.NET's Minimal Api, with a similar Api.
 
-### Asp.NET
+### ASP.NET
 
-- 1️⃣ - In the `MapPut`, we queue up the todo item for deletion using `schedule.ForLater`
+- 1️⃣ - In `MapPut`, we queue up the `TodoItem` for deletion using the `schedule.ForLater`
 
 ```csharp
-app.MapGet("/todoitems/{id}", async (int id, IQuerySession session) =>
+app.MapGet("/todo-items/{id}", async (int id, IQuerySession session) =>
     await session.LoadAsync<TodoItem>(id)
         is { } todo
         ? Results.Ok(todo)
         : Results.NotFound());
 
-app.MapPost("/todoitms", (TodoItem item, IDocumentSession session) =>
+app.MapPost("/todo-items", (TodoItem item, IDocumentSession session) =>
 {
     session.Store(item);
     return Results.Created($"/todoitems/{item.Id}", item);
 });
 
-app.MapPut("/todoitems/{id}", async (
+app.MapPut("/todo-items/{id}", async (
     int id, 
     TodoItem updateItem, 
     IDocumentSession session,
@@ -115,12 +115,11 @@ app.MapPut("/todoitems/{id}", async (
 Here is the code we apply to delete the todo item, once the day has gone by.
 
 ```csharp
-app.MapHandler<RemoveOldItem>((
-    JobContext<RemoveOldItem> ctx,
-    IDocumentSession session) =>
+app.MapHandler<RemoveOldItem>(async (JobContext<RemoveOldItem> ctx, IDocumentSession session) =>
 {
     var itemId = ctx.Payload!.Id;
     session.Delete<TodoItem>(itemId);
+    await Task.CompletedTask;
 });
 ```
 
@@ -134,7 +133,7 @@ there are 3 things we need to do
 
 ### Database (Postgres)
 
-We have abbrivated the code here (full code), to the main lines we need to setup inorder to make `Laters` work with Marten
+We have abbreviated the code here (full code), to focus on what we need to setup for `Laters` to work with Marten
 
 ```csharp
 builder.WebHost.ConfigureServices((context, collection) =>
@@ -157,10 +156,10 @@ builder.WebHost.ConfigureServices((context, collection) =>
 
 ### Laters
 
-`Laters` has a number of things you can modify, however we will setup it with the minimum items
+`Laters` has a number of things you can modify, however, we will set up it with the minimum items
 
-- 1️⃣ - an endpoint which is localhost 5000 (the default for Asp.NET), this can be read from config
-- 2️⃣ - `UseMarten`, to make it make use of the Unit Of Work with all you Asp.NET requests.
+- 1️⃣ - an endpoint which is localhost 5000 (the default for ASP.NET), this can be read from config
+- 2️⃣ - `UseMarten`, to make it make use of the Unit Of Work with all your ASP.NET requests.
 
 ```csharp
 builder.WebHost.ConfigureLaters((context, setup) =>
@@ -170,14 +169,14 @@ builder.WebHost.ConfigureLaters((context, setup) =>
 });
 ```
 
-### Asp.NET
+### ASP.NET.
 
 > [!NOTE]
 > we setup `commit` to apply `commit` on the datastore for us, in Asp.NET. This is for quickness of the demo, and should be your own middleware.
 
 once we have built the host, we need to register `Laters` with Asp.NET
 
-- 1️⃣ - setup laters with aspnet (quick setup for demo)
+- 1️⃣ - setup laters with ASP.NET (quick setup for demo)
 
 ```csharp
 var app = builder.Build();
@@ -187,9 +186,9 @@ app.UseLaters(commit: CommitStrategy.SupplyMiddleware); // 1️⃣
 //...
 ```
 
-## Run
+## Run.
 
-Ok we should be ok to run!
+Okay, we should be ok to run!
 
 ```sh
 dotnet run

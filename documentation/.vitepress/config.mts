@@ -24,7 +24,7 @@ export default defineConfig({
     
     
     editLink: {
-      pattern: 'https://github.com/dbones-labs/laters/edit/main/docs/:path',
+      pattern: 'https://github.com/dbones-labs/laters/edit/main/documentation/:path',
       text: 'Suggest changes to this page'
     },
     
