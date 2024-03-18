@@ -1,7 +1,7 @@
 namespace Laters.ClientProcessing.Middleware;
 
 using Data;
-using Infrastucture.Cron;
+using Infrastructure.Cron;
 using Models;
 using Dbones.Pipes;
 

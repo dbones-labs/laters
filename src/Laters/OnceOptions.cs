@@ -1,6 +1,6 @@
 ﻿namespace Laters;
 
-using Infrastucture;
+using Infrastructure;
 
 public class OnceOptions
 {

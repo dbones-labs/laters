@@ -1,4 +1,4 @@
-﻿namespace Laters.Infrastucture;
+﻿namespace Laters.Infrastructure;
 
 public static class DateTimeExtensions 
 {

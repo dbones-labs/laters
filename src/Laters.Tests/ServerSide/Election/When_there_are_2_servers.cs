@@ -3,7 +3,7 @@
 using ClientProcessing;
 using Contexts.Minimal;
 using Infrastructure;
-using Infrastucture;
+using Laters.Infrastructure;
 using Laters.Configuration;
 using Laters.Minimal.Application;
 using Machine.Specifications;

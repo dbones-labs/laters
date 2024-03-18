@@ -2,7 +2,7 @@ namespace Laters.Data.InMemory;
 
 using System.Text.Json;
 using Data;
-using Infrastucture;
+using Infrastructure;
 using Models;
 using ServerProcessing;
 using ISession = ISession;

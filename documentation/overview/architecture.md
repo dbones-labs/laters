@@ -2,13 +2,13 @@
 outline: deep
 ---
 
-# Archiecture Overview
+# Archiecture Overview.
 
-## Concepts
+## Concepts.
 
 `Laters` is split into 2 main flows (+ a couple of others, which we will cover)
 
-### Schedule
+### Schedule.
 
 While your application processes logic it will queue Jobs to be processed for later. this can be in the form of a fire-and-forget or a CRON, these are ways to queue work to be processed.
 
@@ -16,13 +16,13 @@ While your application processes logic it will queue Jobs to be processed for la
 
 All scheduled work is stored in a data store, to allow it to be processed by different instances of the same application.
 
-### Process
+### Process.
 
 Processes in which a Leader will scan the Datastore to jobs to be processed, and send them to the workers to process, the workers update the job accordingly.
 
 ![An image](./overview-process.png)
 
-## Target Architectures
+## Target Architectures.
 
 > [!NOTE]
 > you can run this with a `single instance` and no load balancer (by targeting localhost)
@@ -36,7 +36,7 @@ so we can apply `Laters` in a few different ways
 - all services can be all roles
 - dedicated leaders and workers
 
-### All Roles
+### All Roles.
 
 > [!NOTE]
 > Any node can be elected leader
@@ -48,7 +48,7 @@ This solution is designed to be simpler, where one instance will be elected lead
 - blue - Leader
 - green - Worker
 
-### Dedicated Roles
+### Dedicated Roles.
 
 > [!NOTE]
 > The leader does not process jobs (at all)

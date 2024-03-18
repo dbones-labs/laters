@@ -2,7 +2,7 @@
 
 using JasperFx.Core;
 using AspNet;
-using Infrastucture.Telemetry;
+using Laters.Infrastructure.Telemetry;
 using Laters.Configuration;
 using Laters.Data.Marten;
 using Marten;

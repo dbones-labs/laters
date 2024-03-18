@@ -1,8 +1,7 @@
 namespace Laters.Data.EntityFrameworkCore;
 
 using System.Data;
-using System.Data.Common;
-using Infrastucture;
+using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using ServerProcessing;
@@ -97,6 +96,9 @@ public class Session : ISession
     {
         try
         {
+            if(_conn.Connection.State != ConnectionState.Open)
+                await _conn.Connection.OpenAsync();
+
             using var tx = _conn.Connection.BeginTransaction(IsolationLevel.Serializable);
             _dbContext.Database.UseTransaction(tx);
             

@@ -5,8 +5,8 @@ using Windows;
 using ClientProcessing;
 using Configuration;
 using Data;
-using Infrastucture;
-using Infrastucture.Telemetry;
+using Infrastructure;
+using Infrastructure.Telemetry;
 
 public class JobWorkerQueue : IDisposable
 {
@@ -71,7 +71,7 @@ public class JobWorkerQueue : IDisposable
 
             var take = _configuration.InMemoryWorkerQueueMax; //this is the in memory queue. (batch)
             candidates = await querySession.GetJobsToProcess(windowNames, 0, take);
-            _logger.LogInformation("found {num} candiate jobs", candidates.Count);
+            _logger.LogInformation("found {num} candidate jobs", candidates.Count);
 
             var fetch = take > candidates.Count ? FetchStrategy.Wait : FetchStrategy.Continue;
             _populateTrigger.SetWhenToFetch(fetch);
@@ -80,7 +80,7 @@ public class JobWorkerQueue : IDisposable
         activity?.AddTag("queued", candidates.Count);
         
         await candidates.ParallelForEachAsync(
-            candidate => SendJobToWorker(cancellationToken, candidate, activity.Id),
+            candidate => SendJobToWorker(cancellationToken, candidate, activity?.Id),
             _configuration.NumberOfProcessingThreads);
     }
 
