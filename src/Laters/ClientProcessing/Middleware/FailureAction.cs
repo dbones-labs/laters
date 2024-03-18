@@ -2,7 +2,7 @@ namespace Laters.ClientProcessing.Middleware;
 
 using Data;
 using Dbones.Pipes;
-using Infrastucture;
+using Infrastructure;
 using Models;
 
 /// <summary>

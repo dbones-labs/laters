@@ -1,7 +1,7 @@
 namespace Laters;
 
 using Configuration;
-using Infrastucture;
+using Infrastructure;
 using ServerProcessing.Windows;
 
 public static class WindowsExtensions

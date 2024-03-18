@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using ClientProcessing;
 using Configuration;
-using Infrastucture.Telemetry;
+using Infrastructure.Telemetry;
 
 /// <summary>
 /// used to call the workers with a job to process

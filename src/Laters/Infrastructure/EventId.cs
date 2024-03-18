@@ -1,4 +1,4 @@
-namespace Laters.Infrastucture;
+namespace Laters.Infrastructure;
 
 /// <summary>
 /// list of all the blocks (of 100), and where its assigned. 

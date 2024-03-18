@@ -1,6 +1,6 @@
 ﻿namespace Laters.Tests.ServerSide.Delayed;
 
-using Infrastucture;
+using Laters.Infrastructure;
 using Contexts.Simple;
 using Infrastructure;
 using Machine.Specifications;

@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Infrastucture;
+using Infrastructure;
 using Triggers;
 
 public class Window : INotifyPropertyChanged, IDisposable

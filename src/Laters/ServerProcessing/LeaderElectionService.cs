@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using Configuration;
 using Data;
 using Exceptions;
-using Infrastucture;
+using Infrastructure;
 using Models;
 using Triggers;
 

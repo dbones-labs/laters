@@ -1,4 +1,4 @@
-﻿namespace Laters.Infrastucture.Telemetry;
+﻿namespace Laters.Infrastructure.Telemetry;
 
 public class TelemetryContext
 {

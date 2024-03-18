@@ -1,4 +1,4 @@
-namespace Laters.Infrastucture.Cron;
+namespace Laters.Infrastructure.Cron;
 
 using NCrontab;
 

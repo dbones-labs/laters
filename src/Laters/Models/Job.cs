@@ -1,6 +1,6 @@
 ﻿namespace Laters.Models;
 
-using Infrastucture;
+using Infrastructure;
 
 /// <summary>
 /// a queued job, to be processed

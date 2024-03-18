@@ -4,7 +4,7 @@ using ClientProcessing;
 using ServerProcessing;
 using Laters.Tests.Contexts.Minimal;
 using Infrastructure;
-using Infrastucture;
+using Laters.Infrastructure;
 using Laters.Minimal.Application;
 using Machine.Specifications;
 using PowerAssert;

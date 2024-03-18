@@ -1,15 +1,17 @@
 namespace Laters.Data.EntityFrameworkCore;
 
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Models;
 
 public abstract class LatersDbContextBase : DbContext
 { 
-    public DbSet<Job> Jobs { get; set; }
-    public DbSet<CronJob> CronJobs { get; set; }
-    public DbSet<Leader> Leaders { get; set; }
+    public LatersDbContextBase(DbContextOptions options) : base(options)
+    {
+    }
+
+    public DbSet<Job> Jobs { get; set; } = null!;
+    public DbSet<CronJob> CronJobs { get; set; } = null!;
+    public DbSet<Leader> Leaders { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

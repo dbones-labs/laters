@@ -1,4 +1,4 @@
-namespace Laters.Infrastucture;
+namespace Laters.Infrastructure;
 
 using System.Collections.Concurrent;
 

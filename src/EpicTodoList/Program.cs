@@ -60,7 +60,7 @@ app.MapGet("/todo-items", (IQuerySession session) =>
     return Task.FromResult(items);
 });
 
-app.MapGet("/todo-items/{id}", async (int id, IQuerySession session) =>
+app.MapGet("/todo-items/{id}", async (string id, IQuerySession session) =>
     await session.LoadAsync<TodoItem>(id)
         is { } todo
         ? Results.Ok(todo)
@@ -73,7 +73,7 @@ app.MapPost("/todo-items", (TodoItem item, IDocumentSession session) =>
 });
 
 app.MapPut("/todo-items/{id}", async (
-    int id,
+    string id,
     TodoItem updateItem,
     IDocumentSession session,
     ISchedule schedule) =>

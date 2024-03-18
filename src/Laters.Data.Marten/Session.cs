@@ -1,7 +1,7 @@
 ﻿namespace Laters.Data.Marten;
 
 using global::Marten;
-using Infrastucture;
+using Infrastructure;
 using Models;
 using ServerProcessing;
 

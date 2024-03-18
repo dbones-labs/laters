@@ -1,4 +1,4 @@
-namespace Laters.Infrastucture;
+namespace Laters.Infrastructure;
 
 /// <summary>
 /// if we are gonna do separate files, we will use this attribute to link the class which

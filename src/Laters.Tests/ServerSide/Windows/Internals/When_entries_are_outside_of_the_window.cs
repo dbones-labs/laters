@@ -1,7 +1,7 @@
 namespace Laters.Tests.ServerSide.Windows;
 
 using Infrastructure;
-using Infrastucture;
+using Laters.Infrastructure;
 using Machine.Specifications;
 using PowerAssert;
 using ServerProcessing.Windows;

@@ -1,6 +1,6 @@
 ﻿namespace Laters.Tests;
 
-using Infrastucture;
+using Laters.Infrastructure;
 using Machine.Specifications;
 
 public class ResetTheClock : ICleanupAfterEveryContextInAssembly
