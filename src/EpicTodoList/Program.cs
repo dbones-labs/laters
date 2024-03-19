@@ -5,7 +5,6 @@ using Laters.ClientProcessing;
 using Laters.Data.Marten;
 using Laters.Minimal.Application;
 using Marten;
-using Microsoft.EntityFrameworkCore;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
