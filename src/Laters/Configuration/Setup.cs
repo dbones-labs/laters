@@ -7,6 +7,7 @@ using Laters.ClientProcessing.Middleware;
 public class Setup
 {
     List<Type> _jobHandlerTypes = new();
+    List<Type> _setupScheduleTypes = new();
     StorageSetup _storageSetup;
 
     /// <summary>
@@ -26,6 +27,11 @@ public class Setup
         {
             var handlerInterfaceType = jobHandlerType.MakeGenericType(GetImplementedType(type, jobHandlerType));
             serviceCollection.AddScoped(handlerInterfaceType,type);
+        }
+
+        foreach (var setupScheduleType in _setupScheduleTypes)
+        {
+            serviceCollection.AddTransient(typeof(ISetupSchedule), setupScheduleType);
         }
     }
 
@@ -70,7 +76,7 @@ public class Setup
         
         var types = fromHere.GetTypes()
             .Where(x => x.IsClass && !x.IsAbstract)
-            .Where(ShouldIncludeJobHandler)
+            .Where(ShouldIncludeType)
             .Select(x => new
             {
                 JobType = GetImplementedType(x, jobHandlerType),
@@ -84,11 +90,43 @@ public class Setup
             .Distinct()
             .ToList();
     }
+    
+    
+    public void AddSetupSchedule<T>() where T: ISetupSchedule
+    {
+        AddSetupSchedule(typeof(T));
+    }
+    
+    public void AddSetupSchedule(Type setupScheduleType)
+    {
+        var isSetupScheduleType = setupScheduleType.IsAssignableTo(typeof(ISetupSchedule));
 
+        if (!isSetupScheduleType)
+        {
+            throw new NotSupportedException($"{setupScheduleType} does not implement {typeof(ISetupSchedule).Name}");
+        }
+        
+        _setupScheduleTypes.Add(setupScheduleType);
+    }
+    
     /// <summary>
-    /// configure the rate limiting windows
+    /// scan an assembly for <see cref="ISetupSchedule"/>
     /// </summary>
-    public Windows Windows { get; set; }
+    /// <param name="fromHere">the target assembly</param>
+    public void ScanForCronSetups(Assembly? fromHere = null)
+    {
+        var setupScheduleType = typeof(ISetupSchedule);
+
+        //default to the running project
+        fromHere ??= Assembly.GetCallingAssembly();
+
+        _setupScheduleTypes = fromHere.GetTypes()
+                .Where(x => x.IsClass && !x.IsAbstract)
+                .Where(x => x.IsAssignableTo(setupScheduleType))
+                .Where(ShouldIncludeType)
+                .Distinct()
+                .ToList();
+    }
     
     /// <summary>
     /// this is the laters configuration, which you can configure directly or via this class
@@ -124,7 +162,7 @@ public class Setup
             .FirstOrDefault(x => x != null);
     }
 
-    private bool ShouldIncludeJobHandler(Type type)
+    private bool ShouldIncludeType(Type type)
     {
         return !type.GetCustomAttributes(typeof(IgnoreAttribute), false).Any();
     }

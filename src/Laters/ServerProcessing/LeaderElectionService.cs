@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using Configuration;
 using Data;
 using Exceptions;
-using Infrastucture;
+using Infrastructure;
 using Models;
 using Triggers;
 
@@ -44,7 +44,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
     public bool IsLeader { get; set; } = false;
 
 
-    public async Task Initialize(CancellationToken cancellationToken = default)
+    public void Initialize(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Initialize the Election component");
         _electServer.Start(cancellationToken);
@@ -52,19 +52,27 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
 
     public async Task CleanUp(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("CleanUp the Election component");
-        using var workingScope = _scope.CreateScope();
-        using var session = _scope.GetRequiredService<ISession>();
-        
-        //check leader
-        var leader = await session.GetById<Leader>(_electedLeaderName);
-        var isCurrentLeader = leader is not null && _leaderContext.IsThisServer(leader);
-        if (isCurrentLeader)
+        try
         {
-            session.Delete<Leader>(_electedLeaderName);   
+            _logger.LogInformation("CleanUp the Election component");
+            using var workingScope = _scope.CreateScope();
+            var session = _scope.GetRequiredService<ISession>();
+
+            //check leader
+            var leader = await session.GetById<Leader>(_electedLeaderName);
+            var isCurrentLeader = leader is not null && _leaderContext.IsThisServer(leader);
+            if (isCurrentLeader)
+            {
+                session.Delete<Leader>(_electedLeaderName);
+            }
+
+            await session.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            //the ioc container may be disposed already.
         }
         
-        await session.SaveChanges();
     }
 
     /// <summary>
@@ -85,7 +93,7 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
             
             bool isLeader = false;
             using var workingScope = _scope.CreateScope();
-            using var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
+            var session = workingScope.ServiceProvider.GetRequiredService<ISession>();
 
             var leader = await session.GetById<Leader>(_electedLeaderName);
             _leaderContext.Leader = leader;
@@ -106,7 +114,12 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
             {
                 _logger.LogInformation("updating our leader registration");
                 //confirm the current leader
-                var timeout = leader.Updated.AddSeconds(_configuration.LeaderTimeToLiveInSeconds);
+                
+                var delay = _leaderContext.IsLeader 
+                    ? (2.0 * _configuration.LeaderTimeToLiveInSeconds) / 3.0
+                    : _configuration.LeaderTimeToLiveInSeconds;
+                
+                var timeout = leader.Updated.AddSeconds(delay);
                 if (timeout > SystemDateTime.UtcNow)
                 {
                     //all is good

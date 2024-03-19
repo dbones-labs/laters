@@ -77,9 +77,5 @@ public class ClientMiddleware
             context.Response.StatusCode = 404;
             await context.Response.WriteAsync("Job does not exist");
         }
-        catch (Exception ex)
-        {
-            throw;
-        }
     }
 }

@@ -6,7 +6,7 @@ using ServerProcessing;
 /// <summary>
 /// datastore interactions
 /// </summary>
-public interface ISession : IDisposable, IAsyncDisposable
+public interface ISession
 {
     /// <summary>
     /// the an entity by its ID
@@ -30,7 +30,7 @@ public interface ISession : IDisposable, IAsyncDisposable
     /// <param name="skip">the number rows to skip</param>
     /// <param name="take">the number of jobs to load in</param>
     /// <returns>all the jobs which meet our criteria, and which have not been dead lettered</returns>
-    public Task<List<Candidate>> GetJobsToProcess(List<string> ids, List<string> rateLimitNames, int skip = 0, int take = 50);
+    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50);
     
 
     /// <summary>

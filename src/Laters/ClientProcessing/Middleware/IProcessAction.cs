@@ -1,6 +1,6 @@
 namespace Laters.ClientProcessing.Middleware;
 
-using Pipes;
+using Dbones.Pipes;
 
 
 /// <summary>

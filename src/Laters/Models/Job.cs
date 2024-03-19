@@ -1,5 +1,6 @@
 ﻿namespace Laters.Models;
 
+using Infrastructure;
 
 /// <summary>
 /// a queued job, to be processed
@@ -20,7 +21,7 @@ public class Job : JobBase
     /// <summary>
     /// when the job will be processed
     /// </summary>
-    public virtual DateTime ScheduledFor { get; set; } = DateTime.UtcNow;
+    public virtual DateTime ScheduledFor { get; set; } = SystemDateTime.UtcNow;
     
     /// <summary>
     /// the parent cron, if this was created via a cron.
