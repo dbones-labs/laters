@@ -7,6 +7,9 @@ outline: deep
 > [!IMPORTANT]
 > This is demo code, with the purpose to get you into using `Laters`
 
+> [!NOTE]
+> [full code over here](https://gist.github.com/dbones/70eaa428e8c2748959a78c2f8f4b3481)
+
 `Laters` is designed to be fast to pick up, with its use of Minimal Api and its default use of `Marten`.
 
 Let's build a simple Todo application (just to get you started with the API).
@@ -73,7 +76,7 @@ We have tried to complement Asp.NET's Minimal Api, with a similar Api.
 - 1️⃣ - In `MapPut`, we queue up the `TodoItem` for deletion using the `schedule.ForLater`
 
 ```csharp
-app.MapGet("/todo-items/{id}", async (int id, IQuerySession session) =>
+app.MapGet("/todo-items/{id}", async (string id, IQuerySession session) =>
     await session.LoadAsync<TodoItem>(id)
         is { } todo
         ? Results.Ok(todo)
@@ -86,7 +89,7 @@ app.MapPost("/todo-items", (TodoItem item, IDocumentSession session) =>
 });
 
 app.MapPut("/todo-items/{id}", async (
-    int id, 
+    string id, 
     TodoItem updateItem, 
     IDocumentSession session,
     ISchedule schedule) =>
@@ -133,25 +136,22 @@ there are 3 things we need to do
 
 ### Database (Postgres)
 
-We have abbreviated the code here (full code), to focus on what we need to setup for `Laters` to work with Marten
+We have abbreviated the code here (full code), to focus on what we need to set up for `Laters` to work with Marten
 
 ```csharp
-builder.WebHost.ConfigureServices((context, collection) =>
+//lets setup the database
+builder.Services.AddMarten(config =>
 {
-    //lets setup the database
-    collection.AddMarten(config =>
-    {
-        //setup Marten code....
-        //....
+    //setup Marten code....
+    //....
 
-        //Setup Laters schema
-        config.Schema.Include<LatersRegistry>();
-    });
-
-    //Laters requires dirty tracking.
-    collection.AddScoped<IDocumentSession>(services =>
-        services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
+    //Setup Laters schema
+    config.Schema.Include<LatersRegistry>();
 });
+
+//Laters requires dirty tracking.
+builder.Services.AddScoped<IDocumentSession>(services =>
+    services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
 ```
 
 ### Laters

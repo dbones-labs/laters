@@ -75,7 +75,8 @@ export default defineConfig({
       {
         text: 'Storage',
         items: [
-          { text: 'Postgres w/Marten', link: '/storage/postgres' },
+          { text: 'Marten', link: '/storage/marten' },
+          { text: 'EntityFramework', link: '/storage/entity-framework' },
           { text: 'custom', link: '/storage/custom' }
         ]
       }
