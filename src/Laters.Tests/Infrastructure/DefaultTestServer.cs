@@ -2,6 +2,7 @@
 
 using JasperFx.Core;
 using AspNet;
+using Laters.Infrastructure.Telemetry;
 using Laters.Configuration;
 using Laters.Data.Marten;
 using Marten;
@@ -45,7 +46,7 @@ public class DefaultTestServer : IDisposable
             setup.ScanForJobHandlers();
             setup.Configuration.Role = _role;
             setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}/";
-            setup.UseStorage<Marten>();
+            setup.UseStorage<UseMarten>();
         };
         
         _configureLaters = _defaultConfigureLaters;
@@ -68,7 +69,7 @@ public class DefaultTestServer : IDisposable
     public LeaderContext Leader { get; private set; }
     
     
-    public async Task InScope<T>(Func<IAdvancedSchedule, T> action)
+    public async Task InScope(Action<IAdvancedSchedule> action)
     {
         using var scope = _server.Services.CreateScope();
         using var documentSession = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
@@ -90,7 +91,7 @@ public class DefaultTestServer : IDisposable
     /// <summary>
     /// call this to build the app and run it.
     /// </summary>
-    public void Setup()
+    public async Task Setup()
     {
         var builder = WebApplication.CreateBuilder();
         
@@ -108,13 +109,14 @@ public class DefaultTestServer : IDisposable
                                        IncludedData.TemplateBody;
                 })
                 .WriteTo.Console()
-                .MinimumLevel.Information();
+                .MinimumLevel.Debug();
         });
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(b => b.AddPrometheusExporter())
             .WithTracing(b =>
             {
+                b.AddSource(Telemetry.Name);
                 b.AddSource("Laters")
                     .ConfigureResource(r => r.AddService("Laters"))
                     .AddAspNetCoreInstrumentation()
@@ -122,12 +124,6 @@ public class DefaultTestServer : IDisposable
                     .AddHttpClientInstrumentation()
                     .AddOtlpExporter();
             });
-        
-        builder.WebHost.ConfigureLaters((context, setup) =>
-        {
-            setup.Configuration.NumberOfProcessingThreads = 1;
-            _configureLaters?.Invoke(context, setup);
-        });
 
         builder.WebHost.ConfigureServices((context, collection) =>
         {
@@ -164,11 +160,17 @@ public class DefaultTestServer : IDisposable
                 });
             });
 
+            //we need to clear the data before we setup laters
             if (_data == TestData.Clear)
             {
                 collection.AddHostedService<ResetDataService>();
             }
             
+            builder.WebHost.ConfigureLaters((context, setup) =>
+            {
+                setup.Configuration.NumberOfProcessingThreads = 1;
+                _configureLaters?.Invoke(context, setup);
+            });
             
             //quick workaround, you can also the SessionFactory
             collection.AddScoped<IDocumentSession>(services =>
@@ -202,7 +204,9 @@ public class DefaultTestServer : IDisposable
         _configure?.Invoke(_server);
         _minimalApiConfigure?.Invoke(_server);
         
-        _server.RunAsync();
+        _server.RunAsync(); //we do not want to be blocking
+        await Task.Delay(100); //but we will allow a tiny bit of time to setup
+        
         
         //_testServer = new TestServer(builder);
 

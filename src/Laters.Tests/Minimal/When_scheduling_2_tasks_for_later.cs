@@ -4,6 +4,7 @@ using AspNet;
 using ClientProcessing;
 using Contexts.Minimal;
 using Infrastructure;
+using Laters.Minimal.Application;
 using Machine.Specifications;
 using PowerAssert;
 

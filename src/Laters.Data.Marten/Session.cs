@@ -1,12 +1,11 @@
 ﻿namespace Laters.Data.Marten;
 
-using Exceptions;
 using global::Marten;
-using Infrastucture;
+using Infrastructure;
 using Models;
 using ServerProcessing;
 
-public class Session : ISession, IAsyncDisposable
+public class Session : ISession
 {
     readonly IDocumentSession _documentSession;
     readonly IQuerySession _querySession;
@@ -29,13 +28,12 @@ public class Session : ISession, IAsyncDisposable
         return Task.FromResult<IEnumerable<CronJob>>(items);
     }
 
-    public Task<List<Candidate>> GetJobsToProcess(List<string> ids, List<string> rateLimitNames, int skip = 0, int take = 50)
+    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50)
     {
         var items = _querySession
             .Query<Job>()
-            .Where(x => x.ScheduledFor < SystemDateTime.UtcNow)
+            .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
-            .Where(x => !ids.Contains(x.Id))
             .Where(x => rateLimitNames.Contains(x.WindowName))
             .OrderByDescending(x => x.ScheduledFor)
             .Skip(skip)
@@ -77,16 +75,5 @@ public class Session : ISession, IAsyncDisposable
             throw new ConcurrencyException(e);
         }
     }
-
-    public void Dispose()
-    {
-        _documentSession.Dispose();
-        _querySession.Dispose();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _documentSession.DisposeAsync();
-        await _querySession.DisposeAsync();
-    }
+    
 }

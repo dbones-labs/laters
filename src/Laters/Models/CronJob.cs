@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using ClientProcessing.Middleware;
-using Infrastucture.Cron;
+using Infrastructure.Cron;
 
 /// <summary>
 /// this is a cron job, which will create a job when the cron is met. 

@@ -7,12 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="coverlet.msbuild" Version="6.0.2" />
       <PackageReference Include="Machine.Specifications" Version="1.1.1" />
       <PackageReference Include="Machine.Specifications.Runner.Console" Version="1.0.0" />
       <PackageReference Include="Machine.Specifications.Runner.VisualStudio" Version="2.10.2" />
       <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.21" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
-      <PackageReference Include="Npgsql.OpenTelemetry" Version="7.0.0" />
+      <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.2" />
       <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
       <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.7.0-rc.1" />
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
@@ -35,12 +36,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Laters.Data.Marten\Laters.Data.Marten.csproj" />
       <ProjectReference Include="..\Laters\Laters.csproj" />
-    </ItemGroup>
-
-
-
-    <ItemGroup>
-      <Folder Include="ServerSide\Throttling\" />
     </ItemGroup>
 
 

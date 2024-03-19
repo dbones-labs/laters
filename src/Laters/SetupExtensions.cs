@@ -5,8 +5,9 @@ using ClientProcessing;
 using ClientProcessing.Middleware;
 using Configuration;
 using Default;
-using Infrastucture.Cron;
-using Infrastucture.Telemetry;
+using Infrastructure;
+using Infrastructure.Cron;
+using Infrastructure.Telemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Minimal;
 using ServerProcessing;
@@ -118,12 +119,10 @@ public static class SetupExtensions
 
         //server side
         collection.TryAddSingleton<DefaultTumbler>();
-        collection.TryAddSingleton<WorkerEngine>();
         collection.TryAddSingleton<JobWorkerQueue>();
         collection.TryAddSingleton<LeaderContext>();
         collection.TryAddSingleton<LeaderElectionService>();
         collection.AddHostedService<DefaultHostedService>();
-        collection.TryAddTransient<WebWorker>();
         
         collection.AddHttpClient<WorkerClient>().ConfigurePrimaryHttpMessageHandler(provider =>
         {
@@ -141,6 +140,9 @@ public static class SetupExtensions
         
         
         //client side
+        collection.AddHostedService<GlobalCronSetup>();
+        collection.AddTransient<GlobalScheduleCronProxy>();
+        
         collection.TryAddScoped<LeaderInformation>();
         
         collection.TryAddSingleton<MinimalLambdaHandlerRegistry>();
@@ -160,8 +162,8 @@ public static class SetupExtensions
         
         //out of the box middleware
         collection.TryAddScoped(typeof(FailureAction<>));
-        collection.TryAddScoped(typeof(LoadJobIntoContextAction<>));
-        collection.TryAddScoped(typeof(QueueNextAction<>));
+        collection.TryAddScoped(typeof(PersistenceAction<>));
+        collection.TryAddScoped(typeof(CronAction<>));
         collection.TryAddScoped(typeof(HandlerAction<>));
         collection.TryAddScoped(typeof(MinimalAction<>));
     }

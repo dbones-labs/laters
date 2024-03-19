@@ -12,7 +12,7 @@ public abstract class JobBase : Entity
     /// the name of the window to apply
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public virtual string? WindowName { get; set; } = "global";
+    public virtual string WindowName { get; set; } = "global";
  
     /// <summary>
     /// the number of times we should retry a job
@@ -29,13 +29,13 @@ public abstract class JobBase : Entity
     /// the job payload which the <see cref="IJobHandler{T}"/> will be provided to process with.
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public virtual string? Payload { get; set; }
+    public virtual string Payload { get; set; } = null!;
 
     /// <summary>
     /// the job type, this is used to let us know which job handler to process
     /// </summary>
     [Required(AllowEmptyStrings = false)]
-    public virtual string? JobType { get; set; }
+    public virtual string JobType { get; set; } = null!;
     
     /// <summary>
     /// meta data to add to the processing of the job

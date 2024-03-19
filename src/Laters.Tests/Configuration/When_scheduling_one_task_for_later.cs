@@ -1,10 +1,10 @@
 ﻿namespace Laters.Tests.Configuration;
 
 using Contexts.DuplicateHandler;
+using Data.Marten;
 using Laters.Tests.Infrastructure;
 using Machine.Specifications;
 using PowerAssert;
-using Marten = Data.Marten.Marten;
 
 [Ignore("need to figure out how to get the exception to surface")]
 [Subject("configuration")]
@@ -19,7 +19,7 @@ class When_registering_more_than_1_handler_for_a_type
         _testServer.OverrideLaters((_, setup) =>
         {
             setup.Configuration.WorkerEndpoint = $"http://localhost/";
-            setup.UseStorage<Marten>();
+            setup.UseStorage<UseMarten>();
             setup.ScanForJobHandlers();
             setup.AddJobHandler<HelloDuplicateJobHandler>(); // <- this will cause the issue.
         });

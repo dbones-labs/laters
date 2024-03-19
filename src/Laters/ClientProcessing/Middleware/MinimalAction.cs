@@ -1,7 +1,7 @@
 namespace Laters.ClientProcessing.Middleware;
 
 using Minimal;
-using Pipes;
+using Dbones.Pipes;
 
 /// <summary>
 /// this will execute the minimal api job handler logic
