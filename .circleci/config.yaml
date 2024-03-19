@@ -1,0 +1,164 @@
+version: 2.1
+
+jobs:
+
+  setup:
+    docker:
+      - image: dboneslabs/tools-docker-gittools:latest
+    steps:
+      - checkout
+      - run:
+          name: version
+          command: |
+            mkdir semver
+            dotnet-gitversion
+            
+            dotnet-gitversion | jq '.BranchName' > ./semver/branch.txt
+            dotnet-gitversion | jq '.SemVer' > ./semver/full.txt
+            dotnet-gitversion | jq '.NuGetVersionV2' > ./semver/nuget.txt
+            dotnet-gitversion | jq '.NuGetPreReleaseTagV2' > ./semver/nuget-sfx.txt
+            dotnet-gitversion | jq '.MajorMinorPatch' > ./semver/mmp.txt
+            
+            export BRANCH=$(cat ./semver/branch.txt)
+            echo $BRANCH
+            
+            export V=\"$(git describe --tags --abbrev=0)\"
+            echo $V
+            
+            cp ./semver/nuget.txt ./semver/version.txt
+            
+            if [[ $BRANCH == "\"(no branch)\"" ]]; then echo "tagged release"; echo $V > ./semver/version.txt; fi;
+
+            cat ./semver/version.txt
+            
+            ls
+            ls ./semver
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - src
+            - semver
+
+  build:
+    docker:
+      - image: dbones/dotnet8:0.0.1
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build
+          command: |
+            
+            ls
+            ls ./semver
+            APP_VERSION=$(cat ./semver/version.txt)
+            echo $APP_VERSION
+
+            cd ./src
+            ls
+
+            dotnet nuget add source https://nuget.pkg.github.com/dbones-labs/index.json -n github -u dbones -p ${GH_TOKEN} --store-password-in-clear-text
+            dotnet restore --packages packages
+            dotnet build --no-restore --configuration Release --force -p:Version=$APP_VERSION
+
+            mkdir ./../nupkgs
+            mv ./**/bin/**/*.nupkg ./../nupkgs
+
+            cd ./../nupkgs
+            rm *.symbols.nupkg
+            pwd
+            ls
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - nupkgs
+            - src
+
+  test:
+    docker:
+      - image: dbones/dotnet8:0.0.1
+      - image: cimg/postgres:16.2
+        environment:
+          POSTGRES_USER: application
+          POSTGRES_PASSWORD: ABC123!!
+          POSTGRES_DB: laters
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: test
+          command: |
+            mkdir ./results
+            
+            cd src
+            dotnet test --no-restore --no-build --configuration Release --logger trx --results-directory ../results /p:CollectCoverage=true /p:CoverletOutputFormat=opencover  /p:Exclude="[*.*Tests]*"
+            find . -type f -name "coverage.opencover.xml" -printf "/%P\n"| while read FILE ; do DIR=$(dirname "$FILE" ); mv ."$FILE" "$PWD"/../results"$DIR".coverage.opencover.xml;done;
+            cd ../results
+            ls
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - results
+            - src
+      - store_test_results:
+          path: results
+
+  upload_result:
+    docker:
+       - image: dboneslabs/tools-docker-codecov
+    steps:
+      - attach_workspace:
+          at: ./results
+      - run: |
+          cd results
+          REPORTS="${PWD}/*.xml"
+          cp /app/* ${PWD}/
+          ls
+          echo "uploading ${REPORTS}"
+          ./codecov.sh -f "${REPORTS}"
+
+  publish:
+    docker:
+      - image: dbones/dotnet8:0.0.1
+    steps:
+      - attach_workspace:
+          at: ./
+      - run: |
+
+          pwd
+          cd nupkgs
+          ls
+          
+          dotnet nuget push "*.nupkg" -k ${GH_PKG} -s https://nuget.pkg.github.com/dbones-labs/index.json
+          dotnet nuget push "*.nupkg" -k ${nuget_pkg} -s https://api.nuget.org/v3/index.json
+                  
+workflows:
+  version: 2
+  build_and_publish:
+    jobs:
+      - setup:
+          filters:
+            branches:
+              ignore:
+                - docs
+      - build:
+          context: build-ctx
+          requires:
+            - setup
+      - test:
+          requires:
+            - build
+      - upload_result:
+          context: build-ctx
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - publish:
+          context: build-ctx
+          requires:
+            - test
