@@ -8,7 +8,7 @@ the main parts to make `Laters` work
 
 Against the `HostBuilder`
 
-- Configure Datastore i.e. [Postgres](../storage/postgres)
+- Configure Datastore i.e. [Postgres](../storage/marten)
 - `ConfigureLaters` - configure Laters with any particular configurations you would like to apply
 
 
@@ -34,7 +34,7 @@ against the `setup` object, you can:
 - Register [Handlers](../processing/job-handler)
 - Register [Custom Client Actions](../processing/custom-actions)
 - Register [Global Cron Jobs](../scheduling/global-many-for-later)
-- Register [Storage](../storage/postgres)
+- Register [Storage](../storage/marten)
 
 ### Configuration object
 
