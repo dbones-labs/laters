@@ -58,7 +58,6 @@ jobs:
             cd ./src
             ls
 
-            dotnet nuget add source https://nuget.pkg.github.com/dbones-labs/index.json -n github -u dbones -p ${GH_TOKEN} --store-password-in-clear-text
             dotnet restore --packages packages
             dotnet build --no-restore --configuration Release --force -p:Version=$APP_VERSION
 
