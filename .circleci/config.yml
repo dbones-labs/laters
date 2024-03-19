@@ -65,7 +65,6 @@ jobs:
             mv ./**/bin/**/*.nupkg ./../nupkgs
 
             cd ./../nupkgs
-            rm -f *.symbols.nupkg
             pwd
             ls
 
