@@ -157,7 +157,7 @@ workflows:
             - test
           filters:
             branches:
-              only: master
+              only: main
       - publish:
           context: build-ctx
           requires:
