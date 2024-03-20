@@ -77,11 +77,11 @@ jobs:
   test:
     docker:
       - image: dbones/dotnet8:0.0.1
-      - image: cimg/postgres:16.2
+      - image: bitnami/postgresql:16
         environment:
-          POSTGRES_USER: application
-          POSTGRES_PASSWORD: ABC123!!
-          POSTGRES_DB: laters
+          POSTGRESQL_USERNAME: application
+          POSTGRESQL_PASSWORD: ABC123!!
+          POSTGRESQL_DATABASE: laters
     steps:
       - attach_workspace:
           at: ./
