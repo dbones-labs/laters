@@ -11,7 +11,7 @@ hero:
   text: .NET scheduling
   tagline: laters.....
   image:
-    src: /logo.png
+    src: https://raw.githubusercontent.com/dbones-labs/laters/main/docs/logo.png
     alt: alt text
   actions:
     - theme: brand
