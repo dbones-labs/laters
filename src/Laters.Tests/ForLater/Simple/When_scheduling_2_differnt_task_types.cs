@@ -7,14 +7,14 @@ using PowerAssert;
 
 [Tags("quality")]
 [Subject("for-later")]
-class When_scheduling_2_differnt_task_types
+class When_scheduling_2_different_task_types
 {
-    static DefaultTestServer _testServer;
+    static DefaultTestServer _testServer = null!;
 
-    Establish context = () =>
+    Establish context = async () =>
     {
         _testServer = new DefaultTestServer();
-        _testServer.Setup();
+        await _testServer.Setup();
     };
 
     Because of = async () =>

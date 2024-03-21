@@ -31,6 +31,8 @@ public class DefaultTestServer : IDisposable
     //TestServer? _testServer;
     WebApplication _server;
 
+    Task? _runningTask = null;
+
     static Random _random = new();
 
     public DefaultTestServer(int port = 0, Roles role = Roles.All, TestData data = TestData.Clear)
@@ -48,7 +50,7 @@ public class DefaultTestServer : IDisposable
             setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}/";
             setup.UseStorage<UseMarten>();
         };
-        
+
         _configureLaters = _defaultConfigureLaters;
 
         _minimalApiConfigure = builder => { };
@@ -67,8 +69,8 @@ public class DefaultTestServer : IDisposable
     public TestMonitor Monitor { get; private set; }
 
     public LeaderContext Leader { get; private set; }
-    
-    
+
+
     public async Task InScope(Action<IAdvancedSchedule> action)
     {
         using var scope = _server.Services.CreateScope();
@@ -76,8 +78,8 @@ public class DefaultTestServer : IDisposable
         var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
         action(schedule);
         await documentSession.SaveChangesAsync();
-    } 
-    
+    }
+
     public async Task InScope(Func<IAdvancedSchedule, Task> action)
     {
         using var scope = _server.Services.CreateScope();
@@ -85,26 +87,26 @@ public class DefaultTestServer : IDisposable
         var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
         await action(schedule);
         await documentSession.SaveChangesAsync();
-    } 
-    
-    
+    }
+
+
     /// <summary>
     /// call this to build the app and run it.
     /// </summary>
     public async Task Setup()
     {
         var builder = WebApplication.CreateBuilder();
-        
+
         builder.Host.UseSerilog((context, config) =>
         {
             config
                 .Enrich.FromLogContext()
                 .Enrich.With(new PropertyEnricher("test_number", $"{TestNumber}"))
-                .Enrich.With(new PropertyEnricher("service_name","Laters"))
+                .Enrich.With(new PropertyEnricher("service_name", "Laters"))
                 .Filter.ByIncludingOnly(Matching.FromSource("Laters"))
                 .WriteTo.OpenTelemetry(opt =>
                 {
-                    opt.IncludedData = IncludedData.SpanIdField | 
+                    opt.IncludedData = IncludedData.SpanIdField |
                                        IncludedData.TraceIdField |
                                        IncludedData.TemplateBody;
                 })
@@ -125,109 +127,115 @@ public class DefaultTestServer : IDisposable
                     .AddOtlpExporter();
             });
 
-        builder.WebHost.ConfigureServices((context, collection) =>
+        builder.Services.AddMarten(config =>
         {
-            //default database
-            collection.AddMarten(config =>
+            var pgHost = Environment.GetEnvironmentVariable("PG_HOST");
+            if (string.IsNullOrWhiteSpace(pgHost))
             {
-                var connectionString = "host=localhost;database=laters;password=ABC123!!;username=application";
-                config.Connection(connectionString);
-
-                config.AutoCreateSchemaObjects = AutoCreate.All;
-                
-                // config.Policies.ForAllDocuments(dm =>
-                // {
-                //     if (dm.IdType == typeof(string))
-                //     {
-                //         dm.IdStrategy = new StringIdGeneration();
-                //     }
-                // });
-                
-                config.Schema.Include<LatersRegistry>();
-
-                config.DatabaseSchemaName = "thisisatest";
-                
-                config.CreateDatabasesForTenants(tenant =>
-                {
-                    tenant.MaintenanceDatabase(connectionString);
-                    tenant
-                        .ForTenant()
-                        .CheckAgainstPgDatabase()
-                        .WithOwner("admin")
-                        .WithEncoding("UTF-8")
-                        .ConnectionLimit(-1)
-                        .OnDatabaseCreated(_ => { });;
-                });
-            });
-
-            //we need to clear the data before we setup laters
-            if (_data == TestData.Clear)
-            {
-                collection.AddHostedService<ResetDataService>();
+                pgHost = "postgres";
             }
-            
-            builder.WebHost.ConfigureLaters((context, setup) =>
+            Console.WriteLine($"PG_HOST: {pgHost}");
+
+            var connectionString = $"host={pgHost};database=laters;password=ABC123!!;username=application";
+            config.Connection(connectionString);
+
+            config.AutoCreateSchemaObjects = AutoCreate.All;
+
+            // config.Policies.ForAllDocuments(dm =>
+            // {
+            //     if (dm.IdType == typeof(string))
+            //     {
+            //         dm.IdStrategy = new StringIdGeneration();
+            //     }
+            // });
+
+            config.Schema.Include<LatersRegistry>();
+
+            config.DatabaseSchemaName = "thisisatest";
+
+            config.CreateDatabasesForTenants(tenant =>
             {
-                setup.Configuration.NumberOfProcessingThreads = 1;
-                _configureLaters?.Invoke(context, setup);
+                tenant.MaintenanceDatabase(connectionString);
+                tenant
+                    .ForTenant()
+                    .CheckAgainstPgDatabase()
+                    .WithOwner("admin")
+                    .WithEncoding("UTF-8")
+                    .ConnectionLimit(-1)
+                    .OnDatabaseCreated(_ => { }); ;
             });
-            
-            //quick workaround, you can also the SessionFactory
-            collection.AddScoped<IDocumentSession>(services =>
-                services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
-            
-            collection.AddSingleton<TestMonitor>();
-            collection.AddControllersWithViews();
-            collection.AddEndpointsApiExplorer();
-            collection.AddSwaggerGen();
-            
-           
-            collection.AddLogging();
-            
-            _configureServices?.Invoke(collection);
         });
 
+        //we need to clear the data before we setup laters
+        if (_data == TestData.Clear)
+        {
+            builder.Services.AddHostedService<ResetDataService>();
+        }
+
+        builder.WebHost.ConfigureLaters((context, setup) =>
+        {
+            setup.Configuration.NumberOfProcessingThreads = 1;
+            _configureLaters?.Invoke(context, setup);
+        });
+
+        //quick workaround, you can also the SessionFactory
+        builder.Services.AddScoped<IDocumentSession>(services =>
+            services.GetRequiredService<IDocumentStore>().DirtyTrackedSession());
+
+        builder.Services.AddSingleton<TestMonitor>();
+        builder.Services.AddControllersWithViews();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+
+        builder.Services.AddLogging();
+
+        _configureServices?.Invoke(builder.Services);
 
         builder.WebHost
             .UseUrls($"http://localhost:{Port}/");
-        
+
         _server = builder.Build();
-        
+
         //add some default middleware
-        _server.UseHttpLogging();
+        //_server.UseHttpLogging();
         _server.UseRouting();
         _server.UseDeveloperExceptionPage();
         _server.UseSwagger();
         _server.UseSwaggerUI();
         _server.UseOpenTelemetryPrometheusScrapingEndpoint();
-        
+
         _configure?.Invoke(_server);
         _minimalApiConfigure?.Invoke(_server);
-        
-        _server.RunAsync(); //we do not want to be blocking
+
+        //we do not want to be blocking
+        _runningTask = Task.Run(() =>
+        {
+             _server.Run();
+             Console.WriteLine("stopped");
+        });
         await Task.Delay(100); //but we will allow a tiny bit of time to setup
-        
-        
+
         //_testServer = new TestServer(builder);
 
         Client = _server.Services.GetRequiredService<HttpClient>();
-        
+
         //Client = _testServer.CreateClient();
         Monitor = _server.Services.GetRequiredService<TestMonitor>();
-        
+
         Leader = _server.Services.GetRequiredService<LeaderContext>();
     }
-    
+
     public void OverrideServices(Action<IServiceCollection> configure)
     {
         _configureServices = configure;
     }
-    
+
     public void OverrideBuilder(Action<IApplicationBuilder> configure)
     {
         _configure = configure;
     }
-    
+
     public void MinimalApi(Action<IApplicationBuilder> configure)
     {
         _minimalApiConfigure = configure;
@@ -241,7 +249,7 @@ public class DefaultTestServer : IDisposable
     {
         _configureLaters = configure;
     }
-    
+
     /// <summary>
     /// add more configuration for laters
     /// </summary>
@@ -251,34 +259,28 @@ public class DefaultTestServer : IDisposable
         _configureLaters = (context, setup) =>
         {
             _defaultConfigureLaters(context, setup);
-            configure(context,setup);
+            configure(context, setup);
         };
     }
-    
+
     public void Dispose()
     {
         _server?.SafeDispose();
     }
 
     #region DoNotUse
-    
+
     public void ConfigureServices(IServiceCollection configure)
     {
     }
-    
+
     public void Configure(IApplicationBuilder app)
     {
-        throw new Exception("asdsads");
-        //app.UseSwagger();
-        //app.UseSwaggerUI();
-        app.UseHttpLogging();
-        app.UseRouting();
-        app.UseDeveloperExceptionPage();
-        _configure?.Invoke(app);
+        //not in use.
     }
 
     #endregion
-    
+
 }
 
 public enum TestData

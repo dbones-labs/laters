@@ -77,6 +77,8 @@ jobs:
   test:
     docker:
       - image: dbones/dotnet8:0.0.1
+        environment:
+          PG_HOST: localhost
       - image: bitnami/postgresql:16
         environment:
           POSTGRESQL_USERNAME: application
@@ -85,19 +87,11 @@ jobs:
     steps:
       - attach_workspace:
           at: ./
-
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
-      - run:
-          name: Wait for db
-          command: dockerize -wait tcp://localhost:5432 -timeout 1m
-          
       - run:
           name: test
           command: |
+            sleep 30
+            
             mkdir ./results
             
             cd src

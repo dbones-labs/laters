@@ -7,3 +7,5 @@ obj/
 *.user
 **/.vitepress/cache/
 node_modules/
+*.trx
+coverage.opencover.xml

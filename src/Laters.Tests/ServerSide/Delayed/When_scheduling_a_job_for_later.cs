@@ -33,7 +33,7 @@ class When_scheduling_a_job_for_later
     Because of = async () =>
     {
         SystemDateTime.Set(() => _secondProcessingTime);
-        await Rig.Wait(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() > 0, TimeSpan.FromMinutes(3));
+        await Rig.Wait(() => _testServer.Monitor.NumberOfCallTicksFor<HelloJobHandler>() > 0);
     };
 
     It should_have_processed_hello_once = () =>
