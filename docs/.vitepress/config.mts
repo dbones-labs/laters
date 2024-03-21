@@ -8,7 +8,7 @@ export default defineConfig({
   lastUpdated: false,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: '/logo.png',
+    logo: 'https://raw.githubusercontent.com/dbones-labs/laters/main/docs/logo.png',
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Quick Start', link: '/overview/quick-start' }
