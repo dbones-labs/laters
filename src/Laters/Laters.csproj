@@ -18,7 +18,6 @@
         <RepositoryUrl>https://github.com/dbones-labs/laters</RepositoryUrl>
         <RepositoryType>https://opensource.org/license/apache-2-0</RepositoryType>
         <PackageTags>schedule</PackageTags>
-        <PackageReleaseNotes>PREVIEW</PackageReleaseNotes>
         <Title>Laters</Title>
     </PropertyGroup>
 
