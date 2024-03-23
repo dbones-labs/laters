@@ -55,8 +55,15 @@ public class UseEntityFramework : StorageSetup
     /// <param name="collection">the ioc collection</param>
     protected override void Apply(IServiceCollection collection)
     {
-        if (ApplyOptions is null) throw new NullReferenceException($"you must supply {nameof(ApplyOptions)}");
-        if (ConnectionFactory is null) throw new NullReferenceException($"you must supply {nameof(ConnectionFactory)}");
+        if (ApplyOptions is null) 
+        {
+            throw new NullReferenceException($"you must supply {nameof(ApplyOptions)}");
+        }
+
+        if (ConnectionFactory is null) 
+        {
+            throw new NullReferenceException($"you must supply {nameof(ConnectionFactory)}");
+        }
 
         // if they only supply a write connection factory, we will use that for read and write
         if (ReadConnectionFactory is null)
@@ -103,15 +110,19 @@ public class UseEntityFramework : StorageSetup
             //find the types which implement the dbContext in the collection
             var dbContextType = collection.FirstOrDefault(x => x.ServiceType.IsAssignableTo(typeof(DbContext)));
             if (dbContextType?.ServiceType is null) 
-            throw new NullReferenceException($"either register your DbContext or use the {nameof(ApplicationDbContext)} to inform laters which to coordinate with.");
-            
+            {
+                throw new NullReferenceException($"either register your DbContext or use the {nameof(ApplicationDbContext)} to inform laters which to coordinate with.");
+            }
             _applicationDbContextType = dbContextType?.ServiceType!;
         }
 
         collection.TryAddScoped(provider =>
         {
             var dbContext = provider.GetRequiredService(_applicationDbContextType) as DbContext;
-            if (dbContext is null) throw new NullReferenceException($"could not find the {nameof(DbContext)}");
+            if (dbContext is null) 
+            {
+                throw new NullReferenceException($"could not find the {nameof(DbContext)}");
+            }
             return new ApplicationDbContextWrapper(dbContext);
         });
 
