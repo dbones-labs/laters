@@ -10,11 +10,16 @@ public class HandlerAction<T> : IProcessAction<T>
 {
     readonly IJobHandler<T> _handler;
 
+    /// <summary>
+    /// creates a new instance of <see cref="HandlerAction{T}"/>
+    /// </summary>
+    /// <param name="handler">the job handler supplied by the application</param>
     public HandlerAction(IJobHandler<T> handler) 
     {
         _handler = handler;
     }
     
+    /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
         await _handler.Execute(context);
