@@ -34,8 +34,10 @@ public class TransactionCoordinator
     public async Task Commit()
     {
 
-        if(_connectionWrapper.Connection.State != ConnectionState.Open)
+        if(_connectionWrapper.Connection.State != ConnectionState.Open) 
+        {
             await _connectionWrapper.Connection.OpenAsync();
+        }
 
         using var tx = _connectionWrapper.Connection.BeginTransaction(IsolationLevel.Serializable);
 

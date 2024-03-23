@@ -39,10 +39,16 @@ public class CronAction<T> : IProcessAction<T>
         var job = context.Job;
 
         //not part of a cron job
-        if(job?.ParentCron is null) return;
+        if(job?.ParentCron is null) 
+        { 
+            return; 
+        }
 
         var cronJob = await _session.GetById<CronJob>(job.ParentCron);
-        if(cronJob is null) throw new MissingParentCronException(job.Id, job.ParentCron);
+        if(cronJob is null) 
+        {
+            throw new MissingParentCronException(job.Id, job.ParentCron);
+        }
 
         var nextJob = cronJob.GetNextJob(_crontab);
         
