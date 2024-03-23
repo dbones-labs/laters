@@ -25,7 +25,6 @@ public interface ISession
     /// <summary>
     /// gets next set the jobs to be processed
     /// </summary>
-    /// <param name="ids">ids of job ids which are being processed</param>
     /// <param name="rateLimitNames">the window names which are open to process, to filter for</param>
     /// <param name="skip">the number rows to skip</param>
     /// <param name="take">the number of jobs to load in</param>
