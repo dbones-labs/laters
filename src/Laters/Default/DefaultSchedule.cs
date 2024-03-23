@@ -36,7 +36,7 @@ public class DefaultSchedule : IAdvancedSchedule
         {
             Id = name,
             Payload = JsonSerializer.Serialize(jobPayload),
-            JobType = typeof(T).FullName,
+            JobType = typeof(T).FullName!,
             Headers = options.Headers,
             Cron = cron,
             MaxRetries = delivery.MaxRetries,
@@ -50,12 +50,12 @@ public class DefaultSchedule : IAdvancedSchedule
     }
     
 
-    public virtual void ForgetAboutAllOfIt<T>(string name, bool removeOrphins = true)
+    public virtual void ForgetAboutAllOfIt<T>(string name, bool removeOrphans = true)
     {
         _session.Delete<CronJob>(name);
-        if (removeOrphins)
+        if (removeOrphans)
         {
-            _session.DeleteOrphin(name);
+            _session.DeleteOrphan(name);
         }
     }
 

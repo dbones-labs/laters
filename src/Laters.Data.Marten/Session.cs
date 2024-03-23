@@ -5,6 +5,9 @@ using Infrastructure;
 using Models;
 using ServerProcessing;
 
+
+#pragma warning disable 1591 //xml comments
+
 public class Session : ISession
 {
     readonly IDocumentSession _documentSession;
@@ -61,6 +64,11 @@ public class Session : ISession
 
     public void DeleteOrphin(string cronName)
     {
+        DeleteOrphan(cronName);
+    }
+
+    public void DeleteOrphan(string cronName)
+    {
         _documentSession.DeleteWhere<Job>(x => x.ParentCron == cronName);
     }
 
@@ -75,5 +83,6 @@ public class Session : ISession
             throw new ConcurrencyException(e);
         }
     }
-    
+
+
 }
