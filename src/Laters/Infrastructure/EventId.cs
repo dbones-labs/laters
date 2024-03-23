@@ -1,5 +1,7 @@
 namespace Laters.Infrastructure;
 
+#pragma warning disable CS1591 //Xml comments
+
 /// <summary>
 /// list of all the blocks (of 100), and where its assigned. 
 /// </summary>

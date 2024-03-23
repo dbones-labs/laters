@@ -39,7 +39,7 @@ dotnet add package Laters
 - Laters.Marten <- the default persistence library, which provides a Unit Of Work (for full transitional support) 
  
 ```sh
-dotnet add package Laters.Marten
+dotnet add package Laters.Data.Marten
 ```
 ## Models.
 
@@ -50,9 +50,10 @@ This is our simple todo class, the CompleteDate is indicated when the TodoItem i
 ```csharp
 public class TodoItem
 {
-    public string Id { get; set; }
-    public string Details { get; set; }
-    public DateTime? CompletedDate { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Details { get; set; } = string.Empty;
+    public bool Completed { get; set; }
 }
 ```
 
@@ -63,7 +64,7 @@ This class represents a work we want to queue and execute later, we only need th
 ```csharp
 public class RemoveOldItem
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 }
 ```
 
@@ -76,33 +77,34 @@ We have tried to complement Asp.NET's Minimal Api, with a similar Api.
 - 1️⃣ - In `MapPut`, we queue up the `TodoItem` for deletion using the `schedule.ForLater`
 
 ```csharp
-app.MapGet("/todo-items/{id}", async (string id, IQuerySession session) =>
+app.MapGet("/todo-items/{id}", async ([FromQuery] string id, IQuerySession session) =>
     await session.LoadAsync<TodoItem>(id)
         is { } todo
         ? Results.Ok(todo)
         : Results.NotFound());
 
-app.MapPost("/todo-items", (TodoItem item, IDocumentSession session) =>
+app.MapPost("/todo-items", ([FromBody] TodoItem item, IDocumentSession session) =>
 {
     session.Store(item);
     return Results.Created($"/todoitems/{item.Id}", item);
 });
 
 app.MapPut("/todo-items/{id}", async (
-    string id, 
-    TodoItem updateItem, 
+    [FromQuery] string id, 
+    [FromBody] TodoItem updateItem, 
     IDocumentSession session,
     ISchedule schedule) =>
 {
     var item = await session.LoadAsync<TodoItem>(id);
     if (item is null) return Results.NotFound();
 
+    item.Name = updateItem.Name;
     item.Details = updateItem.Details;
-    item.CompletedDate = updateItem.CompletedDate;
+    item.Completed = updateItem.Completed;
 
-    if (item.CompletedDate.HasValue)
+    if (item.Completed)
     {
-        var removeDate = item.CompletedDate!.Value.AddDays(1);
+        var removeDate = SystemDateTime.UtcNow.AddDays(1);
         schedule.ForLater(new RemoveOldItem { Id = item.Id }, removeDate); // 1️⃣
     }
 

@@ -25,7 +25,6 @@ public interface ISession
     /// <summary>
     /// gets next set the jobs to be processed
     /// </summary>
-    /// <param name="ids">ids of job ids which are being processed</param>
     /// <param name="rateLimitNames">the window names which are open to process, to filter for</param>
     /// <param name="skip">the number rows to skip</param>
     /// <param name="take">the number of jobs to load in</param>
@@ -51,7 +50,16 @@ public interface ISession
     /// this will delete any jobs which belong to a cronJob
     /// </summary>
     /// <param name="cronName">name of the cronJob</param>
+    [Obsolete("use DeleteOrphan")]
     public void DeleteOrphin(string cronName);
+
+
+    /// <summary>
+    /// this will delete any jobs which belong to a cronJob
+    /// </summary>
+    /// <param name="cronName">name of the cronJob</param>
+    public void DeleteOrphan(string cronName);
+
     
     /// <summary>
     /// unit of work pattern, this will comment any dirty objects
