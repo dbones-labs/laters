@@ -3,8 +3,10 @@ using Laters;
 using Laters.AspNet;
 using Laters.ClientProcessing;
 using Laters.Data.Marten;
+using Laters.Infrastructure;
 using Laters.Minimal.Application;
 using Marten;
+using Microsoft.AspNetCore.Mvc;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,13 +61,13 @@ app.MapGet("/todo-items", (IQuerySession session) =>
     return Task.FromResult(items);
 });
 
-app.MapGet("/todo-items/{id}", async (string id, IQuerySession session) =>
+app.MapGet("/todo-items/{id}", async ([FromQuery] string id, IQuerySession session) =>
     await session.LoadAsync<TodoItem>(id)
         is { } todo
         ? Results.Ok(todo)
         : Results.NotFound());
 
-app.MapPost("/todo-items", (TodoItem item, IDocumentSession session) =>
+app.MapPost("/todo-items", ([FromBody] TodoItem item, IDocumentSession session) =>
 {
     session.Store(item);
     return Results.Created($"/todo-items/{item.Id}", item);
@@ -80,12 +82,14 @@ app.MapPut("/todo-items/{id}", async (
     var item = await session.LoadAsync<TodoItem>(id);
     if (item is null) return Results.NotFound();
 
+    item.Name = updateItem.Name;
     item.Details = updateItem.Details;
-    item.CompletedDate = updateItem.CompletedDate;
+    item.Completed = updateItem.Completed;
 
-    if (item.CompletedDate.HasValue)
+
+    if (item.Completed)
     {
-        var removeDate = item.CompletedDate!.Value.AddDays(1);
+        var removeDate = SystemDateTime.UtcNow.AddDays(1);
         schedule.ForLater(new RemoveOldItem { Id = item.Id }, removeDate);
     }
 
@@ -103,19 +107,25 @@ app.MapHandler<RemoveOldItem>(async (JobContext<RemoveOldItem> ctx, IDocumentSes
 app.Run();
 
 //model
+
 public class TodoItem
 {
     [Required(AllowEmptyStrings = false)]
     public string Id { get; set; } = string.Empty;
 
     [Required(AllowEmptyStrings = false)]
+    public string Name { get; set; } = string.Empty;
+
+    [Required(AllowEmptyStrings = false)]
     public string Details { get; set; } = string.Empty;
 
-    public DateTime? CompletedDate { get; set; }
+    public bool Completed { get; set; }
 
-    public string? RemoveJobId { get; set; }
 }
 
+/// <summary>
+/// This is a simple job that will remove a <see cref="TodoItem"/> from the database
+/// </summary>
 public class RemoveOldItem
 {
     public string Id { get; set; } = string.Empty;
