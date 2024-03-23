@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using ServerProcessing;
 
+#pragma warning disable 1591 //xml comments
+
 public class Session : ISession
 {
     readonly LatersDbContext _dbContext;
@@ -79,6 +81,12 @@ public class Session : ISession
 
     public void DeleteOrphin(string cronName)
     {
+        DeleteOrphan(cronName);
+    }
+
+
+    public void DeleteOrphan(string cronName)
+    {
         var set = _dbContext.Jobs;
         var entities = set.Where(x => x.ParentCron == cronName);
         if (entities.Any())
@@ -110,4 +118,6 @@ public class Session : ISession
             throw new ConcurrencyException(ex);
         }
     }
+
+
 }

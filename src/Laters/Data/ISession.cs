@@ -51,7 +51,16 @@ public interface ISession
     /// this will delete any jobs which belong to a cronJob
     /// </summary>
     /// <param name="cronName">name of the cronJob</param>
+    [Obsolete("use DeleteOrphan")]
     public void DeleteOrphin(string cronName);
+
+
+    /// <summary>
+    /// this will delete any jobs which belong to a cronJob
+    /// </summary>
+    /// <param name="cronName">name of the cronJob</param>
+    public void DeleteOrphan(string cronName);
+
     
     /// <summary>
     /// unit of work pattern, this will comment any dirty objects
