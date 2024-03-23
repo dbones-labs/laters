@@ -74,8 +74,8 @@ app.MapPost("/todo-items", ([FromBody] TodoItem item, IDocumentSession session) 
 });
 
 app.MapPut("/todo-items/{id}", async (
-    string id,
-    TodoItem updateItem,
+    [FromQuery] string id,
+    [FromBody] TodoItem updateItem,
     IDocumentSession session,
     ISchedule schedule) =>
 {
@@ -85,7 +85,6 @@ app.MapPut("/todo-items/{id}", async (
     item.Name = updateItem.Name;
     item.Details = updateItem.Details;
     item.Completed = updateItem.Completed;
-
 
     if (item.Completed)
     {
