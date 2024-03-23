@@ -17,6 +17,11 @@ public class FailureAction<T> : IProcessAction<T>
     readonly IServiceProvider _serviceProvider;
     readonly ILogger<FailureAction<T>> _logger;
 
+    /// <summary>
+    /// this is the catch all error handler, where we handle if we requeue
+    /// </summary>
+    /// <param name="serviceProvider">scoped ioc provider</param>
+    /// <param name="logger">well its a logger that we will use</param>
     public FailureAction(
         IServiceProvider serviceProvider,
         ILogger<FailureAction<T>> logger)
@@ -25,6 +30,7 @@ public class FailureAction<T> : IProcessAction<T>
         _logger = logger;
     }
     
+    /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
         try

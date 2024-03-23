@@ -6,6 +6,7 @@ outline: deep
 
 `Postgres`, `SqlServer`, `Sqlite` are supported with `EntityFrameworkCore`, we have written a provider to make it work with `Laters` (and applied minimal testing with `Postgres`)
 
+
 ## Overview.
 
 `Laters` supplies its own `DbContext`, and this is designed to work with your applications `DbContext`
@@ -20,6 +21,14 @@ This allows us to achieve an all-or-nothing apply/commit to the database.
 
 > [!NOTE]
 > This configuration will show how do to this with `Postgres`, however, you can apply almost the same code to `SqlServer` or `Sqlite`.
+
+### Nuget
+
+You can add this support via Nuget
+
+```sh
+dotnet add package Laters.Data.EntityFrameworkCore
+```
 
 ### Services - Connection
 

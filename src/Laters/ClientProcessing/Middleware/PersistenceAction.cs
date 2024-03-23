@@ -15,6 +15,11 @@ public class PersistenceAction<T> : IProcessAction<T>
     readonly ISession _session;
     readonly ILogger<PersistenceAction<T>> _logger;
 
+    /// <summary>
+    /// creates the persistance action
+    /// </summary>
+    /// <param name="session">the scoped session</param>
+    /// <param name="logger">logger</param>
     public PersistenceAction(
         ISession session, 
         ILogger<PersistenceAction<T>> logger)
@@ -23,6 +28,7 @@ public class PersistenceAction<T> : IProcessAction<T>
         _logger = logger;
     }
     
+    /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
         //load from the database

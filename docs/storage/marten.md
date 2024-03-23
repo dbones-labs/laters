@@ -8,6 +8,14 @@ outline: deep
 
 ## Configuration
 
+### Nuget
+
+You can add this support via Nuget
+
+```sh
+dotnet add package Laters.Data.Marten
+```
+
 ### HostBuilder - Marten
 
 - 1️⃣ - `LatersRegistry` will inform Maren of the Schema we require for Laters to work (based on our [model](../overview/model.md))

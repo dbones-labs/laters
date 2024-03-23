@@ -7,6 +7,8 @@ using Models;
 using ServerProcessing;
 using ISession = ISession;
 
+#pragma warning disable 1591 //xml comments
+
 /// <summary>
 /// this is not for production use
 /// </summary>
@@ -112,6 +114,11 @@ public class InMemorySession : ISession
 
     public void DeleteOrphin(string cronName)
     {
+        DeleteOrphan(cronName);
+    }
+
+    public void DeleteOrphan(string cronName)
+    {
         var job = GetEntities<Job>().FirstOrDefault(x => x.ParentCron == cronName);
         if (job is not null)
         {
@@ -147,4 +154,6 @@ public class InMemorySession : ISession
 
         return Task.CompletedTask;
     }
+
+
 }

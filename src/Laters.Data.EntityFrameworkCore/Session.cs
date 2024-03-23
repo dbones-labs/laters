@@ -6,17 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using ServerProcessing;
 
+#pragma warning disable 1591 //xml comments
+
 public class Session : ISession
 {
     readonly LatersDbContext _dbContext;
     readonly LatersQueryDbContext _queryDbContext;
-    readonly WriteConnectionWrapper _conn;
+    private readonly TransactionCoordinator _transactionCoordinator;
 
-    public Session(LatersDbContext dbContext, LatersQueryDbContext queryDbContext, WriteConnectionWrapper conn)
+    public Session(
+        LatersDbContext dbContext, 
+        LatersQueryDbContext queryDbContext, 
+        TransactionCoordinator transactionCoordinator)
     {
         _dbContext = dbContext;
         _queryDbContext = queryDbContext;
-        _conn = conn;
+        _transactionCoordinator = transactionCoordinator;
     }
     
     public async Task<T?> GetById<T>(string id) where T : Entity
@@ -64,7 +69,6 @@ public class Session : ISession
             //this should not be called, as the entity should already be in the unit of work.
             _dbContext.GetDbSet<T>().Update(entity);
         }
-        
     }
 
     public void Delete<T>(string id) where T : Entity
@@ -78,6 +82,12 @@ public class Session : ISession
     }
 
     public void DeleteOrphin(string cronName)
+    {
+        DeleteOrphan(cronName);
+    }
+
+
+    public void DeleteOrphan(string cronName)
     {
         var set = _dbContext.Jobs;
         var entities = set.Where(x => x.ParentCron == cronName);
@@ -96,18 +106,12 @@ public class Session : ISession
     {
         try
         {
-            if(_conn.Connection.State != ConnectionState.Open)
-                await _conn.Connection.OpenAsync();
-
-            using var tx = _conn.Connection.BeginTransaction(IsolationLevel.Serializable);
-            _dbContext.Database.UseTransaction(tx);
-            
-            await _dbContext.SaveChangesAsync();
-            tx.Commit();
+            await _transactionCoordinator.Commit();
         }
         catch (DbUpdateConcurrencyException ex)
         {
             throw new ConcurrencyException(ex);
         }
     }
+
 }
