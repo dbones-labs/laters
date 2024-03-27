@@ -1,6 +1,7 @@
 namespace Laters.Infrastructure.Telemetry;
 
 using System.Diagnostics.Metrics;
+using Laters.Configuration;
 using Laters.Data;
 using Laters.ServerProcessing;
 using Laters.ServerProcessing.Triggers;
@@ -11,6 +12,7 @@ using Laters.ServerProcessing.Triggers;
 public class StorageMetricsRunner 
 {
     readonly IServiceProvider _serviceProvider;
+    readonly LeaderContext _leaderContext;
     readonly ContinuousLambda _populateCountersLambda;
     readonly ILogger<StorageMetricsRunner> _logger;
     CancellationToken _token = default;
@@ -19,12 +21,19 @@ public class StorageMetricsRunner
     /// create a new instance of the <see cref="StorageMetricsRunner"/>
     /// </summary>
     /// <param name="serviceProvider">service provider</param>
+    /// <param name="configuration">laters configuration</param> 
+    /// <param name="leaderContext">leader context</param>
     /// <param name="logger">the logger</param>
-    public StorageMetricsRunner(IServiceProvider serviceProvider, ILogger<StorageMetricsRunner> logger)
+    public StorageMetricsRunner(
+        IServiceProvider serviceProvider, 
+        LatersConfiguration configuration,
+        LeaderContext leaderContext,
+        ILogger<StorageMetricsRunner> logger)
     {
-        var getMetricsTrigger = new TimeTrigger(TimeSpan.FromSeconds(5));
+        var getMetricsTrigger = new TimeTrigger(TimeSpan.FromSeconds(configuration.CheckTelemetryInSeconds));
 
         _serviceProvider = serviceProvider;
+        _leaderContext = leaderContext;
         _populateCountersLambda = new ContinuousLambda(nameof(Scan), async() => await Scan(), getMetricsTrigger);
        _logger = logger;
 
@@ -33,15 +42,31 @@ public class StorageMetricsRunner
        Deadlettered = new List<Measurement<long>>();
     }
 
+    /// <summary>
+    /// initialize the component
+    /// </summary>
     public void Initialize(CancellationToken token) 
     {
         _logger.LogInformation($"Initialize the {nameof(StorageMetricsRunner)} component");
         _populateCountersLambda.Start(token);  
         _token = token;
+
+        //set some empty lists
+        Ready = new List<Measurement<long>>();
+        Scheduled = new List<Measurement<long>>();
+        Deadlettered = new List<Measurement<long>>();
     }
 
+    /// <summary>
+    /// scan the database for the latest metrics
+    /// </summary>
     public async Task Scan()
     {
+        if(!_leaderContext.IsLeader) 
+        {
+            return;
+        }
+
         using var scope = _serviceProvider.CreateScope();
         ITelemetrySession session = scope.ServiceProvider.GetRequiredService<ITelemetrySession>();
 

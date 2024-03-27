@@ -49,4 +49,9 @@ public class LatersConfiguration
     /// how long to wait before checking the DB for jobs
     /// </summary>
     public int CheckDatabaseInSeconds { get; set; } = 3;
+
+    /// <summary>
+    /// set how often we check the telemetry from the storage
+    /// </summary>
+    public int CheckTelemetryInSeconds { get; set; } = 15;
 }

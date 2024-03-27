@@ -8,8 +8,9 @@ using System.Diagnostics.Metrics;
 /// </summary>
 public class Metrics : IMetrics
 {
-
-    public Metrics(IMeterFactory meterFactory, StorageMetricsRunner storageMetricsRunner)
+    public Metrics(
+        IMeterFactory meterFactory, 
+        StorageMetricsRunner storageMetricsRunner)
     {
         //counters
         Meter = meterFactory.Create(Telemetry.Name);
