@@ -1,6 +1,6 @@
 namespace Laters.Data.InMemory;
-
 using Data;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ISession = ISession;
 
 /// <summary>
@@ -10,7 +10,8 @@ public class UseMemory : StorageSetup
 {
     protected internal override void Apply(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<InMemoryStore>();
-        serviceCollection.AddScoped<ISession, InMemorySession>();
+        serviceCollection.TryAddSingleton<InMemoryStore>();
+        serviceCollection.TryAddScoped<ISession, InMemorySession>();
+        serviceCollection.TryAddScoped<ITelemetrySession, TelemetrySession>();
     }
 }

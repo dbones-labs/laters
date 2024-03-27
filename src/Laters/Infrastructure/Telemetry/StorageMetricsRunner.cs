@@ -74,9 +74,9 @@ public class StorageMetricsRunner
         var scheduled = await session.GetScheduledJobs();
         var deadlettered = await session.GetDeadletterJobs();
 
-        Ready = ready.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.Type) })).ToList();
-        Scheduled = scheduled.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.Type) })).ToList();   
-        Deadlettered = deadlettered.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.Type) })).ToList(); 
+        Ready = ready.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.JobType) })).ToList();
+        Scheduled = scheduled.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.JobType) })).ToList();   
+        Deadlettered = deadlettered.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.JobType) })).ToList(); 
     }
 
     /// <summary>
