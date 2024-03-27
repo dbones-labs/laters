@@ -12,17 +12,14 @@ using Infrastructure.Telemetry;
 public class WorkerClient : IWorkerClient
 {
     readonly HttpClient _httpClient;
-    readonly LatersMetrics _metrics;
     readonly LatersConfiguration _configuration;
     readonly ILogger<WorkerClient> _logger;
 
     public WorkerClient(
         HttpClient httpClient,
-        LatersMetrics metrics,
         LatersConfiguration configuration,
         ILogger<WorkerClient> logger)
     {
-        _metrics = metrics;
         _configuration = configuration;
         _logger = logger;
         _httpClient = httpClient;
@@ -48,9 +45,5 @@ public class WorkerClient : IWorkerClient
             //all other messages
             _logger.LogError(e,e.Message);
         }
-        
-        // Count the metric
-        // var metric = _meter.CreateCounter("laters.job-type");
-        _metrics.JobTypeCounter.Add(1, new KeyValuePair<string, object?>("type", processJob.JobType));
     }
 }

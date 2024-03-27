@@ -7,7 +7,6 @@ using System.Diagnostics;
 /// </summary>
 public class Telemetry : IDisposable
 {
-    public static string Header = "open.telemetry";
     public static string Name = "laters.opentelemetry";
 
     public ActivitySource ActivitySource { get; } = new(Name);
