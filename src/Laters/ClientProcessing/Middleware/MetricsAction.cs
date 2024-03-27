@@ -11,13 +11,13 @@ using Laters.ServerProcessing;
 /// <typeparam name="T">the job type</typeparam>
 public class MetricsAction<T> : IProcessAction<T>
 {
-    readonly ILatersMetrics _metrics;
+    readonly IMetrics _metrics;
 
     /// <summary>
     /// creates a new instance of <see cref="MetricsAction{T}"/>
     /// </summary>
     /// <param name="metrics">metrics wrapper</param>
-    public MetricsAction(ILatersMetrics metrics)
+    public MetricsAction(IMetrics metrics)
     {
         _metrics = metrics;
     }
@@ -28,8 +28,8 @@ public class MetricsAction<T> : IProcessAction<T>
         var candidate = context.Job!;
         var tagList = new TagList
         {
-            { Meters.JobType, candidate.JobType },
-            { Meters.Window, candidate.WindowName }
+            { Telemetry.JobType, candidate.JobType },
+            { Telemetry.Window, candidate.WindowName }
         };
 
         var sw = Stopwatch.StartNew();

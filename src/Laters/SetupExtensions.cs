@@ -108,7 +108,7 @@ public static class SetupExtensions
         //infra
         collection.TryAddSingleton<Traces>();
         collection.TryAddScoped<TelemetryContext>();
-        collection.TryAddSingleton<LatersMetrics>();
+        collection.TryAddSingleton<Metrics>();
         collection.TryAddSingleton(latersConfiguration);
         collection.TryAddSingleton<ICrontab, DefaultCrontab>();
         

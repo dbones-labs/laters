@@ -5,7 +5,7 @@ using System.Diagnostics.Metrics;
 /// <summary>
 /// Make use of Laters Metrics
 /// </summary>
-public interface ILatersMetrics 
+public interface IMetrics 
 {
     /// <summary>
     /// the meter the app uses
@@ -13,42 +13,42 @@ public interface ILatersMetrics
     Meter Meter { get; }
     
     /// <summary>
-    /// <see cref="Meters.Enqueue"/>
+    /// <see cref="Telemetry.Enqueue"/>
     /// </summary>
     Counter<long> EnqueueCounter { get; }
     
     /// <summary>
-    /// <see cref="Meters.Process"/>
+    /// <see cref="Telemetry.Process"/>
     /// </summary>
     Counter<long> ProcessCounter { get; }
     
     /// <summary>
-    /// <see cref="Meters.ProcessErrors"/>
+    /// <see cref="Telemetry.ProcessErrors"/>
     /// </summary>
     Counter<long> ProcessErrorsCounter { get; }
     
     /// <summary>
-    /// <see cref="Meters.Ready"/>
+    /// <see cref="Telemetry.Ready"/>
     /// </summary>
     ObservableGauge<long> ReadyGauge { get; }
 
     /// <summary>
-    /// <see cref="Meters.Scheduled"/>
+    /// <see cref="Telemetry.Scheduled"/>
     /// </summary>
     ObservableGauge<long> ScheduledGauge { get; }
 
     /// <summary>
-    /// <see cref="Meters.Deadletter"/>
+    /// <see cref="Telemetry.Deadletter"/>
     /// </summary>
     ObservableGauge<long> DeadletterGauge { get; }
 
     /// <summary>
-    /// <see cref="Meters.CronScheduled"/>
+    /// <see cref="Telemetry.CronScheduled"/>
     /// </summary>
     ObservableGauge<long> CronScheduledGauge { get; }
 
     /// <summary>
-    /// <see cref="Meters.ProcessTime"/>
+    /// <see cref="Telemetry.ProcessTime"/>
     /// </summary>
     Histogram<double> ProcessTime { get; }
 
