@@ -16,6 +16,7 @@ public class UseMarten : StorageSetup
 {
     protected override void Apply(IServiceCollection collection)
     {
-        collection.AddScoped<ISession, Session>();
+        collection.TryAddScoped<ISession, Session>();
+        collection.TryAddScoped<ITelemetrySession, TelemetrySession>();
     }
-}
+ }

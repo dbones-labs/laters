@@ -128,5 +128,6 @@ public class UseEntityFramework : StorageSetup
 
         collection.TryAddScoped<TransactionCoordinator>();
         collection.TryAddScoped<ISession, Session>();
+        collection.TryAddScoped<ITelemetrySession, TelemetrySession>();
     }
 }
