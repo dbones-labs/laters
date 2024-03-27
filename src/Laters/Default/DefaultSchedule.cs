@@ -14,12 +14,12 @@ public class DefaultSchedule : IAdvancedSchedule
 {
     readonly ISession _session;
     readonly ICrontab _crontab;
-    readonly ILatersMetrics _metrics;
+    readonly IMetrics _metrics;
 
     public DefaultSchedule(
         ISession session,
         ICrontab crontab,
-        ILatersMetrics metrics)
+        IMetrics metrics)
     {
         _session = session;
         _crontab = crontab;
@@ -82,8 +82,8 @@ public class DefaultSchedule : IAdvancedSchedule
 
         var tagList = new TagList
         {
-            { Meters.JobType, job.JobType },
-            { Meters.Window, job.WindowName }
+            { Telemetry.JobType, job.JobType },
+            { Telemetry.Window, job.WindowName }
         };
         
         _metrics.EnqueueCounter.Add(1, tagList);

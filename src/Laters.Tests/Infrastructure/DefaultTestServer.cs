@@ -18,6 +18,7 @@ using Serilog.Core.Enrichers;
 using Serilog.Filters;
 using Serilog.Sinks.OpenTelemetry;
 using ServerProcessing;
+using System.Diagnostics.Metrics;
 
 public class DefaultTestServer : IDisposable
 {
@@ -118,7 +119,7 @@ public class DefaultTestServer : IDisposable
             .WithMetrics(b => b.AddPrometheusExporter())
             .WithTracing(b =>
             {
-                b.AddSource(Traces.Name);
+                b.AddSource(Telemetry.Name);
                 b.AddSource("Laters")
                     .ConfigureResource(r => r.AddService("Laters"))
                     .AddAspNetCoreInstrumentation()

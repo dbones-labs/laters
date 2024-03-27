@@ -49,23 +49,23 @@ public class StorageMetricsRunner
         var scheduled = await session.GetScheduledJobs();
         var deadlettered = await session.GetDeadletterJobs();
 
-        Ready = ready.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Meters.JobType, x.Type) })).ToList();
-        Scheduled = scheduled.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Meters.JobType, x.Type) })).ToList();   
-        Deadlettered = deadlettered.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Meters.JobType, x.Type) })).ToList(); 
+        Ready = ready.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.Type) })).ToList();
+        Scheduled = scheduled.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.Type) })).ToList();   
+        Deadlettered = deadlettered.Select(x => new Measurement<long>(x.Count, new KeyValuePair<string, object?>[] { new (Telemetry.JobType, x.Type) })).ToList(); 
     }
 
     /// <summary>
-    /// <see cref="Meters.Ready"/>
+    /// <see cref="Telemetry.Ready"/>
     /// </summary>
     public List<Measurement<long>> Ready { get; private set; } 
 
     /// <summary>
-    /// <see cref="Meters.Scheduled"/>
+    /// <see cref="Telemetry.Scheduled"/>
     /// </summary>
     public List<Measurement<long>> Scheduled { get; private set; } 
 
     /// <summary>
-    /// <see cref="Meters.Deadletter"/>
+    /// <see cref="Telemetry.Deadletter"/>
     /// </summary>
     public List<Measurement<long>> Deadlettered { get; private set; }
 
