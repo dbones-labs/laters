@@ -1,6 +1,7 @@
 ﻿namespace Laters.Background;
 
 using Configuration;
+using Laters.Infrastructure.Telemetry;
 using ServerProcessing;
 using ServerProcessing.Engine;
 using ServerProcessing.Windows;
@@ -13,19 +14,22 @@ public class DefaultHostedService : IHostedService
     readonly LeaderElectionService _leaderElectionService;
     readonly DefaultTumbler _defaultTumbler;
     readonly JobWorkerQueue _jobWorkerQueue;
+    readonly StorageMetricsRunner _storageMetricsRunner;
     readonly LatersConfiguration _latersConfiguration;
     readonly ILogger<DefaultHostedService> _logger;
 
     public DefaultHostedService(
         LeaderElectionService leaderElectionService,
         DefaultTumbler defaultTumbler,
-        JobWorkerQueue jobWorkerQueue, 
+        JobWorkerQueue jobWorkerQueue,
+        StorageMetricsRunner storageMetricsRunner,
         LatersConfiguration latersConfiguration,
         ILogger<DefaultHostedService> logger)
     {
         _leaderElectionService = leaderElectionService;
         _defaultTumbler = defaultTumbler;
         _jobWorkerQueue = jobWorkerQueue;
+        _storageMetricsRunner = storageMetricsRunner;
         _latersConfiguration = latersConfiguration;
         _logger = logger;
     }
@@ -38,6 +42,7 @@ public class DefaultHostedService : IHostedService
         _leaderElectionService.Initialize(cancellationToken);
         _defaultTumbler.Initialize(cancellationToken);
         _jobWorkerQueue.Initialize(cancellationToken);
+        _storageMetricsRunner.Initialize(cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

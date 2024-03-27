@@ -23,14 +23,20 @@ public class TelemetrySession : ITelemetrySession
     ///<inheritdoc/>
     public Task<List<JobCounter>> GetDeadletterJobs()
     {
-        var counters = _querySession.Query<Job>()
-            .Where(x => x.DeadLettered)
-            .GroupBy(x => x.JobType)
-            .Select(x => new JobCounter()
-            {
-                JobType = x.Key,
-                Count = x.Count()
-            }).ToList();
+        //need to replace with a native sql query
+        var jobTypes = _querySession.Query<Job>().Select(x => x.JobType).Distinct();
+
+        List<JobCounter> counters = new();
+
+        foreach (var jobType in jobTypes)
+        {
+            var count = _querySession.Query<Job>()
+                .Where(x => x.JobType == jobType)
+                .Where(x => x.DeadLettered)
+                .Count();
+
+            counters.Add(new() { Count = count, JobType = jobType });
+        }
 
         return Task.FromResult(counters);
     }
@@ -38,14 +44,21 @@ public class TelemetrySession : ITelemetrySession
     ///<inheritdoc/>
     public Task<List<JobCounter>> GetReadyJobs()
     {
-        var counters = _querySession.Query<Job>()
-            .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow && !x.DeadLettered)
-            .GroupBy(x => x.JobType)
-            .Select(x => new JobCounter()
-            {
-                JobType = x.Key,
-                Count = x.Count()
-            }).ToList();
+        //need to replace with a native sql query
+        var jobTypes = _querySession.Query<Job>().Select(x => x.JobType).Distinct();
+
+        List<JobCounter> counters = new();
+
+        foreach (var jobType in jobTypes)
+        {
+            var count = _querySession.Query<Job>()
+                .Where(x => x.JobType == jobType)
+                .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
+                .Where(x => !x.DeadLettered)
+                .Count();
+
+            counters.Add(new() { Count = count, JobType = jobType });
+        }
 
         return Task.FromResult(counters);
     }
@@ -53,14 +66,20 @@ public class TelemetrySession : ITelemetrySession
     ///<inheritdoc/>
     public Task<List<JobCounter>> GetScheduledJobs()
     {
-        var counters = _querySession.Query<Job>()
-            .Where(x => !x.DeadLettered)
-            .GroupBy(x => x.JobType)
-            .Select(x => new JobCounter()
-            {
-                JobType = x.Key,
-                Count = x.Count()
-            }).ToList();
+        //need to replace with a native sql query
+        var jobTypes = _querySession.Query<Job>().Select(x => x.JobType).Distinct();
+
+        List<JobCounter> counters = new();
+
+        foreach (var jobType in jobTypes)
+        {
+            var count = _querySession.Query<Job>()
+                .Where(x => x.JobType == jobType)
+                .Where(x => !x.DeadLettered)
+                .Count();
+
+            counters.Add(new() { Count = count, JobType = jobType });
+        }
 
         return Task.FromResult(counters);
     }

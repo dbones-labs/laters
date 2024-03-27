@@ -3,6 +3,8 @@ namespace Laters.Data.InMemory;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Data;
+using Laters.Infrastructure;
+using Laters.Models;
 
 /// <summary>
 /// get telemetry data from the storage
@@ -26,6 +28,7 @@ public class TelemetrySession : ITelemetrySession
     {
         var counters = _store.Data.Values
             .Where(x => x is Job job && job.DeadLettered)
+            .Cast<Job>()
             .GroupBy(x => x.JobType)
             .Select(x => new JobCounter()
             {
@@ -40,6 +43,7 @@ public class TelemetrySession : ITelemetrySession
     {
         var counters = _store.Data.Values
             .Where(x => x is Job job && job.ScheduledFor <= SystemDateTime.UtcNow && !job.DeadLettered)
+            .Cast<Job>()    
             .GroupBy(x => x.JobType)
             .Select(x => new JobCounter()
             {
@@ -54,6 +58,7 @@ public class TelemetrySession : ITelemetrySession
     {
         var counters = _store.Data.Values
             .Where(x => x is Job job && !job.DeadLettered)
+            .Cast<Job>()
             .GroupBy(x => x.JobType)
             .Select(x => new JobCounter()
             {

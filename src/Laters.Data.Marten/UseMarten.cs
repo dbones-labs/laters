@@ -1,6 +1,7 @@
 ﻿namespace Laters.Data.Marten;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>
 /// sets up Marten to work with Laters
