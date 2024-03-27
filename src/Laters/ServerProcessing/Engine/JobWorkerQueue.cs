@@ -16,7 +16,7 @@ public class JobWorkerQueue : IDisposable
     readonly IServiceProvider _serviceProvider;
     readonly LatersConfiguration _configuration;
     readonly WorkerClient _workerClient;
-    readonly Telemetry _telemetry;
+    readonly Traces _telemetry;
     readonly ILogger<JobWorkerQueue> _logger;
 
     //local state
@@ -30,7 +30,7 @@ public class JobWorkerQueue : IDisposable
         IServiceProvider serviceProvider,
         LatersConfiguration configuration,
         WorkerClient workerClient,
-        Telemetry telemetry,
+        Traces telemetry,
         ILogger<JobWorkerQueue> logger)
     {
         _leaderContext = leaderContext;

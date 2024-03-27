@@ -54,7 +54,7 @@ public class MetricsAction<T> : IProcessAction<T>
 /// <typeparam name="T">the job type</typeparam>
 public class TraceAction<T> : IProcessAction<T>
 {
-    readonly Telemetry _telemetry;
+    readonly Traces _telemetry;
     readonly LeaderContext _leaderContext;
 
 
@@ -63,7 +63,7 @@ public class TraceAction<T> : IProcessAction<T>
     /// </summary>
     /// <param name="telemetry">the trace wrapper</param>
     /// <param name="leaderContext">the leader</param>
-    public TraceAction(Telemetry telemetry, LeaderContext leaderContext)
+    public TraceAction(Traces telemetry, LeaderContext leaderContext)
     {
         _telemetry = telemetry;
         _leaderContext = leaderContext;

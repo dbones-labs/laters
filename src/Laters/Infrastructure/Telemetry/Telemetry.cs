@@ -5,7 +5,7 @@ using System.Diagnostics;
 /// <summary>
 /// todo register
 /// </summary>
-public class Telemetry : IDisposable
+public class Traces : IDisposable
 {
     public static string Name = "laters.opentelemetry";
 
