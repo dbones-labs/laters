@@ -106,7 +106,7 @@ public static class SetupExtensions
         //------
         //apply all other defaults to the IoC
         //infra
-        collection.TryAddSingleton<Telemetry>();
+        collection.TryAddSingleton<Traces>();
         collection.TryAddScoped<TelemetryContext>();
         collection.TryAddSingleton<LatersMetrics>();
         collection.TryAddSingleton(latersConfiguration);

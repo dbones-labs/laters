@@ -118,7 +118,7 @@ public class DefaultTestServer : IDisposable
             .WithMetrics(b => b.AddPrometheusExporter())
             .WithTracing(b =>
             {
-                b.AddSource(Telemetry.Name);
+                b.AddSource(Traces.Name);
                 b.AddSource("Laters")
                     .ConfigureResource(r => r.AddService("Laters"))
                     .AddAspNetCoreInstrumentation()
