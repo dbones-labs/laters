@@ -14,12 +14,22 @@ public class ClientActions
     /// pulls the data into memory for the rest of the pipeline to make use of (applied second)
     /// </summary>
     public Type PersistenceAction { get; set; } = typeof(PersistenceAction<>);
-    
+
     /// <summary>
-    /// when processed, if the job is part of a cronjob, then create and queue next (applied third)
+    /// create a trace of the job processing (applied third)
+    /// </summary>
+    public Type TraceAction { get; set; } = typeof(TraceAction<>);
+
+    /// <summary>
+    /// measure the job processing (applied fourth)
+    /// </summary>
+    public Type MetricsAction { get; set; } = typeof(MetricsAction<>);
+
+    /// <summary>
+    /// when processed, if the job is part of a cronjob, then create and queue next (applied fifth)
     /// </summary>
     public Type QueueNextAction { get; set; } = typeof(CronAction<>);
-    
+
     /// <summary>
     /// any and all custom actions (applied 4th and onwards, in order)
     /// </summary>
@@ -32,7 +42,7 @@ public class ClientActions
     /// pulls the data into memory for the rest of the pipeline to make use of (applied second)
     /// </summary>
     [Obsolete("use PersistenceAction instead")]
-    public Type LoadJobIntoContextAction { get {return PersistenceAction;} set {PersistenceAction = value;} }
+    public Type LoadJobIntoContextAction { get { return PersistenceAction; } set { PersistenceAction = value; } }
 
     #endregion
 

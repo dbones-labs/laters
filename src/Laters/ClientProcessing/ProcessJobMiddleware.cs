@@ -19,7 +19,9 @@ public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<Job
         //these are actions we need to do
         // _internalMiddleware.Add(MakeGeneric<T>(typeof(OpenTelemetryProcessAction<>)));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.FailureAction));
-        _internalMiddleware.Add(MakeGeneric<T>(clientActions.LoadJobIntoContextAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.PersistenceAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.TraceAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.MetricsAction));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.QueueNextAction));
 
         //these are actions which people may want to add

@@ -2,28 +2,30 @@
 
 using System.Diagnostics;
 using System.Text.Json;
-using ClientProcessing.Middleware;
 using Data;
 using Infrastructure;
 using Infrastructure.Cron;
 using Laters.Infrastructure.Telemetry;
 using Models;
-using ServerProcessing.Windows;
+
 
 public class DefaultSchedule : IAdvancedSchedule
 {
     readonly ISession _session;
     readonly ICrontab _crontab;
     readonly IMetrics _metrics;
+    readonly Traces _traces;
 
     public DefaultSchedule(
         ISession session,
         ICrontab crontab,
-        IMetrics metrics)
+        IMetrics metrics,
+        Traces traces)
     {
         _session = session;
         _crontab = crontab;
         _metrics = metrics;
+        _traces = traces;
     }
     
     public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options = null)
@@ -66,8 +68,16 @@ public class DefaultSchedule : IAdvancedSchedule
 
     public virtual string ForLater<T>(T jobPayload, OnceOptions? options = null)
     {
+        using var activity = _traces.StartActivity<T>(ActivityKind.Producer);
+
         options ??= new OnceOptions();
         var delivery = options.Delivery;
+
+        if (activity is not null)
+        {
+            options.Headers.TryAdd(Telemetry.OpenTelemetry, activity.Id!);
+        }
+        
         
         var job = new Job()
         {
