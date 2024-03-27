@@ -79,8 +79,8 @@ public class TraceAction<T> : IProcessAction<T>
             Activity.Current = activity;
             activity.AddTag("leader.id", _leaderContext.ServerId);
             activity.AddTag("job.id", candidate.Id);
-            activity.AddTag("job.type", candidate.JobType);
-            activity.AddTag("job.windowName", candidate.WindowName);
+            activity.AddTag(Telemetry.JobType, candidate.JobType);
+            activity.AddTag(Telemetry.Window, candidate.WindowName);
         }
         
 
