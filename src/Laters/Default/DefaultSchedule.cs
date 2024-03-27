@@ -1,10 +1,12 @@
 ﻿namespace Laters.Default;
 
+using System.Diagnostics;
 using System.Text.Json;
 using ClientProcessing.Middleware;
 using Data;
 using Infrastructure;
 using Infrastructure.Cron;
+using Laters.Infrastructure.Telemetry;
 using Models;
 using ServerProcessing.Windows;
 
@@ -12,13 +14,16 @@ public class DefaultSchedule : IAdvancedSchedule
 {
     readonly ISession _session;
     readonly ICrontab _crontab;
+    readonly ILatersMetrics _metrics;
 
     public DefaultSchedule(
         ISession session,
-        ICrontab crontab)
+        ICrontab crontab,
+        ILatersMetrics metrics)
     {
         _session = session;
         _crontab = crontab;
+        _metrics = metrics;
     }
     
     public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options = null)
@@ -74,7 +79,15 @@ public class DefaultSchedule : IAdvancedSchedule
             TimeToLiveInSeconds = delivery.TimeToLiveInSeconds,
             WindowName = delivery.WindowName ?? LatersConstants.GlobalTumbler
         };
+
+        var tagList = new TagList
+        {
+            { Meters.JobType, job.JobType },
+            { Meters.Window, job.WindowName }
+        };
         
+        _metrics.EnqueueCounter.Add(1, tagList);
+
         _session.Store(job);
         return job.Id;
     }

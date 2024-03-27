@@ -68,3 +68,45 @@ public interface ISession
     public Task SaveChanges();
     
 }
+
+
+/// <summary>
+/// get telemetry data from the storage
+/// </summary>
+public interface ITelemetrySession
+{
+    /// <summary>
+    /// get the number of jobs which are waiting to be processed
+    /// </summary>
+    /// <returns>Counters</returns>
+    Task<List<JobCounter>> GetReadyJobs();
+
+    /// <summary>
+    /// get the total number of jobs which are scheduled
+    /// </summary>
+    /// <returns>Counters</returns>
+    Task<List<JobCounter>> GetScheduledJobs();
+
+    /// <summary>
+    /// the the number of jobs which have been deadlettered
+    /// </summary>
+    /// <returns>Counters</returns>
+    Task<List<JobCounter>> GetDeadletterJobs();
+}
+
+/// <summary>
+/// a counter entry
+/// </summary>
+public struct JobCounter 
+{
+    /// <summary>
+    /// the job type
+    /// </summary>
+    public string Type { get; set; }
+
+    /// <summary>
+    /// number of occurrences
+    /// </summary>
+    public long Count { get; set; }
+
+}
