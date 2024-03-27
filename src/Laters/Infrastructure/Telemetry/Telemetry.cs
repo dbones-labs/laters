@@ -60,4 +60,8 @@ public static class Telemetry
     /// </summary>
     public static string Window = "laters.window";
 
+    /// <summary>
+    /// this is the key for open telemetry id, in the headers
+    /// </summary>
+    public static string OpenTelemetry = "laters.open_telemetry"; 
 }
