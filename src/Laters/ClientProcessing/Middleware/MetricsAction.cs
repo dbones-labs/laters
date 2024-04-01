@@ -24,11 +24,11 @@ public class MetricsAction<T> : IProcessAction<T>
     /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
-        var candidate = context.Job!;
+        var candidate = context.ServerRequested;
         var tagList = new TagList
         {
             { Telemetry.JobType, candidate.JobType },
-            { Telemetry.Window, candidate.WindowName }
+            { Telemetry.Window, candidate.Window }
         };
 
         var sw = Stopwatch.StartNew();

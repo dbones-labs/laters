@@ -13,15 +13,17 @@ public class ProcessJobMiddleware<T> : IProcessJobMiddleware<T>, IMiddleware<Job
 
     public ProcessJobMiddleware(ClientActions clientActions, MinimalLambdaHandlerRegistry minimalLambdaHandlerRegistry)
     {
-        //we setup a pipline to process a job
+        //we setup a pipeline to process a job
         _internalMiddleware = new Middleware<JobContext<T>>();
         
         //these are actions we need to do
         // _internalMiddleware.Add(MakeGeneric<T>(typeof(OpenTelemetryProcessAction<>)));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.TraceAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.LoggingAction));
+        _internalMiddleware.Add(MakeGeneric<T>(clientActions.MetricsAction));
+        
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.FailureAction));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.PersistenceAction));
-        _internalMiddleware.Add(MakeGeneric<T>(clientActions.TraceAction));
-        _internalMiddleware.Add(MakeGeneric<T>(clientActions.MetricsAction));
         _internalMiddleware.Add(MakeGeneric<T>(clientActions.QueueNextAction));
 
         //these are actions which people may want to add

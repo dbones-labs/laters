@@ -29,16 +29,15 @@ public class TraceAction<T> : IProcessAction<T>
     /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
-        var candidate = context.Job!;
-        candidate.Headers.TryGetValue(Telemetry.OpenTelemetry, out var traceId);
-        using var activity = _telemetry.StartActivity(candidate.JobType, ActivityKind.Consumer, traceId);
+        var candidate = context.ServerRequested;
+        using var activity = _telemetry.StartActivity(candidate.JobType, ActivityKind.Consumer);
         if (activity != null)
         {
             Activity.Current = activity;
-            activity.AddTag("leader.id", _leaderContext.ServerId);
-            activity.AddTag("job.id", candidate.Id);
+            activity.AddTag(Telemetry.LeaderId, _leaderContext.ServerId);
+            activity.AddTag(Telemetry.JobId, candidate.Id);
             activity.AddTag(Telemetry.JobType, candidate.JobType);
-            activity.AddTag(Telemetry.Window, candidate.WindowName);
+            activity.AddTag(Telemetry.Window, candidate.Window);
         }
         
         await next(context);

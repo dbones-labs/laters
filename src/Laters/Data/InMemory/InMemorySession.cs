@@ -89,11 +89,13 @@ public class InMemorySession : ISession
                 UnitOfWork.Add(x.Id, DeepCopy(x));
                 return x;
             })
+            .Where(x => x is not null)
             .Select(x => new Candidate()
             {
-                WindowName = x.WindowName,
+                WindowName = x!.WindowName,
                 Id = x.Id,
-                JobType = x.JobType
+                JobType = x.JobType,
+                TraceId = x.TraceId 
             })
             .ToList();
 

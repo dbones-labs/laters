@@ -45,7 +45,7 @@ public static class Telemetry
     /// </summary>?
     public static string CronScheduled = "laters.cron_jobs.scheduled";
 
-        /// <summary>
+    /// <summary>
     /// time to process the message
     /// </summary>
     public static string ProcessTime = "laters.process_time";
@@ -53,7 +53,8 @@ public static class Telemetry
     /// <summary>
     /// the type of the job (label)
     /// </summary>
-    public static string JobType = "laters.job_type";
+    public static string JobType = "laters.job.job_type";
+
 
     /// <summary>
     /// the window in which the job was processed in (label)
@@ -61,7 +62,28 @@ public static class Telemetry
     public static string Window = "laters.window";
 
     /// <summary>
-    /// this is the key for open telemetry id, in the headers
+    /// the leader id which the job is being processed by (label/header)
+    /// </summary>
+    public static string LeaderId = "laters.leader.id";
+
+    /// <summary>
+    /// the job id (label/header)
+    /// </summary>
+    public static string JobId = "laters.job.id";
+
+
+    /// <summary>
+    /// this is the key for open telemetry id, in the headers (label/header)
     /// </summary>
     public static string OpenTelemetry = "laters.open_telemetry"; 
+
+    /// <summary>
+    /// trace id (label/header)
+    /// </summary>
+    public static string TraceId = "laters.trace.id";
+
+    /// <summary>
+    /// action name (label/header)
+    /// </summary>
+    public static string Action = "laters.action";
 }

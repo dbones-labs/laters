@@ -51,7 +51,8 @@ public class Session : ISession
             {
                 WindowName = x.WindowName,
                 Id = x.Id,
-                JobType = x.JobType
+                JobType = x.JobType,
+                TraceId = x.TraceId
             })
             .ToList();
 
