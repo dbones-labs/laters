@@ -19,6 +19,13 @@ public class ClientMiddleware
     readonly ILogger<ClientMiddleware> _logger;
     readonly Func<IServiceProvider, Job, Task> _execute;
 
+    /// <summary>
+    /// creates a new instance of <see cref="ClientMiddleware"/>
+    /// </summary>
+    /// <param name="next">the next action</param>
+    /// <param name="serviceProvider">the ioc</param>
+    /// <param name="middlewareDelegateFactory">factory with pipelines to handle all jobs</param>
+    /// <param name="logger">logger</param>
     public ClientMiddleware(
         RequestDelegate next, 
         IServiceProvider serviceProvider, 
@@ -31,6 +38,10 @@ public class ClientMiddleware
         _logger = logger;
     }
 
+    /// <summary>
+    /// invoke the middleware
+    /// </summary>
+    /// <param name="context">the current http context</param>
     public async Task InvokeAsync(HttpContext context)
     {
         var httpMethod = context.Request.Method;

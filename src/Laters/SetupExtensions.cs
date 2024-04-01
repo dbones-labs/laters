@@ -169,5 +169,6 @@ public static class SetupExtensions
         collection.TryAddScoped(typeof(MinimalAction<>));
         collection.TryAddScoped(typeof(MetricsAction<>));
         collection.TryAddScoped(typeof(TraceAction<>));
+        collection.TryAddScoped(typeof(LoggingAction<>));
     }
 }

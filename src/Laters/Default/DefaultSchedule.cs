@@ -9,6 +9,9 @@ using Laters.Infrastructure.Telemetry;
 using Models;
 
 
+/// <summary>
+/// the default schedule implementation
+/// </summary>
 public class DefaultSchedule : IAdvancedSchedule
 {
     readonly ISession _session;
@@ -16,6 +19,13 @@ public class DefaultSchedule : IAdvancedSchedule
     readonly IMetrics _metrics;
     readonly Traces _traces;
 
+    /// <summary>
+    /// creates a new instance of <see cref="DefaultSchedule"/>
+    /// </summary>
+    /// <param name="session">the storage session</param>
+    /// <param name="crontab">the crontab</param>
+    /// <param name="metrics">metics</param>
+    /// <param name="traces">traces</param>
     public DefaultSchedule(
         ISession session,
         ICrontab crontab,
@@ -28,12 +38,14 @@ public class DefaultSchedule : IAdvancedSchedule
         _traces = traces;
     }
     
+    /// <inheritdoc />
     public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options = null)
     {
         options ??= new CronOptions();
         ManyForLater(name, jobPayload, cron, options, false);
     }
-    
+
+    /// <inheritdoc />
     public virtual void ManyForLater<T>(string name, T jobPayload, string cron, CronOptions? options, bool isGlobal)
     {
         options ??= new CronOptions();
@@ -56,7 +68,7 @@ public class DefaultSchedule : IAdvancedSchedule
         ForLaterNext(cronJob);
     }
     
-
+    /// <inheritdoc />
     public virtual void ForgetAboutAllOfIt<T>(string name, bool removeOrphans = true)
     {
         _session.Delete<CronJob>(name);
@@ -66,28 +78,24 @@ public class DefaultSchedule : IAdvancedSchedule
         }
     }
 
+    /// <inheritdoc />
     public virtual string ForLater<T>(T jobPayload, OnceOptions? options = null)
     {
         using var activity = _traces.StartActivity<T>(ActivityKind.Producer);
 
         options ??= new OnceOptions();
-        var delivery = options.Delivery;
-
-        if (activity is not null)
-        {
-            options.Headers.TryAdd(Telemetry.OpenTelemetry, activity.Id!);
-        }
-        
+        var delivery = options.Delivery;        
         
         var job = new Job()
         {
             Payload = JsonSerializer.Serialize(jobPayload),
-            JobType = typeof(T).FullName,
+            JobType = typeof(T).FullName!,
             Headers = options.Headers,
             ScheduledFor = options.ScheduleFor,
             MaxRetries = delivery.MaxRetries,
             TimeToLiveInSeconds = delivery.TimeToLiveInSeconds,
-            WindowName = delivery.WindowName ?? LatersConstants.GlobalTumbler
+            WindowName = delivery.WindowName ?? LatersConstants.GlobalTumbler,
+            TraceId = activity?.Id
         };
 
         var tagList = new TagList
@@ -102,6 +110,7 @@ public class DefaultSchedule : IAdvancedSchedule
         return job.Id;
     }
 
+    /// <inheritdoc />
     public virtual string ForLater<T>(T jobPayload, DateTime scheduleFor, OnceOptions? options = null)
     {
         options ??= new OnceOptions();
@@ -110,11 +119,13 @@ public class DefaultSchedule : IAdvancedSchedule
         return ForLater(jobPayload, options);
     }
 
+    /// <inheritdoc />
     public virtual void ForgetAboutIt<T>(string id)
     {
         _session.Delete<Job>(id);
     }
 
+    /// <inheritdoc />
     public virtual string ForLaterNext(CronJob cronJob)
     {
         var job = cronJob.GetNextJob(_crontab);

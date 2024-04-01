@@ -5,10 +5,18 @@
 /// </summary>
 public class ProcessJob
 { 
-    public ProcessJob(string id, string jobType, string leaderId)
+    /// <summary>
+    /// creates a new instance of <see cref="ProcessJob"/>
+    /// </summary>
+    /// <param name="id">job id</param>
+    /// <param name="jobType">job type</param>
+    /// <param name="window">name of the window</param>
+    /// <param name="leaderId">leader id</param>
+    public ProcessJob(string id, string jobType, string window, string leaderId)
     {
         Id = id;
         JobType = jobType;
+        Window = window;
         LeaderId = leaderId;
     }
 
@@ -31,4 +39,9 @@ public class ProcessJob
     /// The server ID which sent the job to be processed
     /// </summary>
     public string LeaderId { get; set; }
+
+    /// <summary>
+    /// Name of the window we are processing the job in
+    /// </summary>
+    public string Window { get; set; }
 }

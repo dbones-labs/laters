@@ -6,27 +6,35 @@
 public class ClientActions
 {
     /// <summary>
-    /// handle the dead-letter and backoff (applied first)
+    /// create a trace of the job processing (applied first)
+    /// </summary>
+    public Type TraceAction { get; set; } = typeof(TraceAction<>);
+
+
+    /// <summary>
+    /// loffing scope (applied second)
+    /// </summary>
+    public Type LoggingAction { get; set; } = typeof(LoggingAction<>);
+
+    /// <summary>
+    /// measure the job processing (applied third)
+    /// </summary>
+    public Type MetricsAction { get; set; } = typeof(MetricsAction<>);
+
+
+    /// <summary>
+    /// handle the dead-letter and backoff (applied forth)
     /// </summary>
     public Type FailureAction { get; set; } = typeof(FailureAction<>);
 
     /// <summary>
-    /// pulls the data into memory for the rest of the pipeline to make use of (applied second)
+    /// pulls the data into memory for the rest of the pipeline to make use of (applied fifth)
     /// </summary>
     public Type PersistenceAction { get; set; } = typeof(PersistenceAction<>);
 
-    /// <summary>
-    /// create a trace of the job processing (applied third)
-    /// </summary>
-    public Type TraceAction { get; set; } = typeof(TraceAction<>);
 
     /// <summary>
-    /// measure the job processing (applied fourth)
-    /// </summary>
-    public Type MetricsAction { get; set; } = typeof(MetricsAction<>);
-
-    /// <summary>
-    /// when processed, if the job is part of a cronjob, then create and queue next (applied fifth)
+    /// when processed, if the job is part of a cronjob, then create and queue next (applied sixth)
     /// </summary>
     public Type QueueNextAction { get; set; } = typeof(CronAction<>);
 
