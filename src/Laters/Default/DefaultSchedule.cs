@@ -8,7 +8,6 @@ using Infrastructure.Cron;
 using Laters.Infrastructure.Telemetry;
 using Models;
 
-
 /// <summary>
 /// the default schedule implementation
 /// </summary>
@@ -65,7 +64,6 @@ public class DefaultSchedule : IAdvancedSchedule
         };
         
         _session.Store(cronJob);
-        ForLaterNext(cronJob);
     }
     
     /// <inheritdoc />
@@ -126,10 +124,9 @@ public class DefaultSchedule : IAdvancedSchedule
     }
 
     /// <inheritdoc />
-    public virtual string ForLaterNext(CronJob cronJob)
+    public virtual void ForLaterNext(CronJob cronJob)
     {
         var job = cronJob.GetNextJob(_crontab);
         _session.Store(job);
-        return job.Id;
     }
 }

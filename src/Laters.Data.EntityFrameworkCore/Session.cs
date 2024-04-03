@@ -32,9 +32,11 @@ public class Session : ISession
         return entity;
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs()
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
     {
-        var items = _dbContext.CronJobs.Where(x => x.IsGlobal);
+        var items = _dbContext.CronJobs.Where(x => x.IsGlobal)
+            .Skip(skip)
+            .Take(take);
         return Task.FromResult<IEnumerable<CronJob>>(items);
     }
 
@@ -115,4 +117,14 @@ public class Session : ISession
         }
     }
 
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    {
+        //todo Perf test.
+        var items = _dbContext.CronJobs
+            .Where(x => !_dbContext.Jobs.Any(y => y.ParentCron == x.Id))
+            .Skip(skip)
+            .Take(take);
+
+        return Task.FromResult<IEnumerable<CronJob>>(items);
+    }
 }
