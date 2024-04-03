@@ -47,12 +47,6 @@ public class InMemorySession : ISession
         return Task.FromResult(none);
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs()
-    {
-        var results = GetEntities<CronJob>();
-        return Task.FromResult(results);
-    }
-
     IEnumerable<T> GetEntities<T>() where T: Entity
     {
         var scoped = UnitOfWork.Where(x => x is T).ToDictionary(x=> x.Key, x=> x.Value);
@@ -157,5 +151,20 @@ public class InMemorySession : ISession
         return Task.CompletedTask;
     }
 
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
+    {
+        var results = GetEntities<CronJob>()
+            .Skip(skip)
+            .Take(take);
+        return Task.FromResult(results);
+    }
 
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    {
+        var results = GetEntities<CronJob>()
+            .Where(x => !GetEntities<Job>().Any(y => y.ParentCron == x.Id))
+            .Skip(skip)
+            .Take(take);
+        return Task.FromResult(results);
+    }
 }

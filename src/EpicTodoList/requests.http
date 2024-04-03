@@ -1,9 +1,9 @@
-get http://localhost:5056/todo-items
+get http://localhost:5235/todo-items
 
 ###
 
 
-post http://localhost:5056/todo-items
+post http://localhost:5235/todo-items
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 ###
 
 
-put http://localhost:5056/todo-items/123
+put http://localhost:5235/todo-items/123
 Content-Type: application/json
 
 {

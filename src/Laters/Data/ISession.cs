@@ -20,7 +20,12 @@ public interface ISession
     /// get the Cron Jobs which are setup globally
     /// </summary>
     /// <returns></returns>
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs();
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50);
+
+    /// <summary>
+    /// get the jobs assigned to a cron
+    /// </summary>
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50);
 
     /// <summary>
     /// gets next set the jobs to be processed
@@ -60,7 +65,6 @@ public interface ISession
     /// <param name="cronName">name of the cronJob</param>
     public void DeleteOrphan(string cronName);
 
-    
     /// <summary>
     /// unit of work pattern, this will comment any dirty objects
     /// </summary>

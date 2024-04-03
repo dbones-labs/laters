@@ -15,6 +15,7 @@ public class DefaultHostedService : IHostedService
     readonly DefaultTumbler _defaultTumbler;
     readonly JobWorkerQueue _jobWorkerQueue;
     readonly StorageMetricsRunner _storageMetricsRunner;
+    readonly EnsureJobInstancesForCron _ensureJobInstancesForCron;
     readonly LatersConfiguration _latersConfiguration;
     readonly ILogger<DefaultHostedService> _logger;
 
@@ -23,6 +24,7 @@ public class DefaultHostedService : IHostedService
         DefaultTumbler defaultTumbler,
         JobWorkerQueue jobWorkerQueue,
         StorageMetricsRunner storageMetricsRunner,
+        EnsureJobInstancesForCron ensureJobInstancesForCron,
         LatersConfiguration latersConfiguration,
         ILogger<DefaultHostedService> logger)
     {
@@ -30,6 +32,7 @@ public class DefaultHostedService : IHostedService
         _defaultTumbler = defaultTumbler;
         _jobWorkerQueue = jobWorkerQueue;
         _storageMetricsRunner = storageMetricsRunner;
+        _ensureJobInstancesForCron = ensureJobInstancesForCron;
         _latersConfiguration = latersConfiguration;
         _logger = logger;
     }
@@ -43,6 +46,7 @@ public class DefaultHostedService : IHostedService
         _defaultTumbler.Initialize(cancellationToken);
         _jobWorkerQueue.Initialize(cancellationToken);
         _storageMetricsRunner.Initialize(cancellationToken);
+        _ensureJobInstancesForCron.Initialize(cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
