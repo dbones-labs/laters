@@ -91,23 +91,12 @@ public class Session : ISession
 
     public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
     {
-        //todo, need to make this more efficient
-        var cronJobs = _querySession.Query<CronJob>()
-            .Select(x=> x.Id)
-            .ToHashSet();
-
-        var done = _querySession.Query<Job>()
-            .Where(x=> x.ParentCron != null)
-            .Where(x=> cronJobs.Contains(x.ParentCron))
-            .Select(x=> x.ParentCron)
-            .ToList();
-
-        var todo = _querySession.Query<CronJob>()
-            .Where(x=> !done.Contains(x.Id))
+        var cronJobs = _documentSession.Query<CronJob>()
+            .Where(x => x.LastTimeJobSynced <= DateTime.MinValue.AddSeconds(1))
             .Skip(skip)
             .Take(take)
             .ToList();
             
-        return Task.FromResult<IEnumerable<CronJob>>(todo);
+        return Task.FromResult<IEnumerable<CronJob>>(cronJobs);
     }
 }

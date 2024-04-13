@@ -67,6 +67,11 @@ public static class Telemetry
     public static string LeaderId = "laters.leader.id";
 
     /// <summary>
+    /// the current server id (label/header)
+    /// </summary>
+    public static string ServerId = "laters.server.id";
+
+    /// <summary>
     /// the job id (label/header)
     /// </summary>
     public static string JobId = "laters.job.id";

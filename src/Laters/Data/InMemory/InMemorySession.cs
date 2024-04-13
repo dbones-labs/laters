@@ -5,7 +5,6 @@ using Data;
 using Infrastructure;
 using Models;
 using ServerProcessing;
-using ISession = ISession;
 
 #pragma warning disable 1591 //xml comments
 
@@ -162,9 +161,10 @@ public class InMemorySession : ISession
     public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
     {
         var results = GetEntities<CronJob>()
-            .Where(x => !GetEntities<Job>().Any(y => y.ParentCron == x.Id))
+            .Where(x => x.LastTimeJobSynced == DateTime.MinValue.ToUniversalTime())
             .Skip(skip)
             .Take(take);
+
         return Task.FromResult(results);
     }
 }

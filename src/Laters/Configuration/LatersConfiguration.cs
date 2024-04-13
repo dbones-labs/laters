@@ -6,12 +6,17 @@ using System.ComponentModel.DataAnnotations;
 /// setup
 /// </summary>
 public class LatersConfiguration
-{ 
+{
     /// <summary>
     /// the length of time a leader has before it checks in
     /// letting all other potential leaders its still alive
     /// </summary>
     public int LeaderTimeToLiveInSeconds { get; set; } = 5;
+
+    /// <summary>
+    /// How often to check if the leader is still alive or elect a new one
+    /// </summary>
+    public int CheckLeaderInSeconds {get; set;} = 3;
     
     /// <summary>
     /// this is the location of the lb which will point at all the workers.

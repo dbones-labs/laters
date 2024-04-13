@@ -12,7 +12,7 @@ public class Session : ISession
 {
     readonly LatersDbContext _dbContext;
     readonly LatersQueryDbContext _queryDbContext;
-    private readonly TransactionCoordinator _transactionCoordinator;
+    readonly TransactionCoordinator _transactionCoordinator;
 
     public Session(
         LatersDbContext dbContext, 
@@ -119,11 +119,11 @@ public class Session : ISession
 
     public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
     {
-        //todo Perf test.
         var items = _dbContext.CronJobs
-            .Where(x => !_dbContext.Jobs.Any(y => y.ParentCron == x.Id))
+            .Where(x=> x.LastTimeJobSynced <= DateTime.MinValue)
             .Skip(skip)
-            .Take(take);
+            .Take(take)
+            .ToList();
 
         return Task.FromResult<IEnumerable<CronJob>>(items);
     }

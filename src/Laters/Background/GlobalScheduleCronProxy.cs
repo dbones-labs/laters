@@ -5,6 +5,10 @@ using Data;
 using Laters.Infrastructure;
 using Models;
 
+/// <summary>
+/// this is a proxy for the global schedule cron, it will allow us to
+/// upsert and remove global cron jobs.
+/// </summary>
 public class GlobalScheduleCronProxy : IScheduleCron
 {
     readonly ISession _session;
@@ -24,9 +28,12 @@ public class GlobalScheduleCronProxy : IScheduleCron
             var cronJob = _session.GetById<CronJob>(name).Result;
             if (cronJob is null)
             {
+                _scheduleCron.ManyForLater(name, jobPayload, cron, options);
                 return;
             }
 
+            //some storage engines may not support just upserting, thus we loaded
+            //the cronjob and we will update it, causing it be marked as dirty.
             options ??= new CronOptions();
             var delivery = options.Delivery;
 

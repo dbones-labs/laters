@@ -1,7 +1,6 @@
 ﻿namespace Laters.Models;
 
 using System.ComponentModel.DataAnnotations;
-using ClientProcessing.Middleware;
 using Infrastructure.Cron;
 
 /// <summary>
@@ -21,7 +20,17 @@ public class CronJob : JobBase
     /// </summary>
     public virtual bool IsGlobal { get; set; }
 
-    public Job GetNextJob(ICrontab crontab)
+    /// <summary>
+    /// this is the <see cref="DateTime"/> that we last confirmed if there was an active job for this cron.
+    /// </summary>
+    public virtual DateTime LastTimeJobSynced { get; set; } = DateTime.MinValue.ToUniversalTime();
+
+    /// <summary>
+    /// creates a new instance of a <see cref="Job"/> for the <see cref="CronJob"/>
+    /// </summary>
+    /// <param name="crontab">the instance of the Crontab to use</param>
+    /// <returns>the next job to run</returns>
+    public virtual Job GetNextJob(ICrontab crontab)
     {
         return new Job()
         {

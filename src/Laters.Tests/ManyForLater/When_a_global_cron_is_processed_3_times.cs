@@ -40,6 +40,7 @@ class When_a_global_cron_is_processed_3_times
             app.MapHandler<Hello>(async (JobContext<Hello> ctx, TestMonitor monitor) =>
             {
                 monitor.AddCallTick(marker);
+                await Task.CompletedTask;
             });
         });
         await _sut.Setup();
@@ -51,7 +52,7 @@ class When_a_global_cron_is_processed_3_times
         Exception? caught = null;
         
         SystemDateTime.Set(()=> _secondSlice);
-        caught = await Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 1, TimeSpan.FromSeconds(9999));
+        caught = await Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 1);
         await Task.Delay(50); // smh
         if (caught is null) _task1Competed = true;
         
@@ -71,7 +72,7 @@ class When_a_global_cron_is_processed_3_times
     
     It should_process_the_cron_twice = () =>
         PAssert.IsTrue(() => _task2Competed);
-    
+
     It should_process_the_cron_thrice = () =>
         PAssert.IsTrue(() => _task3Competed);
     
