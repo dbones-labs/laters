@@ -19,6 +19,16 @@ public class DefaultHostedService : IHostedService
     readonly LatersConfiguration _latersConfiguration;
     readonly ILogger<DefaultHostedService> _logger;
 
+    /// <summary>
+    /// creates an instance of the <see cref="DefaultHostedService"/>
+    /// </summary>
+    /// <param name="leaderElectionService">instance</param>
+    /// <param name="defaultTumbler">instance</param>
+    /// <param name="jobWorkerQueue">instance</param>
+    /// <param name="storageMetricsRunner">instance</param>
+    /// <param name="ensureJobInstancesForCron"></param>
+    /// <param name="latersConfiguration"></param>
+    /// <param name="logger"></param>
     public DefaultHostedService(
         LeaderElectionService leaderElectionService,
         DefaultTumbler defaultTumbler,
@@ -37,9 +47,10 @@ public class DefaultHostedService : IHostedService
         _logger = logger;
     }
     
-    public async Task StartAsync(CancellationToken cancellationToken)
+    ///<inheritdoc/>
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (_latersConfiguration.Role == Roles.Worker) return;
+        if (_latersConfiguration.Role == Roles.Worker) return Task.CompletedTask;
      
         _logger.LogInformation("initializing the server components"); 
         _leaderElectionService.Initialize(cancellationToken);
@@ -47,8 +58,11 @@ public class DefaultHostedService : IHostedService
         _jobWorkerQueue.Initialize(cancellationToken);
         _storageMetricsRunner.Initialize(cancellationToken);
         _ensureJobInstancesForCron.Initialize(cancellationToken);
+        
+         return Task.CompletedTask;
     }
 
+    ///<inheritdoc/>
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         await _leaderElectionService.CleanUp(cancellationToken);

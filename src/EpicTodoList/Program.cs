@@ -37,7 +37,7 @@ builder.Host.UseSerilog((context, config) =>
                                 IncludedData.TemplateBody;
         })
         .WriteTo.Console()
-        .MinimumLevel.Debug();
+        .MinimumLevel.Information();
 });
 
 builder.Services.AddOpenTelemetry()

@@ -47,6 +47,8 @@ public class DefaultTestServer : IDisposable
         _defaultConfigureLaters = (context, setup) =>
         {
             setup.ScanForJobHandlers();
+            setup.Configuration.CheckDatabaseInSeconds = 1;
+            setup.Configuration.CheckLeaderInSeconds = 1;
             setup.Configuration.Role = _role;
             setup.Configuration.WorkerEndpoint = $"http://localhost:{Port}/";
             setup.UseStorage<UseMarten>();

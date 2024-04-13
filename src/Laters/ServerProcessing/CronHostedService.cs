@@ -3,6 +3,7 @@ namespace Laters.ServerProcessing;
 using Laters.Configuration;
 using Laters.ServerProcessing.Triggers;
 using Laters.Models;
+using Laters.Infrastructure;
 
 /// <summary>
 /// this is to ensure that the CronJobs have and instance of a job.
@@ -40,13 +41,20 @@ public class EnsureJobInstancesForCron
     }
 
 
+    /// <summary>
+    /// start the EnsureJobInstancesForCron
+    /// </summary>
+    /// <param name="cancellationToken"></param>
     public void Initialize(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Initialize the CronJob Sync component");
         _populateLambda.Start(cancellationToken);
     }
 
-
+    /// <summary>
+    /// ensure that CronJobs have an instance of a job.
+    /// </summary>
+    /// <param name="cancellationToken">dis</param>
     protected virtual async Task EnsureJobInstances(CancellationToken cancellationToken = default)
     {
         if (!_leaderContext.IsLeader) return;
@@ -54,25 +62,21 @@ public class EnsureJobInstancesForCron
         List<CronJob> cronJobs = new();
         do
         {
-            try
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var session = scope.ServiceProvider.GetRequiredService<Data.ISession>();
-                var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
-                cronJobs = (await session.GetGlobalCronJobsWithOutJob(0, 50)).ToList();
-                foreach (var cronJob in cronJobs)
-                {
-                    schedule.ForLaterNext(cronJob);
-            }
-            await session.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                
-            }
-            
 
-        } while(cronJobs.Count != 0);
+            using var scope = _serviceProvider.CreateScope();
+            var session = scope.ServiceProvider.GetRequiredService<Data.ISession>();
+            var schedule = scope.ServiceProvider.GetRequiredService<IAdvancedSchedule>();
+            cronJobs = (await session.GetGlobalCronJobsWithOutJob(0, 50)).ToList();
+            
+            foreach (var cronJob in cronJobs)
+            {
+                schedule.ForLaterNext(cronJob);
+                cronJob.LastTimeJobSynced = SystemDateTime.UtcNow;
+            }
+
+            await session.SaveChanges();
+
+        } while (cronJobs.Count != 0);
 
     }
 }
