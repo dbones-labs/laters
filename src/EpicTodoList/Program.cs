@@ -177,7 +177,7 @@ var rnd = new Random();
 
 app.MapHandler<SetupTasks>(async (ISchedule schedule, IDocumentSession session) =>
 {
-    var randomBetween1And1000 = rnd.Next(1, 1000);
+    var randomBetween1And1000 = rnd.Next(1, 20);
     for (var i = 0; i < randomBetween1And1000; i++)
     {
         var item = new TodoItem
@@ -193,14 +193,14 @@ app.MapHandler<SetupTasks>(async (ISchedule schedule, IDocumentSession session) 
         {
             var options = new OnceOptions();
             options.Delivery.WindowName = "quick";
-            schedule.ForLater(new SetupDoneIn5 { Id = item.Id }, SystemDateTime.UtcNow.AddSeconds(5), options);
+            schedule.ForLater(new SetupDoneIn5 { Id = item.Id }, SystemDateTime.UtcNow.AddMinutes(20), options);
 
         }
         else
         {
             var options = new OnceOptions();
             options.Delivery.WindowName = "slow";
-            schedule.ForLater(new SetupDoneIn3 { Id = item.Id }, SystemDateTime.UtcNow.AddSeconds(3), options);
+            schedule.ForLater(new SetupDoneIn3 { Id = item.Id }, SystemDateTime.UtcNow.AddHours(3), options);
         }
 
     }
