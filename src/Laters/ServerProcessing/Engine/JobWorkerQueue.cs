@@ -61,7 +61,7 @@ public class JobWorkerQueue : IDisposable
         //no longer leader
         if (!_leaderContext.IsLeader) return;
 
-        using var activity = _telemetry.StartActivity(nameof(PopulateCandidates), ActivityKind.Internal);
+        //using var activity = _telemetry.StartActivity(nameof(PopulateCandidates), ActivityKind.Internal);
 
         IList<Candidate> candidates;
         using (var workingScope = _serviceProvider.CreateScope())
@@ -77,7 +77,7 @@ public class JobWorkerQueue : IDisposable
             _populateTrigger.SetWhenToFetch(fetch);
         }
 
-        activity?.AddTag("queued", candidates.Count);
+        //activity?.AddTag("queued", candidates.Count);
 
         await candidates.ParallelForEachAsync(
             candidate => SendJobToWorker(cancellationToken, candidate),
@@ -88,7 +88,7 @@ public class JobWorkerQueue : IDisposable
 
     async Task SendJobToWorker(CancellationToken cancellationToken, Candidate candidate)
     {
-        using var __ = _logger.BeginScope(new Dictionary<string, string>
+        using var _ = _logger.BeginScope(new Dictionary<string, string>
         {
             { Telemetry.LeaderId, _leaderContext.ServerId },
             { Telemetry.Action, nameof(SendJobToWorker) },
@@ -101,11 +101,19 @@ public class JobWorkerQueue : IDisposable
         var noLongerLeader = !_leaderContext.IsLeader;
         var windowMaxedOut = !_tumbler.AreWeOkToProcessThisWindow(candidate.WindowName);
 
-        if (noLongerLeader || windowMaxedOut)
+        if (noLongerLeader)
+        {
+            //this should be rare, but we needed to check
+            _logger.LogInformation(
+                "candidate {jobId} will be processed later, as node is no longer leader", candidate.Id);
+            return;
+        }
+
+        if (windowMaxedOut)
         {
             //try and exit out asap. if we cannot process the item.
             _logger.LogInformation(
-                "candidate {num} will be processed later, as the window has reached its limit", candidate.Id);
+                "candidate {jobId} will be processed later, as the window has reached its limit", candidate.Id);
             return;
         }
 

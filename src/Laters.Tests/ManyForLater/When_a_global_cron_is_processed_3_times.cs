@@ -44,7 +44,7 @@ class When_a_global_cron_is_processed_3_times
             });
         });
         await _sut.Setup();
-        await Task.Delay(500);
+        Thread.Sleep(1000);
     };
 
     Because of = async () =>
@@ -52,17 +52,17 @@ class When_a_global_cron_is_processed_3_times
         Exception? caught = null;
         
         SystemDateTime.Set(()=> _secondSlice);
-        caught = await Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 1);
+        caught = Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 1).Result;
         await Task.Delay(50); // smh
         if (caught is null) _task1Competed = true;
         
         SystemDateTime.Set(()=> _thirdSlice);
-        caught = await Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 2);
+        caught = Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 2).Result;
         await Task.Delay(50);
         if (caught is null) _task2Competed = true;
         
         SystemDateTime.Set(()=> _forthSlice);
-        caught = await Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 3);
+        caught = Rig.TryWait(() => _sut.Monitor.NumberOfCallTicksFor<MinimalHello>() >= 3).Result;
         await Task.Delay(50);
         if (caught is null) _task3Competed = true;
     };

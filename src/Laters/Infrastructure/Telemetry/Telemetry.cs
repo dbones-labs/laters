@@ -26,22 +26,22 @@ public static class Telemetry
     public static string ProcessErrors = "laters.jobs.process.errors";
 
     /// <summary>
-    /// number of jobs that are ready to be processed (total/ guage)
+    /// number of jobs that are ready to be processed (total/ gauge)
     /// </summary>
     public static string Ready = "laters.jobs.ready";
 
     /// <summary>
-    /// number of jobs that are scheduled to be processed (total / guage)
+    /// number of jobs that are scheduled to be processed (total / gauge)
     /// </summary>
     public static string Scheduled = "laters.jobs.scheduled";
 
     /// <summary>
-    /// number of jobs that are deadlettered (total / guage)
+    /// number of jobs that are deadlettered (total / gauge)
     /// </summary>
     public static string Deadletter = "laters.jobs.deadletter";
     
     /// <summary>
-    /// number of cron jobs that are scheduled (total / guage)
+    /// number of cron jobs that are scheduled (total / gauge)
     /// </summary>?
     public static string CronScheduled = "laters.cron_jobs.scheduled";
 
