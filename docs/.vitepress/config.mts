@@ -42,7 +42,8 @@ export default defineConfig({
       {
         text: 'Configuration',
         items: [
-          { text: 'program.cs', link: '/configuration/programcs' }
+          { text: 'program.cs', link: '/configuration/programcs' },
+          { text: 'Telemetry', link: '/telemetry/open-telemtery' }
         ]
       },
       {
