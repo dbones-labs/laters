@@ -8,6 +8,12 @@ using System.Diagnostics.Metrics;
 /// </summary>
 public class Metrics : IMetrics
 {
+
+    /// <summary>
+    /// instance of the metrics
+    /// </summary>
+    /// <param name="meterFactory">.NET factory for Metrics</param>
+    /// <param name="storageMetricsRunner">the backing store to use for metrics</param>
     public Metrics(
         IMeterFactory meterFactory, 
         StorageMetricsRunner storageMetricsRunner)
@@ -65,7 +71,7 @@ public class Metrics : IMetrics
     /// <summary>
     /// <see cref="Telemetry.CronScheduled"/>
     /// </summary>
-    public ObservableGauge<long> CronScheduledGauge { get; }
+    public ObservableGauge<long> CronScheduledGauge { get; } = null!;
 
     /// <summary>
     /// <see cref="Telemetry.ProcessTime"/>
