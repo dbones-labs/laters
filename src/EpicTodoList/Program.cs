@@ -5,7 +5,6 @@ using Laters.ClientProcessing;
 using Laters.Configuration;
 using Laters.Data.Marten;
 using Laters.Infrastructure;
-using Laters.Infrastructure.Telemetry;
 using Laters.Minimal.Application;
 using Marten;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +18,13 @@ using Serilog.Sinks.OpenTelemetry;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
+var serviceName = "todoApp";
 
 builder.Host.UseSerilog((context, config) =>
 {
     config
         .Enrich.FromLogContext()
-        .Enrich.With(new PropertyEnricher("service_name", "Laters"))
+        .Enrich.With(new PropertyEnricher("service_name", serviceName))
         //.Filter.ByIncludingOnly(Matching.FromSource("Laters"))
         .WriteTo.OpenTelemetry(opt =>
         {
@@ -43,16 +41,15 @@ builder.Host.UseSerilog((context, config) =>
 builder.Services.AddOpenTelemetry()
     .WithMetrics(b =>
     {
-        b.ConfigureResource(r => r.AddService("Laters"))
-            .AddMeter(Telemetry.Name)
+        b.ConfigureResource(r => r.AddService(serviceName))
+            .AddLatersInstrumentation()
             .AddProcessInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddPrometheusExporter();
     }).WithTracing(b =>
     {
-        b.AddSource(Telemetry.Name);
-        b.AddSource("Laters")
-            .ConfigureResource(r => r.AddService("Laters"))
+        b.ConfigureResource(r => r.AddService(serviceName))
+            .AddLatersInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddNpgsql()
             .AddHttpClientInstrumentation()
@@ -177,7 +174,7 @@ var rnd = new Random();
 
 app.MapHandler<SetupTasks>(async (ISchedule schedule, IDocumentSession session) =>
 {
-    var randomBetween1And1000 = rnd.Next(1, 20);
+    var randomBetween1And1000 = 1;// rnd.Next(1, 20);
     for (var i = 0; i < randomBetween1And1000; i++)
     {
         var item = new TodoItem
@@ -193,8 +190,7 @@ app.MapHandler<SetupTasks>(async (ISchedule schedule, IDocumentSession session) 
         {
             var options = new OnceOptions();
             options.Delivery.WindowName = "quick";
-            schedule.ForLater(new SetupDoneIn5 { Id = item.Id }, SystemDateTime.UtcNow.AddMinutes(20), options);
-
+            schedule.ForLater(new SetupDoneIn5 { Id = item.Id }, SystemDateTime.UtcNow.AddMilliseconds(200), options);
         }
         else
         {
