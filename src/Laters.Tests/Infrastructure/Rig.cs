@@ -41,6 +41,7 @@ public static class Rig
     
     public static async Task<Exception?> TryWait(Expression<Func<bool>> predicate)
     {
-        return await TryWait(predicate, TimeSpan.FromSeconds(30));
+        var exception = await TryWait(predicate, TimeSpan.FromSeconds(30));
+        return exception;
     }
 }

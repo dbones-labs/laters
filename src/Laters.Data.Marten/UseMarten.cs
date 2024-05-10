@@ -1,6 +1,7 @@
 ﻿namespace Laters.Data.Marten;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>
 /// sets up Marten to work with Laters
@@ -16,6 +17,7 @@ public class UseMarten : StorageSetup
 {
     protected override void Apply(IServiceCollection collection)
     {
-        collection.AddScoped<ISession, Session>();
+        collection.TryAddScoped<ISession, Session>();
+        collection.TryAddScoped<ITelemetrySession, TelemetrySession>();
     }
-}
+ }

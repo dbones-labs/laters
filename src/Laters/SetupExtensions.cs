@@ -106,9 +106,10 @@ public static class SetupExtensions
         //------
         //apply all other defaults to the IoC
         //infra
-        collection.TryAddSingleton<Telemetry>();
+        collection.TryAddSingleton<IMetrics, Metrics>();
+        collection.TryAddSingleton<Traces>();
         collection.TryAddScoped<TelemetryContext>();
-        collection.TryAddSingleton<LatersMetrics>();
+        collection.TryAddSingleton<StorageMetricsRunner>();
         collection.TryAddSingleton(latersConfiguration);
         collection.TryAddSingleton<ICrontab, DefaultCrontab>();
         
@@ -121,8 +122,10 @@ public static class SetupExtensions
         collection.TryAddSingleton<DefaultTumbler>();
         collection.TryAddSingleton<JobWorkerQueue>();
         collection.TryAddSingleton<LeaderContext>();
+        collection.TryAddSingleton<EnsureJobInstancesForCron>();
         collection.TryAddSingleton<LeaderElectionService>();
         collection.AddHostedService<DefaultHostedService>();
+
         
         collection.AddHttpClient<WorkerClient>().ConfigurePrimaryHttpMessageHandler(provider =>
         {
@@ -166,5 +169,8 @@ public static class SetupExtensions
         collection.TryAddScoped(typeof(CronAction<>));
         collection.TryAddScoped(typeof(HandlerAction<>));
         collection.TryAddScoped(typeof(MinimalAction<>));
+        collection.TryAddScoped(typeof(MetricsAction<>));
+        collection.TryAddScoped(typeof(TraceAction<>));
+        collection.TryAddScoped(typeof(LoggingAction<>));
     }
 }

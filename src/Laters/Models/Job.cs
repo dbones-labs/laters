@@ -32,4 +32,9 @@ public class Job : JobBase
     /// time of last execution
     /// </summary>
     public virtual DateTime LastAttempted { get; set; }
+
+    /// <summary>
+    /// the trace id for the job
+    /// </summary>
+    public virtual string? TraceId { get; set; }
 }

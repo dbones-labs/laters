@@ -2,6 +2,7 @@
 
 using global::Marten;
 using Infrastructure;
+using JasperFx.Core;
 using Models;
 using ServerProcessing;
 
@@ -25,9 +26,12 @@ public class Session : ISession
         return item;
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs()
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
     {
-        var items = _documentSession.Query<CronJob>().Where(x => x.IsGlobal);
+        var items = _documentSession.Query<CronJob>()
+            .Where(x => x.IsGlobal)
+            .Skip(skip)
+            .Take(take);
         return Task.FromResult<IEnumerable<CronJob>>(items);
     }
 
@@ -45,7 +49,8 @@ public class Session : ISession
             {
                 WindowName = x.WindowName,
                 Id = x.Id,
-                JobType = x.JobType
+                JobType = x.JobType,
+                TraceId = x.TraceId
             })
             .ToList();
 
@@ -84,5 +89,14 @@ public class Session : ISession
         }
     }
 
-
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    {
+        var cronJobs = _documentSession.Query<CronJob>()
+            .Where(x => x.LastTimeJobSynced <= DateTime.MinValue.AddSeconds(1))
+            .Skip(skip)
+            .Take(take)
+            .ToList();
+            
+        return Task.FromResult<IEnumerable<CronJob>>(cronJobs);
+    }
 }

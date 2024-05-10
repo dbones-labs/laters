@@ -5,7 +5,6 @@ using Data;
 using Infrastructure;
 using Models;
 using ServerProcessing;
-using ISession = ISession;
 
 #pragma warning disable 1591 //xml comments
 
@@ -47,12 +46,6 @@ public class InMemorySession : ISession
         return Task.FromResult(none);
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs()
-    {
-        var results = GetEntities<CronJob>();
-        return Task.FromResult(results);
-    }
-
     IEnumerable<T> GetEntities<T>() where T: Entity
     {
         var scoped = UnitOfWork.Where(x => x is T).ToDictionary(x=> x.Key, x=> x.Value);
@@ -89,11 +82,13 @@ public class InMemorySession : ISession
                 UnitOfWork.Add(x.Id, DeepCopy(x));
                 return x;
             })
+            .Where(x => x is not null)
             .Select(x => new Candidate()
             {
-                WindowName = x.WindowName,
+                WindowName = x!.WindowName,
                 Id = x.Id,
-                JobType = x.JobType
+                JobType = x.JobType,
+                TraceId = x.TraceId 
             })
             .ToList();
 
@@ -155,5 +150,21 @@ public class InMemorySession : ISession
         return Task.CompletedTask;
     }
 
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
+    {
+        var results = GetEntities<CronJob>()
+            .Skip(skip)
+            .Take(take);
+        return Task.FromResult(results);
+    }
 
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    {
+        var results = GetEntities<CronJob>()
+            .Where(x => x.LastTimeJobSynced == DateTime.MinValue.ToUniversalTime())
+            .Skip(skip)
+            .Take(take);
+
+        return Task.FromResult(results);
+    }
 }
