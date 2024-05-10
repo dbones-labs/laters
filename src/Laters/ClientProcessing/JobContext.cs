@@ -9,12 +9,12 @@ public class JobContext<T>
     /// the information the job is bring processed for
     /// </summary>
     [Required]
-    public T? Payload { get; set; }
+    public T Payload { get; set; } = default(T)!;
 
     /// <summary>
     /// the job, consider this the envelope for the Payload
     /// </summary>
-    public Job? Job { get; set; }
+    public Job Job { get; set; } = null!; 
 
     /// <summary>
     /// the id of the job
@@ -24,5 +24,5 @@ public class JobContext<T>
     /// <summary>
     /// the information we are provided by the leader
     /// </summary>
-    public ProcessJob? ServerRequested{ get; set; }
+    public ProcessJob ServerRequested{ get; set; } = null!;
 }

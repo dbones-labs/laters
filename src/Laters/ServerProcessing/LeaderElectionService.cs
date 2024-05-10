@@ -4,8 +4,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Configuration;
 using Data;
-using Exceptions;
 using Infrastructure;
+using Laters.Infrastructure.Telemetry;
 using Models;
 using Triggers;
 
@@ -34,8 +34,10 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
         _configuration = configuration;
         _scope = scope;
         _logger = logger;
+
+        var timeTrigger = new TimeTrigger(TimeSpan.FromSeconds(configuration.CheckLeaderInSeconds));
         
-        _electServer = new ContinuousLambda(nameof(ElectLeader), async () => await ElectLeader(), new TimeTrigger(TimeSpan.FromSeconds(3)));
+        _electServer = new ContinuousLambda(nameof(ElectLeader), async () => await ElectLeader(), timeTrigger);
     }
     
     /// <summary>
@@ -87,8 +89,8 @@ public class LeaderElectionService : INotifyPropertyChanged, IAsyncDisposable, I
         {
             using var _ = _logger.BeginScope(new Dictionary<string, string>
             {
-                { "ServerId", _leaderContext.ServerId },
-                { "Action", nameof(ElectLeader) }
+                { Telemetry.ServerId, _leaderContext.ServerId },
+                { Telemetry.Action , nameof(ElectLeader) }
             });
             
             bool isLeader = false;

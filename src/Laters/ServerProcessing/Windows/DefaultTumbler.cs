@@ -64,7 +64,7 @@ public class DefaultTumbler : IDisposable
 
         names.Add(LatersConstants.GlobalTumbler);
 
-        var availableWindows = _namedWindows.Where(x => !x.Value.AvailableCapacity).Select(x => x.Key);
+        var availableWindows = _namedWindows.Where(x => x.Value.AvailableCapacity).Select(x => x.Key);
         names.AddRange(availableWindows);
         
         return names;
