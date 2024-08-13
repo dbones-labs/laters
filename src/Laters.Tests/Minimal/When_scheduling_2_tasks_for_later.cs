@@ -22,11 +22,15 @@ class When_using_a_minimal_handler_with_a_single_job
             var marker = new MinimalHello();
             app.UseLaters();
             
-            app.MapHandler<Hello>(async (JobContext<Hello> ctx, TestMonitor monitor, ILogger<MinimalHello> logger) =>
+            app.MapHandler<Hello>(async (JobContext<Hello> ctx, TestMonitor monitor, ILogger<MinimalHello> logger, CancellationToken cancellationToken) =>
             {
                 monitor.AddCallTick(marker);
                 monitor.Observed.Add("ctx", ctx);
                 monitor.Observed.Add("logger", logger);
+                monitor.Observed.Add("cancellationToken", cancellationToken);
+                var c = ctx.CancellationToken == cancellationToken;
+                var d = ctx.CancellationToken == default;
+                var e = (CancellationToken)default == default; 
             });
         });
         _testServer.Setup();
@@ -46,6 +50,9 @@ class When_using_a_minimal_handler_with_a_single_job
     
     It should_inject_params_from_container = () =>
         PAssert.IsTrue(() => _testServer.Monitor.GetObserved<ILogger<MinimalHello>>("logger") != null);
+
+    It should_inject_cancellationToken_from_context = () =>
+        PAssert.IsTrue(() => _testServer.Monitor.GetObserved<CancellationToken>("cancellationToken") != default);
 
     Cleanup after = () =>
     {
