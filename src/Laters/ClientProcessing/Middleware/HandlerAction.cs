@@ -22,6 +22,7 @@ public class HandlerAction<T> : IProcessAction<T>
     /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
+        context.CancellationToken.ThrowIfCancellationRequested(); 
         await _handler.Execute(context);
     }
 }

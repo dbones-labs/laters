@@ -6,8 +6,6 @@ using Infrastructure;
 using Models;
 using ServerProcessing;
 
-#pragma warning disable 1591 //xml comments
-
 /// <summary>
 /// this is not for production use
 /// </summary>
@@ -16,23 +14,22 @@ public class InMemorySession : ISession
     readonly InMemoryStore _store;
     readonly HashSet<string> _removeEntities = new();
     
+    /// <summary>
+    /// create an instance of the session
+    /// </summary>
+    /// <param name="store">the memory backing store</param>
     public InMemorySession(InMemoryStore store)
     {
         _store = store;
     }
 
+    /// <summary>
+    /// this is the store for the unit of work pattern to store changes with.
+    /// </summary>
     public Dictionary<string, Entity> UnitOfWork { get; init; } = new();
-    
-    public void Dispose()
-    {
-    }
 
-    public ValueTask DisposeAsync()
-    {
-        return ValueTask.CompletedTask;
-    }
-
-    public Task<T?> GetById<T>(string id) where T : Entity
+    /// <inheritdoc/>
+    public Task<T?> GetById<T>(string id, CancellationToken cancellationToken = default) where T : Entity
     {
         if (UnitOfWork.TryGetValue(id, out var entry)) return Task.FromResult(entry as T);
         if (_store.Data.TryGetValue(id, out var storedEntry))
@@ -46,6 +43,7 @@ public class InMemorySession : ISession
         return Task.FromResult(none);
     }
 
+    /// <inheritdoc/>
     IEnumerable<T> GetEntities<T>() where T: Entity
     {
         var scoped = UnitOfWork.Where(x => x is T).ToDictionary(x=> x.Key, x=> x.Value);
@@ -55,6 +53,7 @@ public class InMemorySession : ISession
         return results;
     }
     
+    /// <inheritdoc/>
     public static T DeepCopy<T>(T other)
     {
         var payload = JsonSerializer.Serialize(other);
@@ -66,7 +65,8 @@ public class InMemorySession : ISession
         return result;
     }
     
-    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
         var items = GetEntities<Job>()
             .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
@@ -95,23 +95,21 @@ public class InMemorySession : ISession
         return Task.FromResult(items);
     }
 
+    /// <inheritdoc/>
     public void Store<T>(T entity) where T : Entity
     {
         if(UnitOfWork.ContainsKey(entity.Id)) return;
         UnitOfWork.Add(entity.Id, entity);
     }
 
+    /// <inheritdoc/>
     public void Delete<T>(string id) where T : Entity
     {
         UnitOfWork.Remove(id);
         _removeEntities.Remove(id);
     }
 
-    public void DeleteOrphin(string cronName)
-    {
-        DeleteOrphan(cronName);
-    }
-
+    /// <inheritdoc/>
     public void DeleteOrphan(string cronName)
     {
         var job = GetEntities<Job>().FirstOrDefault(x => x.ParentCron == cronName);
@@ -121,7 +119,8 @@ public class InMemorySession : ISession
         }
     }
 
-    public Task SaveChanges()
+    /// <inheritdoc/>
+    public Task SaveChanges(CancellationToken cancellationToken = default)
     {
         _store.Commit(entities =>
         {
@@ -134,7 +133,7 @@ public class InMemorySession : ISession
                 throw new ConcurrencyException(new Exception($"{entity.GetType()} - ID: {entity.Id}"));
             }
             
-            //remove
+            //apply the removals first, then we update
             foreach (var removeId in _removeEntities)
             {
                 _store.Data.Remove(removeId, out var _);
@@ -150,15 +149,18 @@ public class InMemorySession : ISession
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
         var results = GetEntities<CronJob>()
             .Skip(skip)
             .Take(take);
+
         return Task.FromResult(results);
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
         var results = GetEntities<CronJob>()
             .Where(x => x.LastTimeJobSynced == DateTime.MinValue.ToUniversalTime())

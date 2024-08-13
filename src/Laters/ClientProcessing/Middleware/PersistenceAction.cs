@@ -31,13 +31,16 @@ public class PersistenceAction<T> : IProcessAction<T>
     /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
+        var cancellationToken = context.CancellationToken;
+        cancellationToken.ThrowIfCancellationRequested(); 
+
         //load from the database
         var job = await _session.GetById<Job>(context.JobId)
                   ?? throw new JobNotFoundException(context.JobId);
 
         _logger.StartedToProcess(job.Id);
         context.Job = job;
-        context.Payload = JsonSerializer.Deserialize<T>(job.Payload);
+        context.Payload = JsonSerializer.Deserialize<T>(job.Payload)!;
 
         await next(context);
         
