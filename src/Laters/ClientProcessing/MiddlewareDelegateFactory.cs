@@ -118,7 +118,7 @@ public class MiddlewareDelegateFactory
         {
             var ctxInstance = jobContextCtor.Invoke(null);
             jobProperty.SetValue(ctxInstance, job);
-            jobProperty.SetValue(ctxInstance, cancellationToken);
+            jobCancellationToken.SetValue(ctxInstance, cancellationToken);
 
             var middleware = scope.GetRequiredService(processJobMiddlewareType);
             return (Task)executeMethod.Invoke(middleware, new object[] { scope, ctxInstance })!;
