@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using ClientProcessing;
 using ClientProcessing.Middleware;
-using Models;
 
 
 /// <summary>
@@ -17,7 +16,6 @@ public class ClientMiddleware
     readonly IServiceProvider _serviceProvider;
     readonly MiddlewareDelegateFactory _middlewareDelegateFactory;
     readonly ILogger<ClientMiddleware> _logger;
-    readonly Func<IServiceProvider, Job, Task> _execute;
 
     /// <summary>
     /// creates a new instance of <see cref="ClientMiddleware"/>
@@ -45,7 +43,8 @@ public class ClientMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var httpMethod = context.Request.Method;
-        var path = context.Request.Path.Value;
+        var path = context.Request.Path.Value!;
+        var cancellationToken = context.RequestAborted;
 
         var prefix = "laters/process-job";
 
@@ -79,8 +78,8 @@ public class ClientMiddleware
         try
         {
             //_leaderInformation.Id = processJob.LeaderId;
-            var execute = _middlewareDelegateFactory.GetExecute(processJob.JobType);
-            await execute(_serviceProvider, processJob);
+            var execute = _middlewareDelegateFactory.GetExecute(processJob!.JobType);
+            await execute(_serviceProvider, processJob, cancellationToken);
         }
         catch (JobNotFoundException exception)
         {
