@@ -42,7 +42,12 @@ public class MinimalMapper
 
         foreach (var parameter in methodInfo.GetParameters())
         {
-            if (parameter.ParameterType == typeof(T))
+            if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                var tokenProperty = Expression.Property(instanceParameter, nameof(JobContext<object>.CancellationToken));
+                parameters.Add(tokenProperty);
+            }
+            else if (parameter.ParameterType == typeof(T))
             {
                 parameters.Add(instanceParameter);
             }

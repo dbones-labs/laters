@@ -1,5 +1,8 @@
 namespace Laters.Background;
 
+/// <summary>
+/// where we setup the global cron jobs at start of the application
+/// </summary>
 public class GlobalCronSetup : IHostedService
 {
     readonly IServiceProvider _serviceProvider;
@@ -10,6 +13,11 @@ public class GlobalCronSetup : IHostedService
         _serviceProvider = serviceProvider;
     }
 
+    /// <summary>
+    /// setup the global cron jobs
+    /// </summary>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>async</returns>
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope = _serviceProvider.CreateScope();
@@ -21,9 +29,14 @@ public class GlobalCronSetup : IHostedService
             setup.Configure(proxy);
         }
         
-        await proxy.SaveChanges();
+        await proxy.SaveChanges(cancellationToken);
     }
 
+    /// <summary>
+    /// handles any stopping of the cron job setup
+    /// </summary>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>async</returns>
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;

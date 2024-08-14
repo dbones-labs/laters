@@ -6,14 +6,21 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using ServerProcessing;
 
-#pragma warning disable 1591 //xml comments
-
+/// <summary>
+/// The session for the entity framework core
+/// </summary>
 public class Session : ISession
 {
     readonly LatersDbContext _dbContext;
     readonly LatersQueryDbContext _queryDbContext;
     readonly TransactionCoordinator _transactionCoordinator;
 
+    /// <summary>
+    /// create the session
+    /// </summary>
+    /// <param name="dbContext">laters db context</param>
+    /// <param name="queryDbContext">the query only db context</param>
+    /// <param name="transactionCoordinator">the transaction coordinator which will</param>
     public Session(
         LatersDbContext dbContext, 
         LatersQueryDbContext queryDbContext, 
@@ -24,25 +31,32 @@ public class Session : ISession
         _transactionCoordinator = transactionCoordinator;
     }
     
-    public async Task<T?> GetById<T>(string id) where T : Entity
+    /// <inheritdoc/>
+    public async Task<T?> GetById<T>(string id, CancellationToken cancellationToken = default) where T : Entity
     {
         var entity = await _dbContext
             .GetDbSet<T>()
-            .FirstOrDefaultAsync(x=> x.Id == id);
+            .FirstOrDefaultAsync(x=> x.Id == id, cancellationToken);
+
         return entity;
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        var items = _dbContext.CronJobs.Where(x => x.IsGlobal)
+        var items = await _dbContext.CronJobs
+            .Where(x => x.IsGlobal)
             .Skip(skip)
-            .Take(take);
-        return Task.FromResult<IEnumerable<CronJob>>(items);
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+        return items;
     }
 
-    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public async Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        var items = _queryDbContext.Jobs
+        var items = await _queryDbContext.Jobs
             .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
             .Where(x => rateLimitNames.Contains(x.WindowName))
@@ -56,11 +70,12 @@ public class Session : ISession
                 JobType = x.JobType,
                 TraceId = x.TraceId
             })
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        return Task.FromResult(items);
+        return items;
     }
 
+    /// <inheritdoc/>
     public void Store<T>(T entity) where T : Entity
     {
         if (string.IsNullOrEmpty(entity.Id) || _dbContext.GetDbSet<T>().Count(x => x.Id == entity.Id) == 0)
@@ -74,6 +89,7 @@ public class Session : ISession
         }
     }
 
+    /// <inheritdoc/>
     public void Delete<T>(string id) where T : Entity
     {
         var set = _dbContext.GetDbSet<T>();
@@ -84,12 +100,7 @@ public class Session : ISession
         }
     }
 
-    public void DeleteOrphin(string cronName)
-    {
-        DeleteOrphan(cronName);
-    }
-
-
+    /// <inheritdoc/>
     public void DeleteOrphan(string cronName)
     {
         var set = _dbContext.Jobs;
@@ -100,16 +111,12 @@ public class Session : ISession
         }
     }
 
-    
-    /// <summary>
-    /// this is only called by Laters, so we will make use of the transaction
-    /// </summary>
-    /// <exception cref="ConcurrencyException"></exception>
-    public async Task SaveChanges()
+    /// <inheritdoc/>
+    public async Task SaveChanges(CancellationToken cancellationToken = default)
     {
         try
         {
-            await _transactionCoordinator.Commit();
+            await _transactionCoordinator.Commit(cancellationToken);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -117,14 +124,15 @@ public class Session : ISession
         }
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        var items = _dbContext.CronJobs
+        var items = await _dbContext.CronJobs
             .Where(x=> x.LastTimeJobSynced <= DateTime.MinValue)
             .Skip(skip)
             .Take(take)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        return Task.FromResult<IEnumerable<CronJob>>(items);
+        return items;
     }
 }

@@ -35,6 +35,7 @@ public class FailureAction<T> : IProcessAction<T>
     {
         try
         {
+            context.CancellationToken.ThrowIfCancellationRequested();
             await next(context);
         }
         catch (JobNotFoundException)

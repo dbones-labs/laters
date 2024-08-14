@@ -34,6 +34,8 @@ public class CronAction<T> : IProcessAction<T>
     /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
+        context.CancellationToken.ThrowIfCancellationRequested();       
+
         await next(context);
         
         var job = context.Job;
