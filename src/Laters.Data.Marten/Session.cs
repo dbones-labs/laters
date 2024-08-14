@@ -2,42 +2,52 @@
 
 using global::Marten;
 using Infrastructure;
-using JasperFx.Core;
 using Models;
 using ServerProcessing;
 
-
-#pragma warning disable 1591 //xml comments
-
+/// <summary>
+/// The session for the Marten
+/// </summary>
 public class Session : ISession
 {
     readonly IDocumentSession _documentSession;
     readonly IQuerySession _querySession;
 
+    
+    /// <summary>
+    /// create an instance of the session
+    /// </summary>
+    /// <param name="documentSession">the write session from marten</param>
+    /// <param name="querySession">the query session from marten</param>
     public Session(IDocumentSession documentSession, IQuerySession querySession)
     {
         _documentSession = documentSession;
         _querySession = querySession;
     }
 
-    public async Task<T?> GetById<T>(string id) where T : Entity
+    /// <inheritdoc/>
+    public async Task<T?> GetById<T>(string id, CancellationToken cancellationToken = default) where T : Entity
     {
-        var item = await _documentSession.LoadAsync<T>(id);
+        var item = await _documentSession.LoadAsync<T>(id, cancellationToken);
         return item;
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<CronJob>> GetGlobalCronJobs(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        var items = _documentSession.Query<CronJob>()
+        var items = await _documentSession.Query<CronJob>()
             .Where(x => x.IsGlobal)
             .Skip(skip)
-            .Take(take);
-        return Task.FromResult<IEnumerable<CronJob>>(items);
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+        return items;
     }
 
-    public Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public async Task<List<Candidate>> GetJobsToProcess(List<string> rateLimitNames, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        var items = _querySession
+        var items = await _querySession
             .Query<Job>()
             .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
@@ -52,36 +62,35 @@ public class Session : ISession
                 JobType = x.JobType,
                 TraceId = x.TraceId
             })
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        return Task.FromResult(items);
+        return items.ToList();
     }
 
+    /// <inheritdoc/>
     public void Store<T>(T item) where T : Entity
     {
         _documentSession.Store(item);
     }
 
+    /// <inheritdoc/>
     public void Delete<T>(string id) where T : Entity
     {
         _documentSession.Delete<T>(id);
     }
 
-    public void DeleteOrphin(string cronName)
-    {
-        DeleteOrphan(cronName);
-    }
-
+    /// <inheritdoc/>
     public void DeleteOrphan(string cronName)
     {
         _documentSession.DeleteWhere<Job>(x => x.ParentCron == cronName);
     }
 
-    public async Task SaveChanges()
+    /// <inheritdoc/>
+    public async Task SaveChanges(CancellationToken cancellationToken = default)
     {
         try
         {
-            await _documentSession.SaveChangesAsync();
+            await _documentSession.SaveChangesAsync(cancellationToken);
         }
         catch (global::Marten.Exceptions.ConcurrencyException e)
         {
@@ -89,14 +98,15 @@ public class Session : ISession
         }
     }
 
-    public Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<CronJob>> GetGlobalCronJobsWithOutJob(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        var cronJobs = _documentSession.Query<CronJob>()
+        var cronJobs = await _documentSession.Query<CronJob>()
             .Where(x => x.LastTimeJobSynced <= DateTime.MinValue.AddSeconds(1))
             .Skip(skip)
             .Take(take)
-            .ToList();
+            .ToListAsync(cancellationToken);
             
-        return Task.FromResult<IEnumerable<CronJob>>(cronJobs);
+        return cronJobs;
     }
 }

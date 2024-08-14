@@ -31,12 +31,12 @@ public class TransactionCoordinator
     /// <summary>
     ///  commits the transaction
     /// </summary>
-    public async Task Commit()
+    public async Task Commit(CancellationToken cancellationToken = default)
     {
 
         if(_connectionWrapper.Connection.State != ConnectionState.Open) 
         {
-            await _connectionWrapper.Connection.OpenAsync();
+            await _connectionWrapper.Connection.OpenAsync(cancellationToken);
         }
 
         using var tx = _connectionWrapper.Connection.BeginTransaction(IsolationLevel.Serializable);
@@ -44,9 +44,9 @@ public class TransactionCoordinator
         _latersDbContext.Database.UseTransaction(tx);
         _applicationDbContextWrapper.DbContext.Database.UseTransaction(tx);
 
-        await _applicationDbContextWrapper.DbContext.SaveChangesAsync();
-        await _latersDbContext.SaveChangesAsync();
+        await _applicationDbContextWrapper.DbContext.SaveChangesAsync(cancellationToken);
+        await _latersDbContext.SaveChangesAsync(cancellationToken);
 
-        tx.Commit();
+        await tx.CommitAsync(cancellationToken);
     }
 }

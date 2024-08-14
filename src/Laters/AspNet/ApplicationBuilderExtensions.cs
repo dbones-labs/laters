@@ -19,12 +19,12 @@ public static class ApplicationBuilderExtensions
 
 
 /// <summary>
-/// who is accountable for calling commit/savechanges on the unit of work.
+/// who is accountable for calling commit/save-changes on the unit of work.
 /// </summary>
 public enum CommitStrategy
 {
     /// <summary>
-    /// you will handle commit/savechanges
+    /// you will handle commit/save-changes
     /// </summary>
     UseApplicationProvided,
     

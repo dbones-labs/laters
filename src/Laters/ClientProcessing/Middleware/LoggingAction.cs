@@ -41,6 +41,8 @@ public class LoggingAction<T> : IProcessAction<T>
 
         try
         {
+            //executing the cancellation check here so we can keep all the logging information on cancellation.
+            context.CancellationToken.ThrowIfCancellationRequested();
             return next(context);
         }
         catch (Exception ex)

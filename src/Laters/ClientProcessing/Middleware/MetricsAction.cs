@@ -24,6 +24,8 @@ public class MetricsAction<T> : IProcessAction<T>
     /// <inheritdoc />
     public async Task Execute(JobContext<T> context, Next<JobContext<T>> next)
     {
+        context.CancellationToken.ThrowIfCancellationRequested();
+        
         var candidate = context.ServerRequested;
         var tagList = new TagList
         {

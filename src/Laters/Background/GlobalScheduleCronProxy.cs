@@ -57,7 +57,7 @@ public class GlobalScheduleCronProxy : IScheduleCron
     }
 
     ///<inheritdoc/>    
-    public async Task SaveChanges()
+    public async Task SaveChanges(CancellationToken cancellationToken = default)
     {
         var existing = await _session.GetGlobalCronJobs();
         var toRemove = existing.Where(x=> !_newSet.ContainsKey(x.Id)).ToList();
@@ -73,6 +73,6 @@ public class GlobalScheduleCronProxy : IScheduleCron
             _session.DeleteOrphan(entry.Id);
         }
         
-        await _session.SaveChanges();
+        await _session.SaveChanges(cancellationToken);
     }
 }
