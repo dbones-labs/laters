@@ -3,10 +3,6 @@
 [![release](https://img.shields.io/github/v/release/dbones-labs/laters?logo=nuget)](https://github.com/dbones-labs/laters/releases) [![Nuget](https://img.shields.io/badge/nuget-laters-blue)](https://github.com/orgs/dbones-labs/packages?repo_name=laters)
 [![docs](https://img.shields.io/badge/docs-laters-blue)](https://dbones-labs.github.io/laters/)
 
-[![dbones-labs](https://circleci.com/gh/dbones-labs/laters.svg?style=shield)](https://app.circleci.com/pipelines/github/dbones-labs/laters) 
-[![codecov](https://codecov.io/gh/dbones-labs/laters/branch/master/graph/badge.svg?token=0AE8TL5PR3)](undefined) 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/efd93328aebe4815a5710df7bbce5d03)](https://www.codacy.com/gh/dbones-labs/laters/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbones-labs/laters&amp;utm_campaign=Badge_Grade) 
-
 
 Need to delay a task for later?
 
