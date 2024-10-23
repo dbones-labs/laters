@@ -125,7 +125,7 @@ public static class SetupExtensions
         collection.TryAddScoped<IScheduleCron>(provider => provider.GetRequiredService<IAdvancedSchedule>());
 
         //server side
-        collection.TryAddSingleton<DefaultTumbler>();
+        collection.TryAddSingleton<ITumbler, DefaultTumbler>();
         collection.TryAddSingleton<JobWorkerQueue>();
         collection.TryAddSingleton<LeaderContext>();
         collection.TryAddSingleton<EnsureJobInstancesForCron>();

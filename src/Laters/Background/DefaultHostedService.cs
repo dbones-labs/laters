@@ -12,7 +12,7 @@ using ServerProcessing.Windows;
 public class DefaultHostedService : IHostedService
 {
     readonly LeaderElectionService _leaderElectionService;
-    readonly DefaultTumbler _defaultTumbler;
+    readonly ITumbler _defaultTumbler;
     readonly JobWorkerQueue _jobWorkerQueue;
     readonly StorageMetricsRunner _storageMetricsRunner;
     readonly EnsureJobInstancesForCron _ensureJobInstancesForCron;
@@ -31,7 +31,7 @@ public class DefaultHostedService : IHostedService
     /// <param name="logger"></param>
     public DefaultHostedService(
         LeaderElectionService leaderElectionService,
-        DefaultTumbler defaultTumbler,
+        ITumbler defaultTumbler,
         JobWorkerQueue jobWorkerQueue,
         StorageMetricsRunner storageMetricsRunner,
         EnsureJobInstancesForCron ensureJobInstancesForCron,
