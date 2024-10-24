@@ -12,7 +12,7 @@ public class JobWorkerQueue : IDisposable
 {
     //injected
     readonly LeaderContext _leaderContext;
-    readonly DefaultTumbler _tumbler;
+    readonly ITumbler _tumbler;
     readonly IServiceProvider _serviceProvider;
     readonly LatersConfiguration _configuration;
     readonly WorkerClient _workerClient;
@@ -26,7 +26,7 @@ public class JobWorkerQueue : IDisposable
 
     public JobWorkerQueue(
         LeaderContext leaderContext,
-        DefaultTumbler tumbler,
+        ITumbler tumbler,
         IServiceProvider serviceProvider,
         LatersConfiguration configuration,
         WorkerClient workerClient,

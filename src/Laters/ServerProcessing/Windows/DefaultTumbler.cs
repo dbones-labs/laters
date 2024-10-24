@@ -4,7 +4,7 @@ using Configuration;
 using Infrastructure;
 using Triggers;
 
-public class DefaultTumbler : IDisposable
+public class DefaultTumbler : IDisposable, ITumbler
 {
     readonly ManualTrigger _trigger = new ();
 

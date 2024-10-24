@@ -100,6 +100,12 @@ public static class SetupExtensions
         //apply the config override from the application
         //apply the changes to the IoC
         configure?.Invoke(setup);
+
+        //lets try and be helpful
+        if (string.IsNullOrWhiteSpace(setup.Configuration.WorkerEndpoint))
+        {
+            setup.Configuration.WorkerEndpoint = configuration["ASPNETCORE_URLS"];
+        }
         
         setup.Apply(collection);
 
@@ -119,7 +125,7 @@ public static class SetupExtensions
         collection.TryAddScoped<IScheduleCron>(provider => provider.GetRequiredService<IAdvancedSchedule>());
 
         //server side
-        collection.TryAddSingleton<DefaultTumbler>();
+        collection.TryAddSingleton<ITumbler, DefaultTumbler>();
         collection.TryAddSingleton<JobWorkerQueue>();
         collection.TryAddSingleton<LeaderContext>();
         collection.TryAddSingleton<EnsureJobInstancesForCron>();
