@@ -81,6 +81,13 @@ export default defineConfig({
           { text: 'EntityFramework', link: '/storage/entity-framework' },
           { text: 'custom', link: '/storage/custom' }
         ]
+      },
+      {
+        text: 'Performance',
+        items: [
+          { text: 'Overview', link: '/performance/performance' },
+          { text: 'rate-limiting', link: '/performance/rate-limiting' }
+        ]
       }
     ],
 

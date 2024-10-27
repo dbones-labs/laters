@@ -22,8 +22,14 @@ public interface ITumbler
     /// find all windows which have available capacity
     /// </summary>
     /// <returns>all window names which can process</returns>
+    [Obsolete("This method is not used, and will be removed in the future.", true)]
     List<string> GetWindowsWhichAreWithinLimits();
-    
+
+    /// <summary>
+    /// get the windows which have reached their limits
+    /// </summary>
+    /// <returns>either `global` or the list of windows which have reached there limits</returns>
+    public List<string> GetWindowsWhichHaveReachedTheirLimits();
     
     /// <summary>
     /// record a job queue for a given window

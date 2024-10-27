@@ -51,7 +51,7 @@ public class Session : ISession
             .Query<Job>()
             .Where(x => x.ScheduledFor <= SystemDateTime.UtcNow)
             .Where(x => !x.DeadLettered)
-            .Where(x => rateLimitNames.Contains(x.WindowName))
+            .Where(x => !rateLimitNames.Contains(x.WindowName))
             .OrderByDescending(x => x.ScheduledFor)
             .Skip(skip)
             .Take(take)

@@ -1,6 +1,6 @@
 # laters
 
-[![release](https://img.shields.io/github/v/release/dbones-labs/laters?logo=nuget)](https://github.com/dbones-labs/laters/releases) [![Nuget](https://img.shields.io/badge/nuget-laters-blue)](https://github.com/orgs/dbones-labs/packages?repo_name=laters)
+[![release](https://img.shields.io/github/v/release/dbones-labs/laters?logo=nuget)](https://github.com/dbones-labs/laters/releases) [![Nuget](https://img.shields.io/badge/nuget-laters-blue)](https://www.nuget.org/packages?q=laters&includeComputedFrameworks=true&prerel=true&sortby=relevance) [![Github Nuget](https://img.shields.io/badge/github--nuget-laters-blue)](https://github.com/orgs/dbones-labs/packages?repo_name=laters)
 [![docs](https://img.shields.io/badge/docs-laters-blue)](https://dbones-labs.github.io/laters/)
 
 

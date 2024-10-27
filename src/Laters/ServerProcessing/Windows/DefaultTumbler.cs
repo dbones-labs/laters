@@ -36,6 +36,7 @@ public class DefaultTumbler : IDisposable, ITumbler
         }
     }
 
+    /// <inheritdoc />
     public void Initialize(CancellationToken cancellationToken)
     {
         _globalWindow.Initialize(cancellationToken);
@@ -45,12 +46,14 @@ public class DefaultTumbler : IDisposable, ITumbler
         }
     }
 
+    /// <inheritdoc />
     public bool AreWeOkToProcessThisWindow(string windowName)
     {
         if (_globalWindow.ReachedMax) return false;
         return !_namedWindows.TryGetValue(windowName, out var window) || window.AvailableCapacity;
     }
     
+    [Obsolete("This method is not used, and will be removed in the future.", true)]
     public List<string> GetWindowsWhichAreWithinLimits()
     {
         var names = new List<string>();
@@ -69,7 +72,24 @@ public class DefaultTumbler : IDisposable, ITumbler
         
         return names;
     }
+
+    /// <inheritdoc />
+    public List<string> GetWindowsWhichHaveReachedTheirLimits()
+    {
+        if (_globalWindow.ReachedMax)
+        {
+            return new List<string> {LatersConstants.GlobalTumbler};
+        }   
+        
+        var names = new List<string>();
+
+        var availableWindows = _namedWindows.Where(x => x.Value.ReachedMax).Select(x => x.Key);
+        names.AddRange(availableWindows);
+        
+        return names;
+    }
     
+    /// <inheritdoc />
     public void RecordJobQueue(string rateName)
     {
         var dateTime = SystemDateTime.UtcNow;
@@ -79,7 +99,7 @@ public class DefaultTumbler : IDisposable, ITumbler
             window.AddItemsToWindow(dateTime, 1);
         }
     }
-
+    
     Task UpdateTrigger()
     {
         var shouldRun = _globalWindow.AvailableCapacity;

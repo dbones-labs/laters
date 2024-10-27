@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 using Infrastructure;
 using Triggers;
 
+/// <summary>
+/// default window implementation
+/// </summary>
 public class Window : INotifyPropertyChanged, IDisposable
 {
     readonly ReaderWriterLockSlim _lock = new();
@@ -13,12 +16,16 @@ public class Window : INotifyPropertyChanged, IDisposable
     ContinuousLambda? _cleanup;
     bool _availableCapacity;
 
+    /// <summary>
+    /// starte the window
+    /// </summary>
     public void Initialize(CancellationToken cancellationToken)
     {
         _cleanup = new ContinuousLambda(nameof(_cleanup), async () => await CleanUp(), new TimeTrigger(CleanUpInterval));
         _cleanup.Start(cancellationToken);
     }
 
+    
     public bool ReachedMax => !_availableCapacity;
     public bool AvailableCapacity => _availableCapacity;
 
