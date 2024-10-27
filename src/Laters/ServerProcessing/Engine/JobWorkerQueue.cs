@@ -8,6 +8,10 @@ using Data;
 using Infrastructure;
 using Infrastructure.Telemetry;
 
+
+/// <summary>
+/// the main part of the leader, which is responsible for processing the jobs.
+/// </summary>
 public class JobWorkerQueue : IDisposable
 {
     //injected
@@ -24,6 +28,16 @@ public class JobWorkerQueue : IDisposable
     CandidatePopulateTrigger _populateTrigger;
     ContinuousLambda _populateLambda;
 
+    /// <summary>
+    /// creates an instance of the JobWorkerQueue
+    /// </summary>
+    /// <param name="leaderContext"></param>
+    /// <param name="tumbler"></param>
+    /// <param name="serviceProvider"></param>
+    /// <param name="configuration"></param>
+    /// <param name="workerClient"></param>
+    /// <param name="telemetry"></param>
+    /// <param name="logger"></param>
     public JobWorkerQueue(
         LeaderContext leaderContext,
         ITumbler tumbler,
@@ -47,6 +61,9 @@ public class JobWorkerQueue : IDisposable
             new ContinuousLambda(nameof(PopulateCandidates), async () => await PopulateCandidates(), _populateTrigger);
     }
 
+    /// <summary>
+    /// the the JobWorkerQueue component
+    /// </summary>
     public void Initialize(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Initialize the JobWorkerQueue component");
@@ -67,7 +84,15 @@ public class JobWorkerQueue : IDisposable
         using (var workingScope = _serviceProvider.CreateScope())
         {
             var querySession = workingScope.ServiceProvider.GetRequiredService<ISession>();
-            var windowNames = _tumbler.GetWindowsWhichAreWithinLimits();
+            var windowNames = _tumbler.GetWindowsWhichHaveReachedTheirLimits();
+            
+            //the glabal means we need to skip all windows.
+            if (windowNames.Count == 1 && windowNames[0] == LatersConstants.GlobalTumbler)
+            {
+                _logger.LogInformation("the global window has reached its limit");
+                _populateTrigger.SetWhenToFetch(FetchStrategy.Wait);
+                return;
+            }
 
             var take = _configuration.InMemoryWorkerQueueMax; //this is the in memory queue. (batch)
             candidates = await querySession.GetJobsToProcess(windowNames, 0, take);

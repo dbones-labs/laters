@@ -135,7 +135,7 @@ public class DefaultTestServer : IDisposable
             var pgHost = Environment.GetEnvironmentVariable("PG_HOST");
             if (string.IsNullOrWhiteSpace(pgHost))
             {
-                pgHost = "postgres";
+                pgHost = "localhost";
             }
             Console.WriteLine($"PG_HOST: {pgHost}");
 

@@ -6,6 +6,7 @@ using Laters.Configuration;
 using Machine.Specifications;
 using PowerAssert;
 using ServerProcessing.Windows;
+using Marten;
 
 [Subject("window")]
 [Tags("class-test")]
@@ -47,11 +48,11 @@ class When_tumbler_has_entries_are_outside_of_the_global_window
     Because of = async () =>
     {
         SystemDateTime.Set(() => _observedSlice);
-        await Rig.Wait(() => _sut.AreWeOkToProcessThisWindow("global"));
+        await Rig.Wait(() => _sut!.AreWeOkToProcessThisWindow("global"));
     };
 
     It should_remove_obsolete_entries = () =>
-        PAssert.IsTrue(() => _sut.GetWindowsWhichAreWithinLimits().Contains("global"));
+        PAssert.IsTrue(() => _sut!.GetWindowsWhichHaveReachedTheirLimits().IsEmpty());
     
     Cleanup after = () =>
     {
