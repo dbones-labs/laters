@@ -14,6 +14,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Core.Enrichers;
+using Serilog.Filters;
 using Serilog.Sinks.OpenTelemetry;
 using Weasel.Core;
 
@@ -25,7 +26,7 @@ builder.Host.UseSerilog((context, config) =>
     config
         .Enrich.FromLogContext()
         .Enrich.With(new PropertyEnricher("service_name", serviceName))
-        //.Filter.ByIncludingOnly(Matching.FromSource("Laters"))
+        .Filter.ByIncludingOnly(Matching.FromSource("Laters"))
         .WriteTo.OpenTelemetry(opt =>
         {
             opt.Endpoint = "http://otel-collector:4317";
@@ -110,7 +111,7 @@ builder.WebHost.ConfigureLaters((context, setup) =>
     setup.Configuration.InMemoryWorkerQueueMax = 1000;
     setup.Configuration.NumberOfProcessingThreads = 1;
     setup.Configuration.UseInProcessClient = true;
-    setup.ScanForCronSetups();
+    //setup.ScanForCronSetups();
     setup.Configuration.WorkerEndpoint = "http://localhost:5235/";
     setup.UseStorage<UseMarten>();
 });
@@ -171,6 +172,7 @@ app.MapHandler<RemoveOldItem>(async (JobContext<RemoveOldItem> ctx, IDocumentSes
 });
 
 
+/*
 var rnd = new Random();
 
 app.MapHandler<SetupTasks>(async (ISchedule schedule, IDocumentSession session) =>
@@ -227,7 +229,7 @@ app.MapHandler<SetupDone>(async (JobContext<SetupDone> ctx, ISchedule schedule, 
     var removeDate = SystemDateTime.UtcNow.AddSeconds(2);
     schedule.ForLater(new RemoveOldItem { Id = item.Id }, removeDate);
 });
-
+*/
 
 app.Run();
 

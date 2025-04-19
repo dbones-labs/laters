@@ -7,7 +7,7 @@ using Configuration;
 using Data;
 using Infrastructure;
 using Infrastructure.Telemetry;
-
+using Workers;
 
 /// <summary>
 /// the main part of the leader, which is responsible for processing the jobs.

@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
     "id": "123",
-    "title": "todo1",
+    "name": "todo1",
     "details": "todo1 description"
 }
 
@@ -19,7 +19,7 @@ Content-Type: application/json
 
 {
     "id": "123",
-    "title": "todo1",
+    "name": "todo1",
     "details": "todo1 description",
     "completed": true
 }

@@ -1,6 +1,6 @@
-namespace Laters.ServerProcessing;
+namespace Laters.ServerProcessing.Workers;
 
-using ClientProcessing;
+using Laters.ClientProcessing;
 
 /// <summary>
 /// this allows us to process the jobs within the same worker.

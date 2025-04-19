@@ -13,6 +13,7 @@ using Minimal;
 using ServerProcessing;
 using ServerProcessing.Engine;
 using ServerProcessing.Windows;
+using ServerProcessing.Workers;
 
 /// <summary>
 /// Extensions to setup the Laters library.

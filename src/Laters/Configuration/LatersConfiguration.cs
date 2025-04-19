@@ -61,7 +61,7 @@ public class LatersConfiguration
     public int CheckTelemetryInSeconds { get; set; } = 15;
     
     /// <summary>
-    /// this will make use of the in process client, helps with testing or only hosting a single instance of your service.,
+    /// this will make use of the in process client, helps with testing or only hosting a single instance of your service. (Experimental)
     /// </summary>
     public bool UseInProcessClient { get; set; } = false;
     

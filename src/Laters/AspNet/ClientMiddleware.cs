@@ -87,5 +87,11 @@ public class ClientMiddleware
             context.Response.StatusCode = 404;
             await context.Response.WriteAsync("Job does not exist");
         }
+        catch (NoJobTypeFoundException exception)
+        {
+            _logger.LogError(exception, exception.Message);
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("Job type not found");
+        }
     }
 }
