@@ -59,4 +59,10 @@ public class LatersConfiguration
     /// set how often we check the telemetry from the storage
     /// </summary>
     public int CheckTelemetryInSeconds { get; set; } = 15;
+    
+    /// <summary>
+    /// this will make use of the in process client, helps with testing or only hosting a single instance of your service.,
+    /// </summary>
+    public bool UseInProcessClient { get; set; } = false;
+    
 }

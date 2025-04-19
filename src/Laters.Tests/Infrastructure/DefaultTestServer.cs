@@ -19,22 +19,28 @@ using Serilog.Filters;
 using Serilog.Sinks.OpenTelemetry;
 using ServerProcessing;
 using System.Diagnostics.Metrics;
+using Marten.Linq.SqlGeneration.Filters;
+using Microsoft.AspNetCore.Connections;
 
 public class DefaultTestServer : IDisposable
 {
     readonly Roles _role;
     readonly TestData _data;
+   
     Action<IServiceCollection>? _configureServices;
     Action<WebHostBuilderContext, Setup> _defaultConfigureLaters;
     Action<WebHostBuilderContext, Setup> _configureLaters;
     Action<IApplicationBuilder>? _minimalApiConfigure;
     Action<IApplicationBuilder>? _configure;
+    
     //TestServer? _testServer;
     WebApplication _server;
 
     Task? _runningTask = null;
 
     static Random _random = new();
+    
+    bool _useInProcessClient = false; 
 
     public DefaultTestServer(int port = 0, Roles role = Roles.All, TestData data = TestData.Clear)
     {
@@ -177,6 +183,7 @@ public class DefaultTestServer : IDisposable
 
         builder.WebHost.ConfigureLaters((context, setup) =>
         {
+            setup.Configuration.UseInProcessClient = _useInProcessClient;
             setup.Configuration.NumberOfProcessingThreads = 1;
             _configureLaters?.Invoke(context, setup);
         });
@@ -229,6 +236,11 @@ public class DefaultTestServer : IDisposable
         Leader = _server.Services.GetRequiredService<LeaderContext>();
     }
 
+    public void SetInProcessClient()
+    {
+        _useInProcessClient = true;
+    }
+    
     public void OverrideServices(Action<IServiceCollection> configure)
     {
         _configureServices = configure;

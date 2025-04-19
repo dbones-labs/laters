@@ -67,7 +67,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddMarten(config =>
 {
     //read this from config.. but for now...
-    var connectionString = "host=postgres;database=laters;password=ABC123!!;username=application";
+    var connectionString = "host=localhost;database=laters;password=ABC123!!;username=application";
     config.Connection(connectionString);
     config.AutoCreateSchemaObjects = AutoCreate.All;
     config.DatabaseSchemaName = "todoapp";
@@ -108,7 +108,8 @@ builder.WebHost.ConfigureLaters((context, setup) =>
     });
 
     setup.Configuration.InMemoryWorkerQueueMax = 1000;
-    setup.Configuration.NumberOfProcessingThreads = 16;
+    setup.Configuration.NumberOfProcessingThreads = 1;
+    setup.Configuration.UseInProcessClient = true;
     setup.ScanForCronSetups();
     setup.Configuration.WorkerEndpoint = "http://localhost:5235/";
     setup.UseStorage<UseMarten>();
