@@ -44,7 +44,7 @@ jobs:
 
   build:
     docker:
-      - image: dbones/dotnet8:0.0.1
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
       - attach_workspace:
           at: ./
@@ -79,7 +79,7 @@ jobs:
 
   test:
     docker:
-      - image: dbones/dotnet8:0.0.1
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
         environment:
           PG_HOST: localhost
       - image: bitnami/postgresql:16
@@ -128,7 +128,7 @@ jobs:
 
   publish:
     docker:
-      - image: dbones/dotnet8:0.0.1
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
       - attach_workspace:
           at: ./
