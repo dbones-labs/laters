@@ -36,7 +36,7 @@ class When_a_cron_is_processed_3_times
                 monitor.AddCallTick(marker);
             });
         });
-        _sut.Setup();
+        await _sut.Setup();
     };
 
     Because of = async () =>

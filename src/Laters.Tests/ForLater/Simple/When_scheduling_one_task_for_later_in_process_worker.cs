@@ -15,11 +15,11 @@ class When_scheduling_one_task_for_later_in_process_worker
 {
     static DefaultTestServer _testServer;
 
-    Establish context = () =>
+    Establish context = async () =>
     {
         _testServer = new DefaultTestServer();
         _testServer.SetInProcessClient();
-        _testServer.Setup();
+        await _testServer.Setup();
     };
 
     Because of = async () =>

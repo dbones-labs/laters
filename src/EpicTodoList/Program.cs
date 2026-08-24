@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JasperFx;
 using Laters;
 using Laters.AspNet;
 using Laters.ClientProcessing;

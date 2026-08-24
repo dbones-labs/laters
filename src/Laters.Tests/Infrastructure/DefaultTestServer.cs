@@ -1,4 +1,6 @@
-﻿namespace Laters.Tests.Infrastructure;
+﻿using JasperFx;
+
+namespace Laters.Tests.Infrastructure;
 
 using JasperFx.Core;
 using AspNet;

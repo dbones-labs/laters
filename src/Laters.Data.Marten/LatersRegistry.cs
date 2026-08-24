@@ -9,16 +9,16 @@ public class LatersRegistry : global::Marten.MartenRegistry
         For<Leader>()
             .Identity(x => x.Id)
             .UseOptimisticConcurrency(true)
-            .IdStrategy(new StringIdGeneration());
+            .Identification(member => new StringIdentification<Leader>(member));
         
         For<Job>()
             .UseOptimisticConcurrency(true)
             .Identity(x => x.Id)
-            .IdStrategy(new StringIdGeneration());
+            .Identification(member => new StringIdentification<Job>(member));
         
         For<CronJob>()
             .UseOptimisticConcurrency(true)
             .Identity(x => x.Id)
-            .IdStrategy(new StringIdGeneration());
+            .Identification(member => new StringIdentification<CronJob>(member));
     }
 }

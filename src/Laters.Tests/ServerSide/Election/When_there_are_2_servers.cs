@@ -22,8 +22,8 @@ class When_there_are_2_servers
     static DateTime _time = new(1999, 1, 1, 1, 1, 0);
     
     static string _leaderKey = "leaderId";
-    
-    Establish context = async () =>
+
+    private Establish context = async () =>
     {
         SystemDateTime.Set(()=> _time);
         _worker = new DefaultTestServer(role: Roles.Worker);
@@ -36,7 +36,7 @@ class When_there_are_2_servers
                 monitor.AddCallTick(marker);
             });
         });
-        _worker.Setup();
+        await _worker.Setup();
         
         await _worker.InScope(schedule =>
         {
@@ -51,25 +51,21 @@ class When_there_are_2_servers
     {
         var port = _worker.Port;
 
-        var setup1 = () =>
+        async Task SetupLeader1()
         {
             _leader1 = new DefaultTestServer(role: Roles.Leader, data: TestData.Keep);
             _leader1.AdditionalOverrideLaters((_, setup) => setup.Configuration.WorkerEndpoint = $"http://localhost:{port}/");
-            _leader1.Setup();
-        };
+            await _leader1.Setup();
+        }
 
-        var setup2 = () =>
+        async Task SetupLeader2()
         {
             _leader2 = new DefaultTestServer(role: Roles.Leader, data: TestData.Keep);
             _leader2.AdditionalOverrideLaters((_, setup) => setup.Configuration.WorkerEndpoint = $"http://localhost:{port}/");
-            _leader2.Setup();
-        };
-        var t1 = new Task(setup1);
-        var t2 = new Task(setup2);
-        t1.Start();
-        t2.Start();
-            
-        await Task.WhenAll(t1, t2);
+            await _leader2.Setup();
+        }
+
+        await Task.WhenAll(SetupLeader1(), SetupLeader2());
 
         //await Task.Delay(500); //allow time for these servers to argue
         
