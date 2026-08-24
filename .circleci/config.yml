@@ -148,13 +148,21 @@ workflows:
             branches:
               ignore:
                 - docs
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
       - build:
           context: build-ctx
           requires:
             - setup
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
       - upload_result:
           context: build-ctx
           requires:
@@ -166,3 +174,6 @@ workflows:
           context: build-ctx
           requires:
             - test
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
