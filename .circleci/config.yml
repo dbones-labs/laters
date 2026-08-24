@@ -81,11 +81,11 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:10.0
         environment:
           PG_HOST: localhost
-      - image: bitnami/postgresql:16
+      - image: postgres:18-alpine
         environment:
-          POSTGRESQL_USERNAME: application
-          POSTGRESQL_PASSWORD: ABC123!!
-          POSTGRESQL_DATABASE: laters
+          POSTGRES_USER: application
+          POSTGRES_PASSWORD: ABC123!!
+          POSTGRES_DB: laters
     steps:
       - attach_workspace:
           at: ./
