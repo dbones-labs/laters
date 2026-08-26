@@ -9,3 +9,7 @@ obj/
 node_modules/
 *.trx
 coverage.opencover.xml
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

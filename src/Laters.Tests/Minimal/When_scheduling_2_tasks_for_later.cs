@@ -14,7 +14,7 @@ class When_using_a_minimal_handler_with_a_single_job
 {
     static DefaultTestServer _testServer;
 
-    Establish context = () =>
+    Establish context = async () =>
     {
         _testServer = new DefaultTestServer();
         _testServer.OverrideBuilder(app =>
@@ -33,7 +33,7 @@ class When_using_a_minimal_handler_with_a_single_job
                 var e = (CancellationToken)default == default; 
             });
         });
-        _testServer.Setup();
+        await _testServer.Setup();
     };
 
     Because of = async () =>

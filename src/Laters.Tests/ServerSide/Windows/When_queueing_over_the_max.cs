@@ -43,7 +43,7 @@ class When_queueing_over_the_global_max
                 monitor.AddCallTick(marker);
             });
         });
-        _sut.Setup();
+        await _sut.Setup();
         
         SystemDateTime.Set(()=> _firstSlice);
         

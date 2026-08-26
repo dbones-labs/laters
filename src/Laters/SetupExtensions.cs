@@ -13,7 +13,11 @@ using Minimal;
 using ServerProcessing;
 using ServerProcessing.Engine;
 using ServerProcessing.Windows;
+using ServerProcessing.Workers;
 
+/// <summary>
+/// Extensions to setup the Laters library.
+/// </summary>
 public static class SetupExtensions
 {
     static Action<HostBuilderContext, Setup> ToHostBuilderConfig(
@@ -30,6 +34,11 @@ public static class SetupExtensions
         };
     }
 
+    /// <summary>
+    /// Configure laters from the <see cref="IWebHostBuilder"/>
+    /// </summary>
+    /// <param name="builder">the web host</param>
+    /// <param name="configure">the configuration to apply</param>
     public static IWebHostBuilder ConfigureLaters(
         this IWebHostBuilder builder,
         Action<WebHostBuilderContext, Setup> configure)
@@ -37,6 +46,12 @@ public static class SetupExtensions
         return builder.ConfigureLaters("Laters", configure);
     }
 
+    /// <summary>
+    /// Configure laters from the <see cref="IHostBuilder"/>
+    /// </summary>
+    /// <param name="builder">the host</param>
+    /// <param name="configure">the configuration to apply</param>
+    /// <returns></returns>
     public static IHostBuilder ConfigureLaters(
         this IHostBuilder builder, 
         Action<HostBuilderContext, Setup> configure)
@@ -45,6 +60,12 @@ public static class SetupExtensions
     }
 
 
+    /// <summary>
+    /// Configure laters from the <see cref="IWebHostBuilder"/>
+    /// </summary>
+    /// <param name="builder">the web host</param>
+    /// <param name="configEntry">the name of the configuration to ready from, default is `Laters`</param>
+    /// <param name="configure">configuration to apply</param>
     public static IWebHostBuilder ConfigureLaters(
         this IWebHostBuilder builder, 
         string configEntry,
@@ -53,13 +74,18 @@ public static class SetupExtensions
         //LatersConfiguration
         builder.ConfigureServices((context, collection) =>
         {
-            Setup(context.Configuration, collection, configEntry, setup => configure?.Invoke(context, setup));
+            Setup(context.Configuration, collection, configEntry, setup => configure.Invoke(context, setup));
         });
 
         return builder;
     }
     
-    
+    /// <summary>
+    /// Configure laters from the <see cref="IHostBuilder"/>
+    /// </summary>
+    /// <param name="builder">the web host</param>
+    /// <param name="configEntry">the name of the configuration to ready from, default is `Laters`</param>
+    /// <param name="configure">configuration to apply</param>
     public static IHostBuilder ConfigureLaters(
         this IHostBuilder builder, 
         string configEntry, 
@@ -74,6 +100,13 @@ public static class SetupExtensions
         return builder;
     }
     
+    /// <summary>
+    /// Setup the laters configuration
+    /// </summary>
+    /// <param name="configuration">the application config, used to get the laters config options</param>
+    /// <param name="collection">the ioc container collection</param>
+    /// <param name="configEntry">the name of the config entry</param>
+    /// <param name="configure">the configuration to apply</param>
     static void Setup(
         IConfiguration configuration, 
         IServiceCollection collection, 
@@ -93,15 +126,17 @@ public static class SetupExtensions
         });
 
         //setup the configuration before updating the IoC
-        var setup = new Setup();
-        setup.Configuration = latersConfiguration;
-        setup.ConfigurationSection = latersConfigurationSection;
-        
+        var setup = new Setup
+        {
+            Configuration = latersConfiguration,
+            ConfigurationSection = latersConfigurationSection
+        };
+
         //apply the config override from the application
         //apply the changes to the IoC
         configure?.Invoke(setup);
 
-        //lets try and be helpful
+        //let's try and be helpful
         if (string.IsNullOrWhiteSpace(setup.Configuration.WorkerEndpoint))
         {
             setup.Configuration.WorkerEndpoint = configuration["ASPNETCORE_URLS"];
@@ -133,21 +168,29 @@ public static class SetupExtensions
         collection.AddHostedService<DefaultHostedService>();
 
         
-        collection.AddHttpClient<WorkerClient>().ConfigurePrimaryHttpMessageHandler(provider =>
+        
+        //we allow the user to choose how they want to use the distributed clients or just a in process one.
+        if (latersConfiguration.UseInProcessClient)
         {
-            var handler = new HttpClientHandler();
-
-            if (latersConfiguration.AllowPrivateCert)
+            collection.AddSingleton<IWorkerClient, InProcessClient>();
+        }
+        else
+        {
+            collection.AddHttpClient<IWorkerClient, WorkerClient>().ConfigurePrimaryHttpMessageHandler(_ =>
             {
-                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-            }
+                var handler = new HttpClientHandler();
 
-            handler.MaxConnectionsPerServer = latersConfiguration.NumberOfProcessingThreads;
-            return handler;
-        });
-        
-        
+                if (latersConfiguration.AllowPrivateCert)
+                {
+                    handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                    handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                }
+
+                handler.MaxConnectionsPerServer = latersConfiguration.NumberOfProcessingThreads;
+                return handler;
+            });
+        }
+
         //client side
         collection.AddHostedService<GlobalCronSetup>();
         collection.AddTransient<GlobalScheduleCronProxy>();
@@ -160,7 +203,7 @@ public static class SetupExtensions
         
         collection.TryAddSingleton<ClientActions>();
         collection.TryAddSingleton(typeof(IProcessJobMiddleware<>), typeof(ProcessJobMiddleware<>));
-        collection.TryAddSingleton<JobDelegates>(svc => new JobDelegates(collection));
+        collection.TryAddSingleton<JobDelegates>(_ => new JobDelegates(collection));
         
         collection.TryAddSingleton(services =>
         {

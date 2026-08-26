@@ -21,7 +21,7 @@ class When_scheduling_a_job_for_later
     {
         SystemDateTime.Set(() => _enqueuedTime);
         _testServer = new DefaultTestServer();
-        _testServer.Setup();
+        await _testServer.Setup();
         
         await _testServer.InScope(schedule => schedule.ForLater(new Hello { Name = "dave" },  _whenToProcess));
         await _testServer.InScope(schedule => schedule.ForLater(new Bye { Name = "dave" } ));

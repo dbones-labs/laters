@@ -92,7 +92,7 @@ public class Session : ISession
         {
             await _documentSession.SaveChangesAsync(cancellationToken);
         }
-        catch (global::Marten.Exceptions.ConcurrencyException e)
+        catch (global::Marten.Exceptions.ConcurrentUpdateException e)
         {
             throw new ConcurrencyException(e);
         }

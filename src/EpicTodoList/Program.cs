@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JasperFx;
 using Laters;
 using Laters.AspNet;
 using Laters.ClientProcessing;
@@ -14,6 +15,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Core.Enrichers;
+using Serilog.Filters;
 using Serilog.Sinks.OpenTelemetry;
 using Weasel.Core;
 
@@ -25,7 +27,7 @@ builder.Host.UseSerilog((context, config) =>
     config
         .Enrich.FromLogContext()
         .Enrich.With(new PropertyEnricher("service_name", serviceName))
-        //.Filter.ByIncludingOnly(Matching.FromSource("Laters"))
+        .Filter.ByIncludingOnly(Matching.FromSource("Laters"))
         .WriteTo.OpenTelemetry(opt =>
         {
             opt.Endpoint = "http://otel-collector:4317";
@@ -67,7 +69,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddMarten(config =>
 {
     //read this from config.. but for now...
-    var connectionString = "host=postgres;database=laters;password=ABC123!!;username=application";
+    var connectionString = "host=localhost;database=laters;password=ABC123!!;username=application";
     config.Connection(connectionString);
     config.AutoCreateSchemaObjects = AutoCreate.All;
     config.DatabaseSchemaName = "todoapp";
@@ -108,8 +110,9 @@ builder.WebHost.ConfigureLaters((context, setup) =>
     });
 
     setup.Configuration.InMemoryWorkerQueueMax = 1000;
-    setup.Configuration.NumberOfProcessingThreads = 16;
-    setup.ScanForCronSetups();
+    setup.Configuration.NumberOfProcessingThreads = 1;
+    setup.Configuration.UseInProcessClient = true;
+    //setup.ScanForCronSetups();
     setup.Configuration.WorkerEndpoint = "http://localhost:5235/";
     setup.UseStorage<UseMarten>();
 });
@@ -170,6 +173,7 @@ app.MapHandler<RemoveOldItem>(async (JobContext<RemoveOldItem> ctx, IDocumentSes
 });
 
 
+/*
 var rnd = new Random();
 
 app.MapHandler<SetupTasks>(async (ISchedule schedule, IDocumentSession session) =>
@@ -226,7 +230,7 @@ app.MapHandler<SetupDone>(async (JobContext<SetupDone> ctx, ISchedule schedule, 
     var removeDate = SystemDateTime.UtcNow.AddSeconds(2);
     schedule.ForLater(new RemoveOldItem { Id = item.Id }, removeDate);
 });
-
+*/
 
 app.Run();
 

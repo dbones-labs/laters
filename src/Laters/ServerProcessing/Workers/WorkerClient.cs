@@ -1,10 +1,8 @@
-﻿namespace Laters.ServerProcessing;
+﻿namespace Laters.ServerProcessing.Workers;
 
-using System.Diagnostics;
 using System.Text.Json;
-using ClientProcessing;
-using Configuration;
-using Infrastructure.Telemetry;
+using Laters.ClientProcessing;
+using Laters.Configuration;
 
 /// <summary>
 /// used to call the workers with a job to process

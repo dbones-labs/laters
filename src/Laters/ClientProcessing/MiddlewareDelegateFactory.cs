@@ -126,7 +126,7 @@ public class MiddlewareDelegateFactory
     }
 
     /// <summary>
-    /// this create the delegate which will call the pipeline
+    /// this creates the delegate which will call the pipeline
     /// </summary>
     /// <param name="jobType">the job type which the pipeline is for</param>
     /// <remarks>under construction....</remarks>

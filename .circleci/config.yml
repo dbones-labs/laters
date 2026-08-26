@@ -1,4 +1,3 @@
--- Active: 1710668691755@@postgres@5432@laters@thisisatest
 version: 2.1
 
 jobs:
@@ -7,7 +6,8 @@ jobs:
     docker:
       - image: dboneslabs/tools-docker-gittools:latest
     steps:
-      - checkout
+      - checkout:
+          method: full
       - run:
           name: version
           command: |
@@ -43,7 +43,7 @@ jobs:
 
   build:
     docker:
-      - image: dbones/dotnet8:0.0.1
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
       - attach_workspace:
           at: ./
@@ -78,14 +78,14 @@ jobs:
 
   test:
     docker:
-      - image: dbones/dotnet8:0.0.1
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
         environment:
           PG_HOST: localhost
-      - image: bitnami/postgresql:16
+      - image: postgres:18-alpine
         environment:
-          POSTGRESQL_USERNAME: application
-          POSTGRESQL_PASSWORD: ABC123!!
-          POSTGRESQL_DATABASE: laters
+          POSTGRES_USER: application
+          POSTGRES_PASSWORD: ABC123!!
+          POSTGRES_DB: laters
     steps:
       - attach_workspace:
           at: ./
@@ -127,7 +127,7 @@ jobs:
 
   publish:
     docker:
-      - image: dbones/dotnet8:0.0.1
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
       - attach_workspace:
           at: ./
@@ -148,13 +148,21 @@ workflows:
             branches:
               ignore:
                 - docs
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
       - build:
           context: build-ctx
           requires:
             - setup
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
       - upload_result:
           context: build-ctx
           requires:
@@ -166,3 +174,6 @@ workflows:
           context: build-ctx
           requires:
             - test
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/

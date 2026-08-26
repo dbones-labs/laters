@@ -7,7 +7,7 @@ using Configuration;
 using Data;
 using Infrastructure;
 using Infrastructure.Telemetry;
-
+using Workers;
 
 /// <summary>
 /// the main part of the leader, which is responsible for processing the jobs.
@@ -19,7 +19,7 @@ public class JobWorkerQueue : IDisposable
     readonly ITumbler _tumbler;
     readonly IServiceProvider _serviceProvider;
     readonly LatersConfiguration _configuration;
-    readonly WorkerClient _workerClient;
+    readonly IWorkerClient _workerClient;
     readonly Traces _telemetry;
     readonly ILogger<JobWorkerQueue> _logger;
 
@@ -43,7 +43,7 @@ public class JobWorkerQueue : IDisposable
         ITumbler tumbler,
         IServiceProvider serviceProvider,
         LatersConfiguration configuration,
-        WorkerClient workerClient,
+        IWorkerClient workerClient,
         Traces telemetry,
         ILogger<JobWorkerQueue> logger)
     {

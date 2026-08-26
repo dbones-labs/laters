@@ -26,12 +26,16 @@ class When_registering_more_than_1_handler_for_a_type
         
     };
 
-    Because of = () =>
+    Because of = async () =>
     {
-        _result = Catch.Exception(() =>
+        try
         {
-            _testServer.Setup();
-        });
+            await _testServer.Setup();
+        }
+        catch (Exception exception)
+        {
+            _result = exception;
+        }
     };
     
 

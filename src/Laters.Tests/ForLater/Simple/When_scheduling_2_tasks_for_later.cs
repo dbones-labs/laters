@@ -14,10 +14,10 @@ class When_scheduling_several_tasks_for_later
 {
     static DefaultTestServer _testServer;
 
-    Establish context = () =>
+    Establish context = async () =>
     {
         _testServer = new DefaultTestServer();
-        _testServer.Setup();
+        await _testServer.Setup();
     };
 
     Because of = async () =>
@@ -72,7 +72,7 @@ class When_scheduling_several_tasks_for_later_5_threads
 {
     static DefaultTestServer _testServer;
 
-    Establish context = () =>
+    Establish context = async () =>
     {
         _testServer = new DefaultTestServer();
         _testServer.AdditionalOverrideLaters((builderContext, setup) =>
@@ -80,7 +80,7 @@ class When_scheduling_several_tasks_for_later_5_threads
             setup.Configuration.CheckDatabaseInSeconds = 1;
             setup.Configuration.NumberOfProcessingThreads = 5;
         });
-        _testServer.Setup();
+        await _testServer.Setup();
     };
 
     Because of = async () =>

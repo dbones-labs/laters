@@ -36,7 +36,7 @@ class When_a_cron_is_processed_3_times_and_deleting_all_orphins_after_first
                 monitor.AddCallTick(marker);
             });
         });
-        _sut.Setup();
+        await _sut.Setup();
         
         Exception? caught = null;
         SystemDateTime.Set(()=> _firstSlice);

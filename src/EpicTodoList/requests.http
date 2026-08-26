@@ -1,26 +1,25 @@
-get http://localhost:5235/todo-items
+GET localhost:5235/todo-items
 
 ###
 
-
-post http://localhost:5235/todo-items
+POST localhost:5235/todo-items
 Content-Type: application/json
 
 {
     "id": "123",
-    "title": "todo1",
+    "name": "todo1",
     "details": "todo1 description"
 }
 
 ###
 
 
-put http://localhost:5235/todo-items/123
+PUT localhost:5235/todo-items/123
 Content-Type: application/json
 
 {
     "id": "123",
-    "title": "todo1",
+    "name": "todo1",
     "details": "todo1 description",
     "completed": true
 }
